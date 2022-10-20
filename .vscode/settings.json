@@ -26,6 +26,9 @@
         "can_receive.h": "c",
         "can_process.h": "c",
         "can.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "lk9025.h": "c",
+        "dji_motor.h": "c",
+        "ht04.h": "c"
     }
 }

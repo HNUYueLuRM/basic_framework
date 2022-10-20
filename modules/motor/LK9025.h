@@ -3,6 +3,7 @@
 
 #include "struct_typedef.h"
 #include "bsp_can.h"
+#include "controller.h"
 
 #define LK_MOTOR_CNT 2
 #define I_MIN -2000
@@ -17,7 +18,10 @@ typedef struct //9025
     int16_t speed_rpm;
     int16_t given_current;
     uint8_t temperate;
+
+    PID_t pid;
     can_instance motor_can_instance;
+
 } driven_instance;
 
 typedef enum
@@ -25,12 +29,10 @@ typedef enum
     unused = 0,
 } driven_mode;
 
-void LKMotroInit(uint16_t motor_id,uint16_t rx_id,CAN_HandleTypeDef* hcan);
+void LKMotroInit(driven_instance* instance,CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
 
 void DrivenControl(int16_t motor1_current,int16_t motor2_current);
 
 void SetDrivenMode(driven_mode cmd,uint16_t motor_id);
-
-void DecodeDriven(can_instance* _instance);
 
 #endif // LK9025_H

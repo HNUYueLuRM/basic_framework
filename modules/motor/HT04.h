@@ -3,6 +3,7 @@
 
 #include "struct_typedef.h"
 #include "bsp_can.h"
+#include "controller.h"
 
 #define HT_MOTOR_CNT 4
 
@@ -19,6 +20,8 @@ typedef struct //HT04
     float ecd;
     float speed_rpm;
     float given_current;
+
+    PID_t pid;
     can_instance motor_can_instace;
 } joint_instance;
 
@@ -29,6 +32,7 @@ typedef enum
     CMD_ZERO_POSITION = 0xfe
 } joint_mode;
 
+void HTMotorInit(joint_instance* _instance,CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
 
 void JointControl(joint_instance* _instance,float current);
 
