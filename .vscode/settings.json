@@ -1,0 +1,31 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "files.associations": {
+        "arm_math.h": "c",
+        "task.h": "c",
+        "main.h": "c",
+        "cmsis_os.h": "c",
+        "freertos.h": "c",
+        "bmi088driver.h": "c",
+        "user_lib.h": "c",
+        "mpu_armv7.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "stm32f4xx_hal_conf.h": "c",
+        "stm32_hal_legacy.h": "c",
+        "stm32f4xx.h": "c",
+        "cstdint": "c",
+        "tim.h": "c",
+        "struct_typedef.h": "c",
+        "bsp_can.h": "c",
+        "stdint.h": "c",
+        "bsp_temperature.h": "c",
+        "bsp_rc.h": "c",
+        "remote_control.h": "c",
+        "bsp_usart.h": "c",
+        "led_task.h": "c",
+        "can_receive.h": "c",
+        "can_process.h": "c",
+        "can.h": "c",
+        "stdlib.h": "c"
+    }
+}
