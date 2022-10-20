@@ -29,6 +29,8 @@
         "stdlib.h": "c",
         "lk9025.h": "c",
         "dji_motor.h": "c",
-        "ht04.h": "c"
+        "ht04.h": "c",
+        "controller.h": "c",
+        "memory.h": "c"
     }
 }

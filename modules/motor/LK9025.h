@@ -19,8 +19,8 @@ typedef struct //9025
     int16_t given_current;
     uint8_t temperate;
 
-    PID_t pid;
-    can_instance motor_can_instance;
+    PID_t* pid;
+    can_instance* motor_can_instance;
 
 } driven_instance;
 
@@ -29,7 +29,7 @@ typedef enum
     unused = 0,
 } driven_mode;
 
-void LKMotroInit(driven_instance* instance,CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
+driven_instance* LKMotroInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
 
 void DrivenControl(int16_t motor1_current,int16_t motor2_current);
 

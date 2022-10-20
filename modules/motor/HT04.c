@@ -3,18 +3,6 @@
 
 joint_instance* joint_motor_info[HT_MOTOR_CNT];
 
-
-void HTMotorInit(joint_instance* _instance,CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id)
-{
-    static uint8_t idx;
-    _instance->motor_can_instace.can_handle=_hcan;
-    _instance->motor_can_instace.tx_id=tx_id;
-    _instance->motor_can_instace.rx_id=rx_id;
-    _instance->motor_can_instace.can_module_callback=DecodeJoint;
-    CANRegister(&_instance->motor_can_instace);
-    joint_motor_info[idx++]=_instance;
-}
-
 static uint16_t float_to_uint(float x, float x_min, float x_max, uint8_t bits)
 {
     float span = x_max - x_min;
@@ -29,25 +17,7 @@ static float uint_to_float(int x_int, float x_min, float x_max, int bits)
     return ((float)x_int)*span/((float)((1<<bits)-1)) + offset;
 }
 
-void JointControl(joint_instance* _instance,float current)
-{
-    uint16_t tmp;
-    LIMIT_MIN_MAX(current,  T_MIN,  T_MAX);
-    tmp = float_to_uint(current, T_MIN, T_MAX, 12);
-    _instance->motor_can_instace.rx_buff[6] = tmp>>8;
-    _instance->motor_can_instace.rx_buff[7] = tmp&0xff;
-    CANTransmit(&_instance->motor_can_instace);
-}
-
-void SetJointMode(joint_mode cmd,joint_instance* _instance)
-{
-    static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
-    buf[7]=(uint8_t)cmd;
-    memcpy(_instance->motor_can_instace.rx_buff,buf,8*sizeof(uint8_t));
-    CANTransmit(&_instance->motor_can_instace);
-}
-
-void DecodeJoint(can_instance* motor_instance)
+static void DecodeJoint(can_instance* motor_instance)
 {
     uint16_t tmp;
     for (size_t i = 0; i < HT_MOTOR_CNT; i++)
@@ -64,4 +34,29 @@ void DecodeJoint(can_instance* motor_instance)
             break;
         }
     }
+}
+
+joint_instance* HTMotorInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id)
+{
+    static uint8_t idx;
+    joint_motor_info[idx]=(joint_instance*)malloc(sizeof(joint_instance));
+    joint_motor_info[idx++]->motor_can_instace=CANRegister(tx_id,rx_id,_hcan,DecodeJoint);
+}
+
+void JointControl(joint_instance* _instance,float current)
+{
+    uint16_t tmp;
+    LIMIT_MIN_MAX(current,  T_MIN,  T_MAX);
+    tmp = float_to_uint(current, T_MIN, T_MAX, 12);
+    _instance->motor_can_instace->rx_buff[6] = tmp>>8;
+    _instance->motor_can_instace->rx_buff[7] = tmp&0xff;
+    CANTransmit(&_instance->motor_can_instace);
+}
+
+void SetJointMode(joint_mode cmd,joint_instance* _instance)
+{
+    static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
+    buf[7]=(uint8_t)cmd;
+    memcpy(_instance->motor_can_instace->rx_buff,buf,8*sizeof(uint8_t));
+    CANTransmit(&_instance->motor_can_instace);
 }

@@ -15,11 +15,11 @@ typedef struct
     int16_t last_ecd;
 
     PID_t motor_pid;
-    can_instance motor_can_instance;
+    can_instance *motor_can_instance;
 
 } dji_motor_instance;
 
-void DJIMotorInit(dji_motor_instance* motor_instace,CAN_HandleTypeDef* _hcan,uint16_t tx_id,uint16_t rx_id);
+dji_motor_instance* DJIMotorInit(CAN_HandleTypeDef* _hcan,uint16_t tx_id,uint16_t rx_id);
 
 void DJIMotorControl();
 

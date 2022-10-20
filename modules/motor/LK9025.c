@@ -18,25 +18,21 @@ static void DecodeDriven(can_instance* _instance)
     }
 }
 
-void LKMotroInit(driven_instance* instance,CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id)
+driven_instance* LKMotroInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id)
 {
     static uint8_t idx;
-    instance->motor_can_instance.can_module_callback=DecodeDriven;
-    instance->motor_can_instance.can_handle=_hcan;
-    instance->motor_can_instance.tx_id=tx_id;
-    instance->motor_can_instance.rx_id=rx_id;
-    CANRegister(&instance->motor_can_instance);
-    driven_motor_info[idx++]=instance;
+    driven_motor_info[idx]=(driven_instance*)malloc(sizeof(driven_instance));
+    driven_motor_info[idx++]->motor_can_instance=CANRegister(tx_id,rx_id,_hcan,DecodeDriven);
 }
 
 void DrivenControl(int16_t motor1_current,int16_t motor2_current)
 {
     LIMIT_MIN_MAX(motor1_current,  I_MIN,  I_MAX);
     LIMIT_MIN_MAX(motor2_current,  I_MIN,  I_MAX);
-    driven_motor_info[0]->motor_can_instance.tx_buff[0] = motor1_current;
-    driven_motor_info[0]->motor_can_instance.tx_buff[1] = motor1_current>>8;
-    driven_motor_info[0]->motor_can_instance.tx_buff[2] = motor2_current;
-    driven_motor_info[0]->motor_can_instance.tx_buff[3] = motor2_current>>8;
+    driven_motor_info[0]->motor_can_instance->tx_buff[0] = motor1_current;
+    driven_motor_info[0]->motor_can_instance->tx_buff[1] = motor1_current>>8;
+    driven_motor_info[0]->motor_can_instance->tx_buff[2] = motor2_current;
+    driven_motor_info[0]->motor_can_instance->tx_buff[3] = motor2_current>>8;
     CANTransmit(&driven_motor_info[0]->motor_can_instance);
 }
 

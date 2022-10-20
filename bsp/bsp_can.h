@@ -9,9 +9,6 @@
 #define MX_CAN_FILTER_CNT (4 * 14) // temporarily useless
 #define DEVICE_CAN_CNT 2           // CAN1,CAN2
 
-/* module callback,which resolve protocol when new mesg arrives*/
-
-
 /* can instance typedef, every module registered to CAN should have this variable */
 typedef struct tmp
 {
@@ -24,6 +21,9 @@ typedef struct tmp
     void (*can_module_callback)(struct tmp*); // callback needs an instance to tell among registered ones
 } can_instance;
 
+/* module callback,which resolve protocol when new mesg arrives*/
+typedef void (*can_callback)(can_instance*);
+
 /**
  * @brief transmit mesg through CAN device
  * 
@@ -34,13 +34,10 @@ void CANTransmit(can_instance* _instance);
 /**
  * @brief Register a module to CAN service,remember to call this before using a CAN device
  * 
- * @attention  tx_id, rx_id, can_handle and module_callback should be set before calling this func
- *             for the rest configs, this func will do for you
- * 
  * @param _instance can instance owned by a specific device, remember to initialize it!
  * 
  */
-void CANRegister(can_instance* _instance);
+can_instance* CANRegister(uint8_t tx_id,uint8_t rx_id,CAN_HandleTypeDef* can_handle,can_callback module_callback);
 
 
 #endif

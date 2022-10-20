@@ -52,17 +52,22 @@ static void CANServiceInit()
     HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO1_MSG_PENDING);
 }
 
-void CANRegister(can_instance* _instance)
+can_instance* CANRegister(uint8_t tx_id,uint8_t rx_id,CAN_HandleTypeDef* can_handle,can_callback module_callback)
 {
-    static uint8_t instance_idx;
-    if(!instance_idx)
+    static uint8_t idx;
+    if(!idx)
     {
         CANServiceInit();
     }
-    _instance->rx_buff=(uint8_t*)malloc(8*sizeof(uint8_t));
-    _instance->tx_buff=(uint8_t*)malloc(8*sizeof(uint8_t));
-    CANAddFilter(_instance);
-    instance[instance_idx++]=_instance;
+    instance[idx]=(can_instance*)malloc(sizeof(can_instance));
+    instance[idx]->can_handle=can_handle;
+    instance[idx]->tx_id=tx_id;
+    instance[idx]->rx_id=rx_id;
+    instance[idx]->can_module_callback=module_callback;
+    instance[idx]->tx_buff=(uint8_t*)malloc(8*sizeof(uint8_t));
+    instance[idx]->rx_buff=(uint8_t*)malloc(8*sizeof(uint8_t));
+    CANAddFilter(instance[idx]);
+    return instance[idx++];
 }
 
 void CANTransmit(can_instance* _instance)

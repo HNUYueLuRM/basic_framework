@@ -22,7 +22,7 @@ typedef struct //HT04
     float given_current;
 
     PID_t pid;
-    can_instance motor_can_instace;
+    can_instance* motor_can_instace;
 } joint_instance;
 
 typedef enum
@@ -32,11 +32,10 @@ typedef enum
     CMD_ZERO_POSITION = 0xfe
 } joint_mode;
 
-void HTMotorInit(joint_instance* _instance,CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
+joint_instance* HTMotorInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
 
 void JointControl(joint_instance* _instance,float current);
 
 void SetJointMode(joint_mode cmd,joint_instance* _instance);
 
-void DecodeJoint(can_instance* motor_instance);
 #endif // !HT04_H#define HT04_H
