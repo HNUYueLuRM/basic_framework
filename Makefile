@@ -116,8 +116,9 @@ modules/master_machine/master_process.c \
 modules/motor/dji_motor.c \
 modules/motor/HT04.c \
 modules/motor/LK9025.c \
+modules/motor/motor_task.c \
 modules/referee/referee.c \
-modules/remote/remote_control.c\ \
+modules/remote/remote_control.c \
 modules/super_cap/super_cap.c
 
 # ASM sources

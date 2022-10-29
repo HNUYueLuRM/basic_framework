@@ -18,7 +18,6 @@ static void USARTServiceInit(usart_instance* _instance)
 void USARTRegister(usart_instance* _instance)
 {
     static instance_idx;
-    _instance->recv_buff=(uint8_t*)malloc(_instance->recv_buff_size*sizeof(uint8_t));
     USARTServiceInit(_instance);
     instance[instance_idx++]=_instance;
 }

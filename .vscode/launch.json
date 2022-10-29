@@ -4,7 +4,7 @@
         {
             "name": "Cortex Debug",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}\\build\\abstract_test.elf",
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf",
             "request": "launch",
             "type": "cortex-debug",
             "device":"STM32F407IG",        //使用J-link GDB Server时必须；其他GBD Server时可选（有可能帮助自动选择SVD文件）。支持的设备见 https://www.segger.com/downloads/supported-devices.php

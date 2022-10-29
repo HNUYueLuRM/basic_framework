@@ -5,6 +5,7 @@
 #include "main.h"
 
 #define DEVICE_USART_CNT 3
+#define USART_RX_LIMIT 128 // if your protocol needs bigger buff, modify here
 
 /* application callback,which resolves specific protocol */
 typedef void (*usart_module_callback)();
@@ -12,7 +13,7 @@ typedef void (*usart_module_callback)();
 /* usart_instance struct,each app would have one instance */
 typedef struct
 {
-    uint8_t *recv_buff;
+    uint8_t recv_buff[USART_RX_LIMIT];
     uint8_t recv_buff_size;
     UART_HandleTypeDef *usart_handle;
     usart_module_callback module_callback;

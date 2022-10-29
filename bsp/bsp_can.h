@@ -15,8 +15,8 @@ typedef struct tmp
     CAN_HandleTypeDef* can_handle;
     uint32_t tx_id;
     uint32_t tx_mailbox;
-    uint8_t* tx_buff; 
-    uint8_t* rx_buff;
+    uint8_t tx_buff[8]; 
+    uint8_t rx_buff[8];
     uint32_t rx_id;
     void (*can_module_callback)(struct tmp*); // callback needs an instance to tell among registered ones
 } can_instance;

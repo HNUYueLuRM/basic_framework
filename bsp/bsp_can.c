@@ -64,8 +64,6 @@ can_instance* CANRegister(uint8_t tx_id,uint8_t rx_id,CAN_HandleTypeDef* can_han
     instance[idx]->tx_id=tx_id;
     instance[idx]->rx_id=rx_id;
     instance[idx]->can_module_callback=module_callback;
-    instance[idx]->tx_buff=(uint8_t*)malloc(8*sizeof(uint8_t));
-    instance[idx]->rx_buff=(uint8_t*)malloc(8*sizeof(uint8_t));
     CANAddFilter(instance[idx]);
     return instance[idx++];
 }
