@@ -36,11 +36,11 @@ static void DecodeJoint(can_instance* motor_instance)
     }
 }
 
-joint_instance* HTMotorInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id)
+joint_instance* HTMotorInit(can_instance_config config)
 {
     static uint8_t idx;
     joint_motor_info[idx]=(joint_instance*)malloc(sizeof(joint_instance));
-    joint_motor_info[idx++]->motor_can_instace=CANRegister(tx_id,rx_id,_hcan,DecodeJoint);
+    joint_motor_info[idx++]->motor_can_instace=CANRegister(config);
 }
 
 void JointControl(joint_instance* _instance,float current)

@@ -4,15 +4,9 @@
 #include "LK9025.h"
 #include "HT04.h"
 #include "dji_motor.h"
+#include "motor_def.h"
 
-typedef enum 
-{
-    GM6020=0,
-    M3508=1,
-    M2006=2,
-    LK9025=3,
-    HT04=4
-} Motor_Type_e;
+
 
 void MotorControlTask();
 

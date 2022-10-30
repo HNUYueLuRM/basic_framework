@@ -32,7 +32,7 @@ typedef enum
     CMD_ZERO_POSITION = 0xfe
 } joint_mode;
 
-joint_instance* HTMotorInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
+joint_instance* HTMotorInit(can_instance_config config);
 
 void JointControl(joint_instance* _instance,float current);
 

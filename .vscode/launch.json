@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Cortex Debug",
+            "name": "Debug-dap",
             "cwd": "${workspaceRoot}",
             "executable": "${workspaceRoot}\\build\\basic_framework.elf",
             "request": "launch",
@@ -16,6 +16,20 @@
             // path to your gcc-arm-none-eabi/bin
             "armToolchainPath": "D:\\gcc-arm-none-eabi\\bin",
             // path to your gcc-arm-none-eabi/arm-none-eabi-gdb.exe
+            "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe" 
+        },
+        {
+            "name": "Debug-jlink",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "device": "STM32F407IG",
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            "servertype": "jlink",
+            "interface": "swd",
+            "armToolchainPath": "D:\\gcc-arm-none-eabi\\bin",
             "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe" 
         }
     ]

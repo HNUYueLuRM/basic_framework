@@ -37,6 +37,7 @@
 #include "bsp_can.h"
 #include "can.h"
 #include "LK9025.h"
+#include "dji_motor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,7 +115,6 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-  
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

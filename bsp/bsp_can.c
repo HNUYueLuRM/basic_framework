@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "memory.h"
 
+/* can instance ptrs storage, used for recv callback */
 static can_instance* instance[MX_REGISTER_DEVICE_CNT];
 
 /**
@@ -52,7 +53,11 @@ static void CANServiceInit()
     HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO1_MSG_PENDING);
 }
 
-can_instance* CANRegister(uint8_t tx_id,uint8_t rx_id,CAN_HandleTypeDef* can_handle,can_callback module_callback)
+
+/* -----------------------two callable function -----------------------*/
+
+
+can_instance* CANRegister(can_instance_config config)
 {
     static uint8_t idx;
     if(!idx)
@@ -60,24 +65,32 @@ can_instance* CANRegister(uint8_t tx_id,uint8_t rx_id,CAN_HandleTypeDef* can_han
         CANServiceInit();
     }
     instance[idx]=(can_instance*)malloc(sizeof(can_instance));
-    instance[idx]->can_handle=can_handle;
-    instance[idx]->tx_id=tx_id;
-    instance[idx]->rx_id=rx_id;
-    instance[idx]->can_module_callback=module_callback;
+
+    instance[idx]->txconf.StdId=config.tx_id;
+    instance[idx]->txconf.IDE=CAN_ID_STD;
+    instance[idx]->txconf.RTR=CAN_RTR_DATA;
+    instance[idx]->txconf.DLC=0x08;
+
+    instance[idx]->can_handle=config.can_handle;
+    instance[idx]->tx_id=config.tx_id;
+    instance[idx]->rx_id=config.rx_id;
+    instance[idx]->can_module_callback=config.can_module_callback;
+
     CANAddFilter(instance[idx]);
+
     return instance[idx++];
 }
 
+
 void CANTransmit(can_instance* _instance)
 {
-    CAN_TxHeaderTypeDef txconf;
-    txconf.StdId=_instance->tx_id;
-    txconf.IDE=CAN_ID_STD;
-    txconf.RTR=CAN_RTR_DATA;
-    txconf.DLC=0x08;
-    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0);
-    HAL_CAN_AddTxMessage(_instance->can_handle, &txconf, _instance->tx_buff, &_instance->tx_mailbox);
+    while(HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0);
+    HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
 }
+
+
+/* -----------------------belows are callback definitions--------------------------*/
+
 
 /**
  * @brief this func will recv data from @param:fifox to a tmp can_rx_buff
@@ -102,7 +115,8 @@ static void CANFIFOxCallback(CAN_HandleTypeDef* _hcan,uint32_t fifox)
     }   
 }
 
-/* ATTENTION: two CAN device in STM32 share two FIFO */
+
+/* ATTENTION: two CAN devices in STM32 share two FIFOs */
 /* functions below will call CANFIFOxCallback() to further process message from a specific CAN device */
 /**
  * @brief rx fifo callback. Once FIFO_0 is full,this func would be called
@@ -113,6 +127,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     CANFIFOxCallback(hcan, CAN_RX_FIFO0);
 }
+
 
 /**
  * @brief rx fifo callback. Once FIFO_1 is full,this func would be called

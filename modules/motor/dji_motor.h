@@ -7,8 +7,13 @@
 #include "controller.h"
 #include "motor_def.h"
 
+/**
+ * @brief DJI intelligent motor typedef
+ * 
+ */
 typedef struct
 {
+    /* motor measurement recv from CAN feedback */
     struct 
     {
         uint16_t ecd;
@@ -20,25 +25,29 @@ typedef struct
         int32_t total_angle;
     } motor_measure;
 
-    struct 
-    {
-        closeloop_e close_loop_type;
-        reverse_flag_e reverse_flag;
-        feedback_source_e angle_feedback_source;
-        feedback_source_e speed_feedback_source;
-    } controll_state;
+    /* basic config of a motor*/
+    Motor_Control_Setting_s motor_settings;
 
-    float* other_angle_feedback_ptr;
-    float* other_speed_feedback_ptr;
+    /* controller used in the motor (3 loops)*/
+    Motor_Controller_s motor_controller;
 
-    PID_t* current_PID;
-    PID_t* speed_PID;
-    PID_t* angle_PID;
-
+    /* the CAN instance own by motor instance*/
     can_instance *motor_can_instance;
+
+    /* sender assigment*/
+    uint8_t sender_group;
+    uint8_t message_num;
+
+    Motor_Type_e motor_type;
+
 } dji_motor_instance;
 
-dji_motor_instance* DJIMotorInit(CAN_HandleTypeDef* _hcan,uint16_t tx_id,uint16_t rx_id);
+
+dji_motor_instance* DJIMotorInit(can_instance_config config,
+                                 Motor_Controller_s controller_config,
+                                 Motor_Control_Setting_s motor_setting,
+                                 Motor_Controller_Init_s controller_init,
+                                 Motor_Type_e type);
 
 void DJIMotorSetRef();
 
