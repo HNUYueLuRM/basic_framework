@@ -16,7 +16,7 @@
 #include "bsp_temperature.h"
 #include "spi.h"
 
-INS_t INS; 
+INS_t INS;
 IMU_Param_t IMU_Param;
 PID_t TempCtrl = {0};
 
@@ -44,7 +44,14 @@ void INS_Init(void)
 
     IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0);
     // imu heat init
-    PID_Init(&TempCtrl, 2000, 300, 0, 1000, 20, 0, 0, 0, 0, 0, 0, 0);
+    PID_Init_config_s config = {.MaxOut = 2000,
+                                .IntegralLimit = 300,
+                                .DeadBand = 0,
+                                .Kp = 1000,
+                                .Ki = 20,
+                                .Kd = 0,
+                                .Improve = 0x01}; // enable integratiaon limit
+    PID_Init(&TempCtrl,&config);
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
@@ -99,7 +106,7 @@ void INS_Task(void)
         INS.Yaw = QEKF_INS.Yaw;
         INS.Pitch = QEKF_INS.Pitch;
         INS.Roll = QEKF_INS.Roll;
-        INS.YawTotalAngle = QEKF_INS.YawTotalAngle; 
+        INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
     }
 
     // temperature control
@@ -116,7 +123,6 @@ void INS_Task(void)
 
     count++;
 }
-
 
 /**
  * @brief          Transform 3dvector from BodyFrame to EarthFrame
@@ -232,7 +238,7 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
 
 /**
  * @brief 温度控制
- * 
+ *
  */
 void IMU_Temperature_Ctrl(void)
 {

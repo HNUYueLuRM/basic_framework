@@ -7,6 +7,18 @@
 #include "controller.h"
 #include "motor_def.h"
 
+/* DJI电机CAN反馈信息*/
+typedef struct
+{
+    uint16_t ecd;
+    uint16_t last_ecd;
+    int16_t speed_rpm;
+    int16_t given_current;
+    uint8_t temperate;
+    int16_t total_round;
+    int32_t total_angle;
+} dji_motor_measure;
+
 /**
  * @brief DJI intelligent motor typedef
  *
@@ -14,16 +26,7 @@
 typedef struct
 {
     /* motor measurement recv from CAN feedback */
-    struct
-    {
-        uint16_t ecd;
-        uint16_t last_ecd;
-        int16_t speed_rpm;
-        int16_t given_current;
-        uint8_t temperate;
-        int16_t total_round;
-        int32_t total_angle;
-    } motor_measure;
+    dji_motor_measure motor_measure;
 
     /* basic config of a motor*/
     Motor_Control_Setting_s motor_settings;
@@ -32,7 +35,7 @@ typedef struct
     Motor_Controller_s motor_controller;
 
     /* the CAN instance own by motor instance*/
-    can_instance *motor_can_instance;
+    can_instance motor_can_instance;
 
     /* sender assigment*/
     uint8_t sender_group;
@@ -44,8 +47,6 @@ typedef struct
 
 
 /**
- * @todo 加入ID冲突的检查机制,如果发现注册的ID冲突,进入IDcrash_Handler()的死循环中
- * 
  * @brief 调用此函数注册一个DJI智能电机,需要传递较多的初始化参数,请在application初始化的时候调用此函数
  *        推荐传参时像标准库一样构造initStructure然后传入此函数.
  *        recommend: type xxxinitStructure = {
@@ -55,8 +56,8 @@ typedef struct
  *        请注意不要在一条总线上挂载过多的电机(超过6个),若一定要这么做,请降低每个电机的反馈频率(设为500Hz),
  *        并减小DJIMotorControl()任务的运行频率.
  * 
- * @attention 当前并没有对电机的ID冲突进行检查,请保证在注册电机的时候,他们的反馈ID不会产生冲突!
- *            M3508和M2006的反馈报文都是0x200+id,而GM6020的反馈是0x204+id,请注意前两者和后者的id不要冲突.
+ * @attention M3508和M2006的反馈报文都是0x200+id,而GM6020的反馈是0x204+id,请注意前两者和后者的id不要冲突.
+ *            如果产生冲突,在初始化电机的时候会进入IDcrash_Handler(),可以通过debug来判断是否出现冲突.
  * 
  * @param config 电机can设置,对于DJI电机仅需要将tx_id设置为电调闪动次数(c620,615,610)或拨码开关的值(GM6020)
  *               你不需要自己查表计算发送和接收id,我们会帮你处理好!
@@ -87,8 +88,18 @@ void DJIMotorSetRef(dji_motor_instance *motor, float ref);
 
 
 /**
- * @brief 该函数被motor_task调用运行在rtos上,motor_stask内通过osDelay()确定控制频率
+ * @brief 切换反馈的目标来源,如将角速度和角度的来源换为IMU(小陀螺模式常用)
  * 
+ * @param motor 要切换反馈数据来源的电机
+ * @param loop  要切换反馈数据来源的控制闭环
+ * @param type  目标反馈模式
+ */
+void DJIMotorChangeFeed(dji_motor_instance *motor,Closeloop_Type_e loop,Feedback_Source_e type);
+
+
+/**
+ * @brief 该函数被motor_task调用运行在rtos上,motor_stask内通过osDelay()确定控制频率
+ * @todo  增加前馈功能 
  */
 void DJIMotorControl();
 

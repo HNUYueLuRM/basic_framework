@@ -23,7 +23,7 @@ driven_instance* LKMotroInit(can_instance_config config)
     static uint8_t idx;
     driven_motor_info[idx]=(driven_instance*)malloc(sizeof(driven_instance));
     config.can_module_callback=DecodeDriven;
-    driven_motor_info[idx++]->motor_can_instance=CANRegister(config);
+    CANRegister(driven_motor_info[idx++]->motor_can_instance,config);
 }
 
 void DrivenControl(int16_t motor1_current,int16_t motor2_current)

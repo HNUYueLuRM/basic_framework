@@ -57,14 +57,14 @@ static void CANServiceInit()
 
 /* -----------------------two extern callable function -----------------------*/
 
-can_instance *CANRegister(can_instance_config config)
+void CANRegister(can_instance* ins,can_instance_config config)
 {
     static uint8_t idx;
     if (!idx)
     {
         CANServiceInit();
     }
-    instance[idx] = (can_instance *)malloc(sizeof(can_instance));
+    instance[idx]=ins;
 
     instance[idx]->txconf.StdId = config.tx_id;
     instance[idx]->txconf.IDE = CAN_ID_STD;

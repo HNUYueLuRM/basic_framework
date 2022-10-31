@@ -40,7 +40,7 @@ joint_instance* HTMotorInit(can_instance_config config)
 {
     static uint8_t idx;
     joint_motor_info[idx]=(joint_instance*)malloc(sizeof(joint_instance));
-    joint_motor_info[idx++]->motor_can_instace=CANRegister(config);
+    CANRegister(&joint_motor_info[idx++]->motor_can_instace,config);
 }
 
 void JointControl(joint_instance* _instance,float current)
@@ -50,7 +50,7 @@ void JointControl(joint_instance* _instance,float current)
     tmp = float_to_uint(current, T_MIN, T_MAX, 12);
     _instance->motor_can_instace->rx_buff[6] = tmp>>8;
     _instance->motor_can_instace->rx_buff[7] = tmp&0xff;
-    CANTransmit(&_instance->motor_can_instace);
+    CANTransmit(_instance->motor_can_instace);
 }
 
 void SetJointMode(joint_mode cmd,joint_instance* _instance)
@@ -58,5 +58,5 @@ void SetJointMode(joint_mode cmd,joint_instance* _instance)
     static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
     buf[7]=(uint8_t)cmd;
     memcpy(_instance->motor_can_instace->rx_buff,buf,8*sizeof(uint8_t));
-    CANTransmit(&_instance->motor_can_instace);
+    CANTransmit(_instance->motor_can_instace);
 }

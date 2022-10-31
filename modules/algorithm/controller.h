@@ -19,7 +19,6 @@
 #include "string.h"
 #include "stdlib.h"
 #include "bsp_dwt.h"
-#include "user_lib.h"
 #include "arm_math.h"
 #include <math.h>
 
@@ -27,13 +26,6 @@
 #define abs(x) ((x > 0) ? x : -x)
 #endif
 
-#ifndef user_malloc
-#ifdef _CMSIS_OS_H
-#define user_malloc pvPortMalloc
-#else
-#define user_malloc malloc
-#endif
-#endif
 
 /******************************* PID CONTROL *********************************/
 typedef enum pid_Improvement_e
@@ -55,19 +47,31 @@ typedef enum errorType_e
     Motor_Blocked = 0x01U
 } ErrorType_e;
 
-typedef __packed struct
+typedef  struct
 {
     uint64_t ERRORCount;
     ErrorType_e ERRORType;
 } PID_ErrorHandler_t;
 
-typedef __packed struct pid_t
+typedef struct 
 {
-    float Ref;
+//---------------------------------- init config block
+    // config parameter
     float Kp;
     float Ki;
     float Kd;
 
+    float MaxOut;
+    float IntegralLimit;
+    float DeadBand;
+    float CoefA;         //For Changing Integral
+    float CoefB;         //ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
+    float Output_LPF_RC; // RC = 1/omegac
+    float Derivative_LPF_RC;
+
+    uint8_t Improve;
+//-----------------------------------
+    // for calculating
     float Measure;
     float Last_Measure;
     float Err;
@@ -83,134 +87,42 @@ typedef __packed struct pid_t
     float Last_Output;
     float Last_Dout;
 
+    float Ref;
+
+    uint32_t DWT_CNT;
+    float dt;
+
+    PID_ErrorHandler_t ERRORHandler;
+} PID_t;
+
+/* 用于PID初始化的结构体*/
+typedef struct 
+{
+    // config parameter
+    float Kp;
+    float Ki;
+    float Kd;
+
     float MaxOut;
     float IntegralLimit;
     float DeadBand;
-    float ControlPeriod;
     float CoefA;         //For Changing Integral
     float CoefB;         //ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
 
-    uint16_t OLS_Order;
-    Ordinary_Least_Squares_t OLS;
-
-    uint32_t DWT_CNT;
-    float dt;
-
     uint8_t Improve;
 
-    PID_ErrorHandler_t ERRORHandler;
+} PID_Init_config_s;
 
-    void (*User_Func1_f)(struct pid_t *pid);
-    void (*User_Func2_f)(struct pid_t *pid);
-} PID_t;
 
-void PID_Init(
-    PID_t *pid,
-    float max_out,
-    float intergral_limit,
-    float deadband,
 
-    float kp,
-    float ki,
-    float kd,
-
-    float A,
-    float B,
-
-    float output_lpf_rc,
-    float derivative_lpf_rc,
-
-    uint16_t ols_order,
-
-    uint8_t improve);
+void PID_Init(PID_t* pid,PID_Init_config_s* config);
 float PID_Calculate(PID_t *pid, float measure, float ref);
 
-/*************************** FEEDFORWARD CONTROL *****************************/
-typedef __packed struct
-{
-    float c[3]; // G(s) = 1/(c2s^2 + c1s + c0)
-
-    float Ref;
-    float Last_Ref;
-
-    float DeadBand;
-
-    uint32_t DWT_CNT;
-    float dt;
-
-    float LPF_RC; // RC = 1/omegac
-
-    float Ref_dot;
-    float Ref_ddot;
-    float Last_Ref_dot;
-
-    uint16_t Ref_dot_OLS_Order;
-    Ordinary_Least_Squares_t Ref_dot_OLS;
-    uint16_t Ref_ddot_OLS_Order;
-    Ordinary_Least_Squares_t Ref_ddot_OLS;
-
-    float Output;
-    float MaxOut;
-
-} Feedforward_t;
-
-void Feedforward_Init(
-    Feedforward_t *ffc,
-    float max_out,
-    float *c,
-    float lpf_rc,
-    uint16_t ref_dot_ols_order,
-    uint16_t ref_ddot_ols_order);
-
-float Feedforward_Calculate(Feedforward_t *ffc, float ref);
-
-/************************* LINEAR DISTURBANCE OBSERVER *************************/
-typedef __packed struct
-{
-    float c[3]; // G(s) = 1/(c2s^2 + c1s + c0)
-
-    float Measure;
-    float Last_Measure;
-
-    float u; // system input
-
-    float DeadBand;
-
-    uint32_t DWT_CNT;
-    float dt;
-
-    float LPF_RC; // RC = 1/omegac
-
-    float Measure_dot;
-    float Measure_ddot;
-    float Last_Measure_dot;
-
-    uint16_t Measure_dot_OLS_Order;
-    Ordinary_Least_Squares_t Measure_dot_OLS;
-    uint16_t Measure_ddot_OLS_Order;
-    Ordinary_Least_Squares_t Measure_ddot_OLS;
-
-    float Disturbance;
-    float Output;
-    float Last_Disturbance;
-    float Max_Disturbance;
-} LDOB_t;
-
-void LDOB_Init(
-    LDOB_t *ldob,
-    float max_d,
-    float deadband,
-    float *c,
-    float lpf_rc,
-    uint16_t measure_dot_ols_order,
-    uint16_t measure_ddot_ols_order);
-
-float LDOB_Calculate(LDOB_t *ldob, float measure, float u);
 
 /*************************** Tracking Differentiator ***************************/
-typedef __packed struct
+typedef  struct
 {
     float Input;
 

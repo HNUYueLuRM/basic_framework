@@ -52,7 +52,7 @@ void CANTransmit(can_instance* _instance);
  * @param config init config
  * @return can_instance* can instance owned by module
  */
-can_instance* CANRegister(can_instance_config config);
+void CANRegister(can_instance* instance, can_instance_config config);
 
 
 #endif

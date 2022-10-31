@@ -89,11 +89,11 @@ extern uint8_t GlobalDebugMode;
 
 typedef struct
 {
-    float input;        //ÊäÈëÊý¾Ý
-    float out;          //Êä³öÊý¾Ý
-    float min_value;    //ÏÞ·ù×îÐ¡Öµ
-    float max_value;    //ÏÞ·ù×î´óÖµ
-    float frame_period; //Ê±¼ä¼ä¸ô
+    float input;        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    float out;          //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    float min_value;    //ï¿½Þ·ï¿½ï¿½ï¿½Ð¡Öµ
+    float max_value;    //ï¿½Þ·ï¿½ï¿½ï¿½ï¿½Öµ
+    float frame_period; //Ê±ï¿½ï¿½ï¿½ï¿½
 } ramp_function_source_t;
 
 typedef __packed struct
@@ -112,41 +112,34 @@ typedef __packed struct
     float t[4];
 } Ordinary_Least_Squares_t;
 
-//¿ìËÙ¿ª·½
+//ï¿½ï¿½ï¿½Ù¿ï¿½ï¿½ï¿½
 float Sqrt(float x);
 
-//Ð±²¨º¯Êý³õÊ¼»¯
+//Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 void ramp_init(ramp_function_source_t *ramp_source_type, float frame_period, float max, float min);
-//Ð±²¨º¯Êý¼ÆËã
+//Ð±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 float ramp_calc(ramp_function_source_t *ramp_source_type, float input);
 
-//¾ø¶ÔÏÞÖÆ
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 float abs_limit(float num, float Limit);
-//ÅÐ¶Ï·ûºÅÎ»
+//ï¿½Ð¶Ï·ï¿½ï¿½ï¿½Î»
 float sign(float value);
-//¸¡µãËÀÇø
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 float float_deadband(float Value, float minValue, float maxValue);
-// int26ËÀÇø
+// int26ï¿½ï¿½ï¿½ï¿½
 int16_t int16_deadline(int16_t Value, int16_t minValue, int16_t maxValue);
-//ÏÞ·ùº¯Êý
+//ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½
 float float_constrain(float Value, float minValue, float maxValue);
-//ÏÞ·ùº¯Êý
+//ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½
 int16_t int16_constrain(int16_t Value, int16_t minValue, int16_t maxValue);
-//Ñ­»·ÏÞ·ùº¯Êý
+//Ñ­ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½ï¿½ï¿½
 float loop_float_constrain(float Input, float minValue, float maxValue);
-//½Ç¶È ¡ãÏÞ·ù 180 ~ -180
+//ï¿½Ç¶ï¿½ ï¿½ï¿½ï¿½Þ·ï¿½ 180 ~ -180
 float theta_format(float Ang);
 
 int float_rounding(float raw);
 
-//»¡¶È¸ñÊ½»¯Îª-PI~PI
+//ï¿½ï¿½ï¿½È¸ï¿½Ê½ï¿½ï¿½Îª-PI~PI
 #define rad_format(Ang) loop_float_constrain((Ang), -PI, PI)
-
-void OLS_Init(Ordinary_Least_Squares_t *OLS, uint16_t order);
-void OLS_Update(Ordinary_Least_Squares_t *OLS, float deltax, float y);
-float OLS_Derivative(Ordinary_Least_Squares_t *OLS, float deltax, float y);
-float OLS_Smooth(Ordinary_Least_Squares_t *OLS, float deltax, float y);
-float Get_OLS_Derivative(Ordinary_Least_Squares_t *OLS);
-float Get_OLS_Smooth(Ordinary_Least_Squares_t *OLS);
 
 #endif

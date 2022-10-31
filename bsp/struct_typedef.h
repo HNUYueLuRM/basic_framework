@@ -1,10 +1,6 @@
 #ifndef STRUCT_TYPEDEF_H
 #define STRUCT_TYPEDEF_H
 
-#ifndef __packed
-#define __packed
-#endif
-
 typedef signed char int8_t;
 typedef signed short int int16_t;
 

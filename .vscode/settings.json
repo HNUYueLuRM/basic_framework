@@ -36,6 +36,8 @@
         "functional": "c",
         "stdexcept": "c",
         "tuple": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "chrono": "c",
+        "complex": "c"
     }
 }
