@@ -40,6 +40,9 @@ typedef struct
     PID_t* speed_PID;
     PID_t* angle_PID;
 
+    float pid_ref;
+    float pid_output;
+
 } Motor_Controller_s;
 
 typedef enum 

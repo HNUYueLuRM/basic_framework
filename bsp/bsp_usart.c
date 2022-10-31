@@ -2,29 +2,29 @@
 #include "stdlib.h"
 
 /* usart service instance,modules' info would be recoreded here using ModuleRegister() */
-static usart_instance* instance[DEVICE_USART_CNT];
+static usart_instance *instance[DEVICE_USART_CNT];
 
 /**
  * @brief usart service will start automatically, after each module registered
- * 
+ *
  * @param _instance instance owned by module
  */
-static void USARTServiceInit(usart_instance* _instance)
+static void USARTServiceInit(usart_instance *_instance)
 {
     HAL_UARTEx_ReceiveToIdle_DMA(_instance->usart_handle, _instance->recv_buff, _instance->recv_buff_size);
     __HAL_DMA_DISABLE_IT(_instance->usart_handle->hdmarx, DMA_IT_HT);
 }
 
-void USARTRegister(usart_instance* _instance)
+void USARTRegister(usart_instance *_instance)
 {
     static instance_idx;
     USARTServiceInit(_instance);
-    instance[instance_idx++]=_instance;
+    instance[instance_idx++] = _instance;
 }
 
-void USARTSend(usart_instance* _instance,uint8_t* send_buf, uint16_t send_size)
+void USARTSend(usart_instance *_instance, uint8_t *send_buf, uint16_t send_size)
 {
-    HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf,send_size);
+    HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
 }
 
 /**

@@ -18,11 +18,12 @@ static void DecodeDriven(can_instance* _instance)
     }
 }
 
-driven_instance* LKMotroInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id)
+driven_instance* LKMotroInit(can_instance_config config)
 {
     static uint8_t idx;
     driven_motor_info[idx]=(driven_instance*)malloc(sizeof(driven_instance));
-    driven_motor_info[idx++]->motor_can_instance=CANRegister(tx_id,rx_id,_hcan,DecodeDriven);
+    config.can_module_callback=DecodeDriven;
+    driven_motor_info[idx++]->motor_can_instance=CANRegister(config);
 }
 
 void DrivenControl(int16_t motor1_current,int16_t motor2_current)

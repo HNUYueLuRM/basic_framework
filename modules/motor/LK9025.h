@@ -30,7 +30,7 @@ typedef enum
     unused = 0,
 } driven_mode;
 
-driven_instance* LKMotroInit(CAN_HandleTypeDef* _hcan,uint8_t tx_id,uint8_t rx_id);
+driven_instance* LKMotroInit(can_instance_config config);
 
 void DrivenControl(int16_t motor1_current,int16_t motor2_current);
 
