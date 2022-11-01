@@ -1,37 +1,38 @@
-
+/**
+ * @file controller.c
+ * @author wanghongxi
+ * @author modified by neozng
+ * @brief  PID控制器定义
+ * @version beta
+ * @date 2022-11-01
+ *
+ * @copyrightCopyright (c) 2022 HNU YueLu EC all rights reserved
+ */
 #include "controller.h"
 #include <memory.h>
 
-/******************************* PID CONTROL *********************************/
 // PID优化环节函数声明
-static void f_Trapezoid_Intergral(PID_t *pid);
-static void f_Integral_Limit(PID_t *pid);
-static void f_Derivative_On_Measurement(PID_t *pid);
-static void f_Changing_Integration_Rate(PID_t *pid);
-static void f_Output_Filter(PID_t *pid);
-static void f_Derivative_Filter(PID_t *pid);
-static void f_Output_Limit(PID_t *pid);
-static void f_Proportion_Limit(PID_t *pid);
-static void f_PID_ErrorHandle(PID_t *pid);
+static void f_Trapezoid_Intergral(PID_t *pid);       // 梯形积分
+static void f_Integral_Limit(PID_t *pid);            // 积分限幅
+static void f_Derivative_On_Measurement(PID_t *pid); // 微分先行(仅使用反馈微分)
+static void f_Changing_Integration_Rate(PID_t *pid); // 变速积分
+static void f_Output_Filter(PID_t *pid);             // 输出滤波
+static void f_Derivative_Filter(PID_t *pid);         // 微分滤波(采集时)
+static void f_Output_Limit(PID_t *pid);              // 输出限幅
+static void f_PID_ErrorHandle(PID_t *pid);           // 堵转保护
 
 /**
- * @brief
+ * @brief 初始化PID,设置参数和启用的优化环节,将其他数据置零
  *
- * @param pid
- * @param config
+ * @param pid    PID实例
+ * @param config PID初始化设置
  */
-void PID_Init(PID_t* pid,PID_Init_config_s *config)
+void PID_Init(PID_t *pid, PID_Init_config_s *config)
 {
+    // utilize the quality of struct that its memeory is continuous
     memcpy(pid, config, sizeof(PID_Init_config_s));
-    memset(&pid->Measure,0,sizeof(PID_t)-sizeof(PID_Init_config_s));
-    
-    // // DWT定时器计数变量清零
-    // // reset DWT Timer count counter
-    // pid->DWT_CNT = 0;
-
-    // // 设置PID异常处理 目前仅包含电机堵转保护
-    // pid->ERRORHandler.ERRORCount = 0;
-    // pid->ERRORHandler.ERRORType = PID_ERROR_NONE;
+    // set rest of memory to 0
+    memset(&pid->Measure, 0, sizeof(PID_t) - sizeof(PID_Init_config_s));
 }
 
 /**

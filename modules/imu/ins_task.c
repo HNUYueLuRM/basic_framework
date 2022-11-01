@@ -16,7 +16,7 @@
 #include "bsp_temperature.h"
 #include "spi.h"
 
-INS_t INS;
+static INS_t INS;
 IMU_Param_t IMU_Param;
 PID_t TempCtrl = {0};
 
@@ -30,6 +30,11 @@ uint8_t ins_debug_mode = 0;
 float RefTemp = 40;
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
+
+attitude_t *GetINSptr()
+{
+    return (attitude_t *)&INS.Roll;
+}
 
 void INS_Init(void)
 {
@@ -51,7 +56,7 @@ void INS_Init(void)
                                 .Ki = 20,
                                 .Kd = 0,
                                 .Improve = 0x01}; // enable integratiaon limit
-    PID_Init(&TempCtrl,&config);
+    PID_Init(&TempCtrl, &config);
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
