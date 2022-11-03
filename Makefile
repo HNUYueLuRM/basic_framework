@@ -36,65 +36,65 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Src/main.c \
-Src/gpio.c \
-Src/adc.c \
-Src/can.c \
-Src/dma.c \
-Src/rng.c \
-Src/rtc.c \
-Src/spi.c \
-Src/tim.c \
-Src/usart.c \
-Src/usb_device.c \
-Src/usbd_conf.c \
-Src/usbd_desc.c \
-Src/usbd_cdc_if.c \
-Src/stm32f4xx_it.c \
-Src/stm32f4xx_hal_msp.c \
-Src/system_stm32f4xx.c \
-Src/freertos.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
-Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
-Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
-Middlewares/Third_Party/FreeRTOS/Source/list.c \
-Middlewares/Third_Party/FreeRTOS/Source/queue.c \
-Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
-Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+HAL_N_Middlewares/Src/main.c \
+HAL_N_Middlewares/Src/gpio.c \
+HAL_N_Middlewares/Src/adc.c \
+HAL_N_Middlewares/Src/can.c \
+HAL_N_Middlewares/Src/dma.c \
+HAL_N_Middlewares/Src/rng.c \
+HAL_N_Middlewares/Src/rtc.c \
+HAL_N_Middlewares/Src/spi.c \
+HAL_N_Middlewares/Src/tim.c \
+HAL_N_Middlewares/Src/usart.c \
+HAL_N_Middlewares/Src/usb_device.c \
+HAL_N_Middlewares/Src/usbd_conf.c \
+HAL_N_Middlewares/Src/usbd_desc.c \
+HAL_N_Middlewares/Src/usbd_cdc_if.c \
+HAL_N_Middlewares/Src/stm32f4xx_it.c \
+HAL_N_Middlewares/Src/stm32f4xx_hal_msp.c \
+HAL_N_Middlewares/Src/system_stm32f4xx.c \
+HAL_N_Middlewares/Src/freertos.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c \
+HAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+HAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+HAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+HAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/list.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 \ \
 bsp/bsp_dwt.c \
 bsp/bsp_temperature.c \
@@ -176,7 +176,19 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--IInc \
+-IHAL_N_Middlewares/Inc \
+-IHAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Inc \
+-IHAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy \
+-IHAL_N_Middlewares/Drivers/CMSIS/Device/ST/STM32F4xx/Include \
+-IHAL_N_Middlewares/Drivers/CMSIS/Include \
+-IHAL_N_Middlewares/Drivers/CMSIS/DSP/Include \
+-IHAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
+-IHAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+-IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \
+-IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+-IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/include  \
+-IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/include \
+-IHAL_N_Middlewares/Middlewares/ST/ARM/DSP/Inc \
 -Iapplication \
 -Ibsp \
 -Imodules/algorithm \
@@ -186,19 +198,7 @@ C_INCLUDES =  \
 -Imodules/motor \
 -Imodules/referee \
 -Imodules/remote \
--Imodules/super_cap \
--IDrivers/STM32F4xx_HAL_Driver/Inc \
--IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy \
--IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
--IDrivers/CMSIS/Include \
--IDrivers/CMSIS/DSP/Include \
--IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
--IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
--IMiddlewares/Third_Party/FreeRTOS/Source/include  \
--IMiddlewares/Third_Party/FreeRTOS/Source/include \
--IMiddlewares/ST/ARM/DSP/Inc
+-Imodules/super_cap 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -224,7 +224,7 @@ LDSCRIPT = STM32F407IGHx_FLASH.ld
 LIBS = -lc -lm -lnosys  \
 -larm_cortexM4lf_math
 LIBDIR =  \
--LDrivers/CMSIS/Lib/GCC
+-LHAL_N_Middlewares/Drivers/CMSIS/Lib/GCC
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all

@@ -38,6 +38,7 @@
         "tuple": "c",
         "typeinfo": "c",
         "chrono": "c",
-        "complex": "c"
+        "complex": "c",
+        "usb_device.h": "c"
     }
 }
