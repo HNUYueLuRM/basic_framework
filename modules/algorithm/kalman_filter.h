@@ -92,7 +92,7 @@ typedef struct kf_t
     void (*User_Func4_f)(struct kf_t *kf);
     void (*User_Func5_f)(struct kf_t *kf);
     void (*User_Func6_f)(struct kf_t *kf);
-    
+
     // 矩阵存储空间指针
     float *xhat_data, *xhatminus_data;
     float *u_data;

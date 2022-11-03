@@ -118,7 +118,11 @@ modules/motor/LK9025.c \
 modules/motor/motor_task.c \
 modules/referee/referee.c \
 modules/remote/remote_control.c \
-modules/super_cap/super_cap.c
+modules/super_cap/super_cap.c \
+modules/master_machine/seasky_protocol.c \
+modules/algorithm/crc8.c \
+modules/algorithm/crc16.c 
+
 
 # ASM sources
 ASM_SOURCES =  \

@@ -1,15 +1,15 @@
 /**
-  ******************************************************************************
-  * @file	 user_lib.c
-  * @author  Wang Hongxi
-  * @version V1.0.0
-  * @date    2021/2/18
-  * @brief   
-  ******************************************************************************
-  * @attention
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file	 user_lib.c
+ * @author  Wang Hongxi
+ * @version V1.0.0
+ * @date    2021/2/18
+ * @brief
+ ******************************************************************************
+ * @attention
+ *
+ ******************************************************************************
+ */
 #include "stdlib.h"
 #include "string.h"
 #include "user_lib.h"
@@ -51,16 +51,13 @@ float Sqrt(float x)
     return y;
 }
 
-
-
-
 /**
-  * @brief          斜波函数计算，根据输入的值进行叠加， 输入单位为 /s 即一秒后增加输入的值
-  * @author         RM
-  * @param[in]      斜波函数结构体
-  * @param[in]      输入值
-  * @retval         返回空
-  */
+ * @brief          斜波函数计算，根据输入的值进行叠加， 输入单位为 /s 即一秒后增加输入的值
+ * @author         RM
+ * @param[in]      斜波函数结构体
+ * @param[in]      输入值
+ * @retval         返回空
+ */
 float ramp_calc(ramp_function_source_t *ramp_source_type, float input)
 {
     ramp_source_type->input = input;
@@ -113,7 +110,7 @@ float float_deadband(float Value, float minValue, float maxValue)
     return Value;
 }
 
-//int26死区
+// int26死区
 int16_t int16_deadline(int16_t Value, int16_t minValue, int16_t maxValue)
 {
     if (Value < maxValue && Value > minValue)

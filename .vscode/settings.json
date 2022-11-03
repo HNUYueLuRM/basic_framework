@@ -39,6 +39,8 @@
         "typeinfo": "c",
         "chrono": "c",
         "complex": "c",
-        "usb_device.h": "c"
+        "usb_device.h": "c",
+        "vofa_protocol.h": "c",
+        "master_process.h": "c"
     }
 }
