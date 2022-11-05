@@ -4,8 +4,8 @@
  * @brief  module for recv&send vision data
  * @version beta
  * @date 2022-11-03
- *
- * @copyright Copyright (c) 2022
+ * @todo 增加对串口调试助手协议的支持,包括vofa和serial debug
+ * @copyright Copyright (c) 2022 
  *
  */
 #include "Master_process.h"
@@ -27,12 +27,13 @@ static void DecodeVision()
 }
 
 /* 视觉通信初始化 */
-void VisionInit(UART_HandleTypeDef *handle)
+Vision_Recv_s* VisionInit(UART_HandleTypeDef *handle)
 {
     vision_usart_instance.module_callback = DecodeVision;
     vision_usart_instance.recv_buff_size = VISION_RECV_SIZE;
     vision_usart_instance.usart_handle = handle;
     USARTRegister(&vision_usart_instance);
+    return &recv_data;
 }
 
 /**

@@ -5,10 +5,10 @@
  * @brief  遥控器模块定义头文件
  * @version beta
  * @date 2022-11-01
- * 
+ *
  * @copyright Copyright (c) 2016 DJI corp
  * @copyright Copyright (c) 2022 HNU YueLu EC all rights reserved
- * 
+ *
  */
 #ifndef REMOTE_CONTROL_H
 #define REMOTE_CONTROL_H
@@ -73,20 +73,6 @@ typedef struct
  * @attention 注意分配正确的串口硬件,遥控器在C板上使用USART3
  *
  */
-void RC_init(UART_HandleTypeDef *rc_usart_handle);
-
-/**
- * @brief 获取遥控器的数据指针
- *
- * @return const RC_ctrl_t*
- */
-extern const RC_ctrl_t *get_remote_control_point(void);
-
-/**
- * @brief 检查遥控器数据是否出错
- *
- * @return uint8_t
- */
-extern uint8_t RC_data_is_error(void);
+RC_ctrl_t *RC_init(UART_HandleTypeDef *rc_usart_handle);
 
 #endif

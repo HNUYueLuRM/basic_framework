@@ -9,12 +9,19 @@
 #define VISION_SEND_SIZE 36u
 
 
+typedef struct
+{
+    
+};
+
+
+
 /**
  * @brief 调用此函数初始化和视觉的串口通信
  * 
  * @param handle 用于和视觉通信的串口handle(C板上一般为USART1,丝印为USART2,4pin)
  */
-void VisionInit(UART_HandleTypeDef* handle);
+Vision_Recv_s* VisionInit(UART_HandleTypeDef* handle);
 
 /**
  * @brief 发送视觉视觉
