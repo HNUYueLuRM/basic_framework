@@ -55,7 +55,7 @@ static void ReceiveCallback()
     sbus_to_rc(rc_usart_instance.recv_buff, &rc_ctrl);
 }
 
-RC_ctrl_t* RC_init(UART_HandleTypeDef *rc_usart_handle)
+RC_ctrl_t *RC_init(UART_HandleTypeDef *rc_usart_handle)
 {
     rc_usart_instance.module_callback = ReceiveCallback;
     rc_usart_instance.usart_handle = rc_usart_handle;
@@ -64,7 +64,7 @@ RC_ctrl_t* RC_init(UART_HandleTypeDef *rc_usart_handle)
     return &rc_ctrl;
 }
 
-const  *get_remote_control_point(void)
+const RC_ctrl_t *get_remote_control_point(void)
 {
-    
+    return &rc_ctrl;
 }

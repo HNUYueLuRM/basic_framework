@@ -75,4 +75,10 @@ typedef struct
  */
 RC_ctrl_t *RC_init(UART_HandleTypeDef *rc_usart_handle);
 
+/**
+ * @brief Get the remote control point object
+ *
+ * @return const RC_ctrl_t*
+ */
+const RC_ctrl_t *get_remote_control_point(void);
 #endif

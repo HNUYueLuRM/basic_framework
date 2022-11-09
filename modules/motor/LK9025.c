@@ -34,7 +34,7 @@ void DrivenControl(int16_t motor1_current,int16_t motor2_current)
     driven_motor_info[0]->motor_can_instance->tx_buff[1] = motor1_current>>8;
     driven_motor_info[0]->motor_can_instance->tx_buff[2] = motor2_current;
     driven_motor_info[0]->motor_can_instance->tx_buff[3] = motor2_current>>8;
-    CANTransmit(&driven_motor_info[0]->motor_can_instance);
+    CANTransmit(driven_motor_info[0]->motor_can_instance);
 }
 
 void SetDrivenMode(driven_mode cmd,uint16_t motor_id)

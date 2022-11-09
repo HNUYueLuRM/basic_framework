@@ -36,7 +36,6 @@
 #include "bsp_usart.h"
 #include "bsp_can.h"
 #include "can.h"
-#include "LK9025.h"
 #include "dji_motor.h"
 #include "motor_task.h"
 /* USER CODE END Includes */
