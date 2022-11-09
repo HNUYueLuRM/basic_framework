@@ -4,9 +4,9 @@
  * @brief  串口bsp层的实现
  * @version beta
  * @date 2022-11-01
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include "bsp_usart.h"
 #include "stdlib.h"
@@ -30,7 +30,7 @@ static void USARTServiceInit(usart_instance *_instance)
 
 void USARTRegister(usart_instance *_instance)
 {
-    static instance_idx;
+    static uint8_t instance_idx;
     USARTServiceInit(_instance);
     instance[instance_idx++] = _instance;
 }

@@ -139,4 +139,5 @@ uint16_t get_protocol_info(uint8_t *rx_buf,          //接收到的原始数据
             return pro.cmd_id;
         }
     }
+    return 0;
 }

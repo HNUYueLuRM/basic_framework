@@ -22,7 +22,7 @@ static void DecodeJoint(can_instance* motor_instance)
     uint16_t tmp;
     for (size_t i = 0; i < HT_MOTOR_CNT; i++)
     {
-        if(&joint_motor_info[i]->motor_can_instace==motor_instance)
+        if(joint_motor_info[i]->motor_can_instace==motor_instance)
         {
             tmp = (motor_instance->rx_buff[1] << 8) | motor_instance->rx_buff[2];
             joint_motor_info[i]->last_ecd=joint_motor_info[i]->ecd;
@@ -40,7 +40,8 @@ joint_instance* HTMotorInit(can_instance_config config)
 {
     static uint8_t idx;
     joint_motor_info[idx]=(joint_instance*)malloc(sizeof(joint_instance));
-    CANRegister(&joint_motor_info[idx++]->motor_can_instace,config);
+    CANRegister(joint_motor_info[idx++]->motor_can_instace,config);
+    return joint_motor_info[idx++];
 }
 
 void JointControl(joint_instance* _instance,float current)

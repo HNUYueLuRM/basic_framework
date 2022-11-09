@@ -42,6 +42,7 @@
         "usb_device.h": "c",
         "vofa_protocol.h": "c",
         "master_process.h": "c",
-        "stdint-gcc.h": "c"
+        "stdint-gcc.h": "c",
+        "string.h": "c"
     }
 }

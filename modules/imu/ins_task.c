@@ -15,6 +15,7 @@
 #include "QuaternionEKF.h"
 #include "bsp_temperature.h"
 #include "spi.h"
+#include "user_lib.h"
 
 static INS_t INS;
 IMU_Param_t IMU_Param;

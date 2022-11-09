@@ -96,7 +96,7 @@ typedef struct
     float frame_period; //ʱ����
 } ramp_function_source_t;
 
-typedef __packed struct
+typedef struct
 {
     uint16_t Order;
     uint32_t Count;
