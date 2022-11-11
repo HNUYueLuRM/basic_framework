@@ -93,12 +93,6 @@ void INS_Init(void);
 void INS_Task(void);
 
 /**
- * @brief 温控函数
- *
- */
-void IMU_Temperature_Ctrl(void);
-
-/**
  * @brief 四元数更新函数,即实现dq/dt=0.5Ωq
  *
  * @param q  四元数

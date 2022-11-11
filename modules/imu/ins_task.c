@@ -2,6 +2,7 @@
  ******************************************************************************
  * @file    ins_task.c
  * @author  Wang Hongxi
+ * @author  annotation and modificaiton by neozng
  * @version V2.0.0
  * @date    2022/2/23
  * @brief
@@ -35,6 +36,17 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
 attitude_t *GetINSptr()
 {
     return (attitude_t *)&INS.Roll;
+}
+
+/**
+ * @brief 温度控制
+ *
+ */
+static void IMU_Temperature_Ctrl(void)
+{
+    PID_Calculate(&TempCtrl, BMI088.Temperature, RefTemp);
+
+    imu_pwm_set(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
 void INS_Init(void)
@@ -240,17 +252,6 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
     lastYawOffset = param->Yaw;
     lastPitchOffset = param->Pitch;
     lastRollOffset = param->Roll;
-}
-
-/**
- * @brief 温度控制
- *
- */
-void IMU_Temperature_Ctrl(void)
-{
-    PID_Calculate(&TempCtrl, BMI088.Temperature, RefTemp);
-
-    imu_pwm_set(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
 //------------------------------------functions below are not used in this demo-------------------------------------------------

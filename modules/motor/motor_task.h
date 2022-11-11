@@ -15,6 +15,12 @@
 #include "HT04.h"
 #include "dji_motor.h"
 
+// 舵机控制任务的频率设定为20Hz或更低
+// 开关式的舵机控制不应该放在该函数中
+/**
+ * @brief 
+ * 
+ */
 void MotorControlTask();
 
 #endif // !MOTOR_TASK_H
