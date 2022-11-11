@@ -231,13 +231,13 @@ void DJIMotorControl()
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, motor_controller->pid_ref);
             }
 
-            if (motor_setting->close_loop_type & CURRENT_LOOP) //计算电流环
+            if (motor_setting->close_loop_type & CURRENT_LOOP) // 计算电流环
             {
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, motor_controller->pid_ref);
             }
 
             set = (int16_t)motor_controller->pid_ref;
-            if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE) //设置反转
+            if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE) // 设置反转
                 set *= -1;
 
             // 分组填入发送数据

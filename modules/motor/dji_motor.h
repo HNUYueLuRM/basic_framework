@@ -4,9 +4,14 @@
  * @brief DJI智能电机头文件
  * @version 0.1
  * @date 2022-11-01
- * 
+ *
+ * @todo  1. 给不同的电机设置不同的低通滤波器惯性系数而不是统一使用宏
+          2. 当前电机初始化函数`DJIMotorInit()`稍显凌乱,
+             应设置一个`dji_motor_init_config_s`结构体用于电机初始化,使得风格统一,提高可读性
+          3. 为M2006和M3508增加开环的零位校准函数
+
  * @copyright Copyright (c) 2022 HNU YueLu EC all rights reserved
- * 
+ *
  */
 
 #ifndef DJI_MOTOR_H

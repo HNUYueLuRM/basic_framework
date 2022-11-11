@@ -95,6 +95,8 @@ HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_printf.c \
+HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT.c \
 \ \
 bsp/bsp_dwt.c \
 bsp/bsp_temperature.c \
@@ -127,8 +129,9 @@ modules/algorithm/crc16.c
 
 
 # ASM sources
-ASM_SOURCES =  \
-startup_stm32f407xx.s
+ASM_SOURCES +=  \
+startup_stm32f407xx.s \
+HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_ASM_ARMv7M.s
 
 #######################################
 # binaries
@@ -194,6 +197,8 @@ C_INCLUDES =  \
 -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/include  \
 -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/include \
+-IHAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT \
+-IHAL_N_Middlewares/Middlewares/Third_Party/SEGGER/Config \
 -IHAL_N_Middlewares/Middlewares/ST/ARM/DSP/Inc \
 -Iapplication \
 -Ibsp \
