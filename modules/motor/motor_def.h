@@ -20,11 +20,12 @@
  */
 typedef enum
 {
+    OPEN_LOOP = 0b0000,
     CURRENT_LOOP = 0b0001,
     SPEED_LOOP = 0b0010,
     ANGLE_LOOP = 0b0100,
 
-    // only for check
+    // only for checking
     _ = 0b0011,
     __ = 0b0110,
     ___ = 0b0111

@@ -6,7 +6,7 @@
 
 #define MX_REGISTER_DEVICE_CNT 12  // maximum number of device can be registered to CAN service
                                    // this number depends on the load of CAN bus.
-#define MX_CAN_FILTER_CNT (4 * 14) // temporarily useless
+#define MX_CAN_FILTER_CNT (2 * 14) // temporarily useless
 #define DEVICE_CAN_CNT 2           // CAN1,CAN2
 
 

@@ -43,6 +43,7 @@
         "vofa_protocol.h": "c",
         "master_process.h": "c",
         "stdint-gcc.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "motor_def.h": "c"
     }
 }

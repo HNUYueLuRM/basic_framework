@@ -158,7 +158,7 @@ int main(void)
 
 		DJIMotorSetRef(djimotor, get_remote_control_point()->rc.ch[0]);
 		MotorControlTask();
-		HAL_Delay(10);
+		HAL_Delay(100);
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */

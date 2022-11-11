@@ -13,7 +13,7 @@
 
 /* usart service instance, modules' info would be recoreded here using USARTRegister() */
 /* usart服务实例,所有注册了usart的模块信息会被保存在这里 */
-static usart_instance *instance[DEVICE_USART_CNT];
+static usart_instance *instance[DEVICE_USART_CNT]={NULL};
 
 /**
  * @brief usart service will start automatically, after each module registered

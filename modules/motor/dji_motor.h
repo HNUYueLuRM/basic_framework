@@ -12,13 +12,13 @@
 #ifndef DJI_MOTOR_H
 #define DJI_MOTOR_H
 
-#define DJI_MOTOR_CNT 12
-#define SPEED_SMOOTH_COEF 0.85f   // better to be greater than 0.8
-#define CURRENT_SMOOTH_COEF 0.98f // this coef must be greater than 0.95
-
 #include "bsp_can.h"
 #include "controller.h"
 #include "motor_def.h"
+
+#define DJI_MOTOR_CNT 12
+#define SPEED_SMOOTH_COEF 0.85f   // better to be greater than 0.8
+#define CURRENT_SMOOTH_COEF 0.98f // this coef must be greater than 0.95
 
 /* DJI电机CAN反馈信息*/
 typedef struct

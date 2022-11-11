@@ -4,7 +4,7 @@
 #include "memory.h"
 
 /* can instance ptrs storage, used for recv callback */
-static can_instance *instance[MX_REGISTER_DEVICE_CNT];
+static can_instance *instance[MX_REGISTER_DEVICE_CNT]={NULL};
 
 /* ----------------two static function called by CANRegister()-------------------- */
 

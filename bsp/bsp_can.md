@@ -1,0 +1,98 @@
+# bsp_can
+
+<p align='right'>neozng1@hnu.edu.cn</p>
+
+> TODO:
+>
+> 1. 增加数据帧的长度定义，使得收发更加灵活，而不是固定的8 bytes
+> 2. 增加自动检测ID冲突的log输出。
+
+## 代码结构
+
+.h文件内包括了外部接口和类型定义,以及模块对应的宏。c文件内为私有函数和外部接口的定义。
+
+### 类型定义
+
+```c
+
+#define MX_REGISTER_DEVICE_CNT 12  // maximum number of device can be registered to CAN service, this number depends on the load of CAN bus.
+#define MX_CAN_FILTER_CNT (4 * 14) // temporarily useless
+#define DEVICE_CAN_CNT 2           // CAN1,CAN2
+
+/* can instance typedef, every module registered to CAN should have this variable */
+typedef struct _
+{
+    CAN_HandleTypeDef* can_handle;
+    CAN_TxHeaderTypeDef txconf;
+    uint32_t tx_id;
+    uint32_t tx_mailbox;
+    uint8_t tx_buff[8]; 
+    uint8_t rx_buff[8];
+    uint32_t rx_id;
+    void (*can_module_callback)(struct _*);
+} can_instance;
+
+typedef struct 
+{
+    CAN_HandleTypeDef* can_handle;
+    uint32_t tx_id;
+    uint32_t rx_id;
+    void (*can_module_callback)(can_instance*);
+} can_instance_config;
+
+typedef void (*can_callback)(can_instance*);
+```
+
+- `MX_REGISTER_DEVICE_CNT`是最大的CAN设备注册数量，当每个设备的发送频率都较高时，设备过多会产生总线拥塞从而出现丢包和数据错误的情况。
+- `MX_CAN_FILTER_CNT`是最大的CAN接收过滤器数量，两个CAN共享标号0~27共28个过滤器。这部分内容比较繁杂，暂时不用理解，有兴趣自行参考MCU的数据手册。当前为简单起见，每个过滤器只设置一组规则用于控制一个id的过滤。
+- `DEVICE_CAN_CNT`是MCU拥有的CAN硬件数量。
+
+- `can_instance`是一个CAN实例。注意，CAN作为一个总线设备，一条总线上可以挂载多个设备，因此多个设备可以共享同一个CAN硬件。其成员变量包括发送id，发送邮箱（不需要管，只是一个32位变量，CAN收发器会自动设置其值），发送buff以及接收buff，还有接收id和接收协议解析回调函数。**由于目前使用的设备每个数据帧的长度都是8，因此收发buff长度暂时固定为8**。定义该结构体的时候使用了一个技巧，使得在结构体内部可以用结构体自身的指针作为成员，即`can_module_callback`的定义。
+
+- `can_instance_config`是用于初始化CAN实例的结构，在调用CAN实例的初始化函数时传入（下面介绍函数时详细介绍）。
+
+- `can_module_callback()`是模块提供给CAN接收中断回调函数使用的协议解析函数指针。对于每个需要CAN的模块，需要定义一个这样的函数用于解包数据。
+- 每个使用CAN外设的module，都需要在其内部定义一个`can_instance`。
+
+
+### 外部接口
+
+```c
+void CANRegister(can_instance* instance, can_instance_config config);
+void CANTransmit(can_instance* _instance);
+```
+
+`CANRegister`是用于初始化CAN实例的接口，module层的模块对象（也应当为一个结构体）内要包含一个`usart_instance`。调用时传入实例指针，以及用于初始化的config。`CANRegister`应当在module的初始化函数内被调用，推荐config采用以下的方式定义，更加直观明了：
+
+```c
+can_instance_config config={.can_handle=&hcan1,
+							.tx_id=0x005,
+							.rx_id=0x200,
+							can_module_callback=MotorCallback}
+```
+
+`CANTransmit()`是通过模块通过其拥有的CAN实例发送数据的接口，调用时传入对应的instance。在发送之前，应当给instance内的`send_buff`赋值。
+
+### 私有函数和变量
+
+在.c文件内设为static的函数和变量
+
+```c
+static can_instance *instance[MX_REGISTER_DEVICE_CNT]={NULL};
+```
+
+这是bsp层管理所有CAN实例的入口。
+
+```c
+static void CANServiceInit()
+static void CANAddFilter(can_instance *_instance)
+static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+```
+
+- `CANServiceInit()`会被`CANRegister()`调用，对CAN外设进行硬件初始化并开启接收中断和消息提醒。
+
+- `CANAddFilter()`在每次使用`CANRegister()`的时候被调用，用于给当前注册的实例添加过滤器规则并设定处理对应`rx_id`的接收FIFO。过滤器的作用是减小CAN收发器的压力，只接收符合过滤器规则的报文（否则不会产生接收中断）。
+
+- `HAL_CAN_RxFifo0MsgPendingCallback()`和`HAL_CAN_RxFifo1MsgPendingCallback()`都是对HAL的CAN回调函数的重定义（原本的callback是`__week`修饰的弱定义），当发生FIFO0或FIFO1有新消息到达的时候，对应的callback会被调用。`CANFIFOxCallback()`随后被前两者调用，并根据接收id和硬件中断来源（哪一个CAN硬件，CAN1还是CAN2）调用对应的instance的回调函数进行协议解析。

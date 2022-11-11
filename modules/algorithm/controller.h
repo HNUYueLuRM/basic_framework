@@ -26,7 +26,7 @@
 #endif
 
 // PID 优化环节使能标志位
-typedef enum pid_Improvement_e
+typedef enum
 {
     NONE = 0b00000000,                        // 0000 0000
     Integral_Limit = 0b00000001,              // 0000 0001
@@ -103,16 +103,15 @@ typedef struct
     float Ki;
     float Kd;
 
-    float MaxOut;
-    float IntegralLimit;
-    float DeadBand;
+    float MaxOut;        // 输出限幅
+    float IntegralLimit; // 积分限幅
+    float DeadBand;      // 死区
     float CoefA;         // For Changing Integral
     float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
 
-    uint8_t Improve;
-
+    PID_Improvement_e Improve;
 } PID_Init_config_s;
 
 /**
