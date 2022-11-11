@@ -7,11 +7,19 @@
 > 1. 增加数据帧的长度定义，使得收发更加灵活，而不是固定的8 bytes
 > 2. 增加自动检测ID冲突的log输出。
 
+## 使用说明
+
+若你希望新增一个基于CAN的module，首先在该模块下应该有一个包含`can_instance`指针的module结构体（或当功能简单的时候，可以是单独存在的`can_instance`，但不推荐这样做）。
+
+
+
+
+
 ## 代码结构
 
 .h文件内包括了外部接口和类型定义,以及模块对应的宏。c文件内为私有函数和外部接口的定义。
 
-### 类型定义
+## 类型定义
 
 ```c
 
@@ -55,7 +63,7 @@ typedef void (*can_callback)(can_instance*);
 - 每个使用CAN外设的module，都需要在其内部定义一个`can_instance`。
 
 
-### 外部接口
+## 外部接口
 
 ```c
 void CANRegister(can_instance* instance, can_instance_config config);
@@ -73,7 +81,7 @@ can_instance_config config={.can_handle=&hcan1,
 
 `CANTransmit()`是通过模块通过其拥有的CAN实例发送数据的接口，调用时传入对应的instance。在发送之前，应当给instance内的`send_buff`赋值。
 
-### 私有函数和变量
+## 私有函数和变量
 
 在.c文件内设为static的函数和变量
 

@@ -6,7 +6,10 @@
 
 #define BUFFER_INDEX 0
 
-void BSP_Log_Init() { SEGGER_RTT_Init(); }
+void BSP_Log_Init() 
+{ 
+    SEGGER_RTT_Init(); 
+}
 
 int printf_log(const char *fmt, ...)
 {

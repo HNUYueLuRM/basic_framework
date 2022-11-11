@@ -45,6 +45,9 @@
         "stdint-gcc.h": "c",
         "string.h": "c",
         "motor_def.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "segger_rtt_conf.h": "c",
+        "segger_rtt.h": "c",
+        "bsp_log.h": "c"
     }
 }
