@@ -22,4 +22,11 @@ Vision_Recv_s *VisionInit(UART_HandleTypeDef *handle);
  */
 void VisionSend(Vision_Send_s *send);
 
+/**
+ * @brief 返回所需的上位机数据
+ * 
+ * @return Vision_Recv_s* 数据结构体指针
+ */
+Vision_Recv_s* VisionGetcmd();
+
 #endif // !MASTER_PROCESS_H

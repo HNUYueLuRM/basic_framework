@@ -87,39 +87,9 @@ extern uint8_t GlobalDebugMode;
 #define VAL_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define VAL_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-typedef struct
-{
-    float input;        //��������
-    float out;          //�������
-    float min_value;    //�޷���Сֵ
-    float max_value;    //�޷����ֵ
-    float frame_period; //ʱ����
-} ramp_function_source_t;
-
-typedef struct
-{
-    uint16_t Order;
-    uint32_t Count;
-
-    float *x;
-    float *y;
-
-    float k;
-    float b;
-
-    float StandardDeviation;
-
-    float t[4];
-} Ordinary_Least_Squares_t;
 
 //���ٿ���
 float Sqrt(float x);
-
-//б��������ʼ��
-void ramp_init(ramp_function_source_t *ramp_source_type, float frame_period, float max, float min);
-//б����������
-float ramp_calc(ramp_function_source_t *ramp_source_type, float input);
-
 //��������
 float abs_limit(float num, float Limit);
 //�жϷ���λ

@@ -100,10 +100,11 @@ Module层主要存放的是类型定义和实例指针数组，在该层没有�
 
 ## 文件树
 
+板级支持包的每个组件,每个moduel,每个app都有对应的说明文档.
 ```shell
 ROOT:.
 │  .gitignore             # git版本管理忽略文件
-│  .mxproject			  # CubeMX项目文件
+│  .mxproject			        # CubeMX项目文件
 │  basic_framework.ioc	  # CubeMX初始化配置文件
 │  Makefile               # 编译管理文件,为make命令的目标
 │  openocd.cfg            # 用于OpenOCD调试使用的配置文件
@@ -111,39 +112,50 @@ ROOT:.
 │  startup_stm32f407xx.s  # F407汇编启动文件
 │  STM32F407.svd          # F407外设地址映射文件,用于调试 
 │  STM32F407IGHx_FLASH.ld # F407IGH(C板使用的MCU)的文件目标FLASH地址,用于烧录和调试
-│
+│  VSCode+Ozone使用方法.md # 开发环境配置
+|
 ├─.vscode
 │      launch.json  # 用于VSCode插件CORTEX-DEBUG调试的配置文件
 │
 ├─application # 应用层,包括底盘控制,云台控制和发射控制
 │      chassis.c
 │      chassis.h
+│      chassis.md
 │      gimbal.c
 │      gimbal.h
+│      gimbal.md
 │      shoot.c
 │      shoot.h
+│      shoot.md
 │
 ├─bsp  # 板级支持包,提供对硬件的封装,将接口暴露给module层
+│      bsp.md
 │      bsp_buzzer.c
 │      bsp_buzzer.h
 │      bsp_can.c
 │      bsp_can.h
+│      bsp_can.md
 │      bsp_dwt.c
 │      bsp_dwt.h
+│      bsp_init.c
+│      bsp_init.h
 │      bsp_led.c
 │      bsp_led.h
 │      bsp_log.c
 │      bsp_log.h
+│      bsp_log.md
 │      bsp_temperature.c
 │      bsp_temperature.h
 │      bsp_usart.c
 │      bsp_usart.h
+│      bsp_usart.md
 │      struct_typedef.h
 │
 ├─HAL_N_Middlewares # HAL库对寄存器操作的封装,以及FreeRTOS等中间件
 |
 └─modules  # 模块层,使用BSP提供的接口构建对应的功能模块,将模块实例提供给应用层
     ├─algorithm # 算法
+    │      algorithm.md
     │      controller.c # 控制器
     │      controller.h
     │      crc16.c		# 循环冗余校验
@@ -159,6 +171,11 @@ ROOT:.
     │      user_lib.c      # 多个模块都会使用到的函数
     │      user_lib.h
     │
+    ├─can_comm # 双板CAN通信组件
+    │      can_comm.c
+    │      can_comm.h
+    │      can_comm.md   
+    | 
     ├─imu  # 考虑到使用SPI的设备较少,这里没有对SPI提供bsp支持,直接于此实现
     │      BMI088driver.c
     │      BMI088driver.h
@@ -173,10 +190,12 @@ ROOT:.
     │      led_task.h
     │
     ├─master_machine # 和上位机(视觉PC)通信的模块
-    │      master_process.c 
+    │      master_process.c
     │      master_process.h
-    │      seasky_protocol.c # 视觉通信协议
+    │      master_process.md 
+    │      seasky_protocol.c 
     │      seasky_protocol.h
+    │      湖南大学RoboMaster电控组通信协议.md
     │
     ├─motor # 电机模块
     │      dji_motor.c  # DJI智能电机
@@ -193,7 +212,8 @@ ROOT:.
     │      referee.c # 接收裁判系统信息
     │      referee.h
     │      referee_UI.c # UI绘制(发送)
-    │
+    │      referee_communication.c # 多机通信
+    |
     ├─remote # 遥控器模块
     │      remote_control.c
     │      remote_control.h

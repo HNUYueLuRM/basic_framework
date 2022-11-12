@@ -2,13 +2,11 @@
  * @file dji_motor.h
  * @author neozng
  * @brief DJI智能电机头文件
- * @version 0.1
+ * @version 0.2
  * @date 2022-11-01
  *
  * @todo  1. 给不同的电机设置不同的低通滤波器惯性系数而不是统一使用宏
-          2. 当前电机初始化函数`DJIMotorInit()`稍显凌乱,
-             应设置一个`dji_motor_init_config_s`结构体用于电机初始化,使得风格统一,提高可读性
-          3. 为M2006和M3508增加开环的零位校准函数
+          2. 为M2006和M3508增加开环的零位校准函数
 
  * @copyright Copyright (c) 2022 HNU YueLu EC all rights reserved
  *
@@ -28,13 +26,13 @@
 /* DJI电机CAN反馈信息*/
 typedef struct
 {
-    uint16_t ecd;
+    uint16_t ecd; // 0-8192
     uint16_t last_ecd;
-    int16_t speed_rpm;
-    int16_t given_current;
+    int16_t speed_rpm;     // rounds per minute
+    int16_t given_current; // 实际电流
     uint8_t temperate;
-    int16_t total_round;
-    int32_t total_angle;
+    int16_t total_round; // 总圈数,注意方向
+    int32_t total_angle; // 总角度,注意方向
 } dji_motor_measure;
 
 /**
@@ -66,19 +64,18 @@ typedef struct
 /**
  * @brief 调用此函数注册一个DJI智能电机,需要传递较多的初始化参数,请在application初始化的时候调用此函数
  *        推荐传参时像标准库一样构造initStructure然后传入此函数.
- *        recommend: type xxxinitStructure = {
- *                                         .member1=xx,
- *                                         .member2=xx,
- *                                         ....};
+ *        recommend: type xxxinitStructure = {.member1=xx,
+ *                                            .member2=xx,
+ *                                             ....};
  *        请注意不要在一条总线上挂载过多的电机(超过6个),若一定要这么做,请降低每个电机的反馈频率(设为500Hz),
  *        并减小DJIMotorControl()任务的运行频率.
  *
  * @attention M3508和M2006的反馈报文都是0x200+id,而GM6020的反馈是0x204+id,请注意前两者和后者的id不要冲突.
  *            如果产生冲突,在初始化电机的时候会进入IDcrash_Handler(),可以通过debug来判断是否出现冲突.
- * 
+ *
  * @param config 电机初始化结构体,包含了电机控制设置,电机PID参数设置,电机类型以及电机挂载的CAN设置
- * 
- * @return dji_motor_instance* 
+ *
+ * @return dji_motor_instance*
  */
 dji_motor_instance *DJIMotorInit(Motor_Init_Config_s config);
 

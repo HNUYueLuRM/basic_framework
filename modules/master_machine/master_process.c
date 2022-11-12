@@ -12,11 +12,14 @@
 
 /* use usart1 as vision communication*/
 static Vision_Recv_s recv_data;
+// @todo:由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务,或由IMU采集完成产生的中断唤醒的任务,
+// 使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
+// static Vision_Send_s send_data;
 static usart_instance vision_usart_instance;
 
 /**
  * @brief 接收解包回调函数,将在bsp_usart.c中被usart rx callback调用
- * @todo  1.提高可读性,将get_protocol_info的第四个参数增加一个float buffer
+ * @todo  1.提高可读性,将get_protocol_info的第四个参数增加一个float类型buffer
  *        2.添加标志位解码
  */
 static void DecodeVision()
@@ -38,8 +41,10 @@ Vision_Recv_s* VisionInit(UART_HandleTypeDef *handle)
 
 /**
  * @brief 发送函数
- * @todo 1.提高可读性,将get_protocol_info的第四个参数增加一个float buffer
+ * @todo 1.提高可读性,将get_protocol_send_data的第6个参数增加一个float buffer
  *       2.添加标志位解码
+ *       3.由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务
+ *         或由IMU采集完成产生的中断唤醒的任务,使得时间戳对齐.
  *
  * @param send 待发送数据
  */
@@ -52,4 +57,10 @@ void VisionSend(Vision_Send_s *send)
 
     get_protocol_send_data(0x02, flag_register, &send->yaw, 3, send_buff, &tx_len);
     USARTSend(&vision_usart_instance, send_buff, tx_len);
+}
+
+
+Vision_Recv_s* VisionGetcmd()
+{
+    return &recv_data;
 }

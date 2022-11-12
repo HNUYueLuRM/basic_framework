@@ -105,6 +105,7 @@ bsp/bsp_can.c \
 bsp/bsp_buzzer.c \
 bsp/bsp_usart.c \
 bsp/bsp_log.c \
+bsp/bsp_init.c \
 \ \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
@@ -117,6 +118,7 @@ modules/master_machine/master_process.c \
 modules/motor/dji_motor.c \
 modules/motor/HT04.c \
 modules/motor/LK9025.c \
+modules/mode/step_motor.c \
 modules/motor/motor_task.c \
 modules/referee/referee.c \
 modules/referee/referee_UI.c \
@@ -125,7 +127,8 @@ modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
 modules/master_machine/seasky_protocol.c \
 modules/algorithm/crc8.c \
-modules/algorithm/crc16.c 
+modules/algorithm/crc16.c \
+modules/can_comm/can_comm.c 
 
 
 # ASM sources

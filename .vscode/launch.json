@@ -1,24 +1,25 @@
 {
     "version": "0.2.0",
     "configurations": [
-        {
+        { // 使用dap-link(如无线调试器时的参考配置)
             "name": "Debug-dap",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}\\build\\basic_framework.elf",
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf", // 要下载到调试器的文件
             "request": "launch",
             "type": "cortex-debug",
-            "device":"STM32F407IG",        //使用J-link GDB Server时必须；其他GBD Server时可选（有可能帮助自动选择SVD文件）。支持的设备见 https://www.segger.com/downloads/supported-devices.php
-            "svdFile": ".\\STM32F407.svd",  //svd文件，有这个文件才能查看寄存器的值，每个单片机都不同。可以在以下地址找到 https://github.com/posborne/cmsis-svd
-            "servertype": "openocd",       //使用的GDB Server
-            "configFiles":[ 
-                ".\\openocd.cfg",
+            "device": "STM32F407IG", //使用J-link GDB Server时必须;其他GBD Server时可选（有可能帮助自动选择SVD文件）。支持的设备见 https://www.segger.com/downloads/supported-devices.php
+            "svdFile": ".\\STM32F407.svd", //svd文件，有这个文件才能查看寄存器的值，每个单片机都不同。可以在以下地址找到 https://github.com/posborne/cmsis-svd
+            // 该项目的根目录已经提供了C型开发板使用的外设svd文件
+            "servertype": "openocd", //使用的GDB Server
+            "configFiles": [
+                ".\\openocd.cfg", // 配置文件已经在根目录提供,若要修改以此类推
             ],
-            // path to your gcc-arm-none-eabi/bin
+            // path to your gcc-arm-none-eabi/bin,如果在cortex-debug的设置中写入了全局路径,这里不需要再写
             "armToolchainPath": "D:\\gcc-arm-none-eabi\\bin",
-            // path to your gcc-arm-none-eabi/arm-none-eabi-gdb.exe
-            "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe" 
+            // path to your gcc-arm-none-eabi/arm-none-eabi-gdb.exe,如果在cortex-debug的设置中写入了全局路径,这里不需要再写
+            "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe"
         },
-        {
+        { // 使用j-link时的参考配置
             "name": "Debug-jlink",
             "cwd": "${workspaceFolder}",
             "executable": "${workspaceRoot}\\build\\basic_framework.elf",
@@ -29,8 +30,10 @@
             "showDevDebugOutput": "none",
             "servertype": "jlink",
             "interface": "swd",
+            //如果在cortex-debug的设置中写入了全局路径,这里不需要再写
             "armToolchainPath": "D:\\gcc-arm-none-eabi\\bin",
-            "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe" 
+            //如果在cortex-debug的设置中写入了全局路径,这里不需要再写            
+            "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe"
         }
     ]
 }

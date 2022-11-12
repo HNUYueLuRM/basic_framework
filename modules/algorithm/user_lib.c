@@ -2,7 +2,8 @@
  ******************************************************************************
  * @file	 user_lib.c
  * @author  Wang Hongxi
- * @version V1.0.0
+ * @author  modified by neozng
+ * @version 0.2 beta
  * @date    2021/2/18
  * @brief
  ******************************************************************************
@@ -24,7 +25,7 @@
 
 uint8_t GlobalDebugMode = 7;
 
-//快速开方
+// 快速开方
 float Sqrt(float x)
 {
     float y;
@@ -51,29 +52,7 @@ float Sqrt(float x)
     return y;
 }
 
-/**
- * @brief          斜波函数计算，根据输入的值进行叠加， 输入单位为 /s 即一秒后增加输入的值
- * @author         RM
- * @param[in]      斜波函数结构体
- * @param[in]      输入值
- * @retval         返回空
- */
-float ramp_calc(ramp_function_source_t *ramp_source_type, float input)
-{
-    ramp_source_type->input = input;
-    ramp_source_type->out += ramp_source_type->input * ramp_source_type->frame_period;
-    if (ramp_source_type->out > ramp_source_type->max_value)
-    {
-        ramp_source_type->out = ramp_source_type->max_value;
-    }
-    else if (ramp_source_type->out < ramp_source_type->min_value)
-    {
-        ramp_source_type->out = ramp_source_type->min_value;
-    }
-    return ramp_source_type->out;
-}
-
-//绝对值限制
+// 绝对值限制
 float abs_limit(float num, float Limit)
 {
     if (num > Limit)
@@ -87,7 +66,7 @@ float abs_limit(float num, float Limit)
     return num;
 }
 
-//判断符号位
+// 判断符号位
 float sign(float value)
 {
     if (value >= 0.0f)
@@ -100,7 +79,7 @@ float sign(float value)
     }
 }
 
-//浮点死区
+// 浮点死区
 float float_deadband(float Value, float minValue, float maxValue)
 {
     if (Value < maxValue && Value > minValue)
@@ -120,7 +99,7 @@ int16_t int16_deadline(int16_t Value, int16_t minValue, int16_t maxValue)
     return Value;
 }
 
-//限幅函数
+// 限幅函数
 float float_constrain(float Value, float minValue, float maxValue)
 {
     if (Value < minValue)
@@ -131,7 +110,7 @@ float float_constrain(float Value, float minValue, float maxValue)
         return Value;
 }
 
-//限幅函数
+// 限幅函数
 int16_t int16_constrain(int16_t Value, int16_t minValue, int16_t maxValue)
 {
     if (Value < minValue)
@@ -142,7 +121,7 @@ int16_t int16_constrain(int16_t Value, int16_t minValue, int16_t maxValue)
         return Value;
 }
 
-//循环限幅函数
+// 循环限幅函数
 float loop_float_constrain(float Input, float minValue, float maxValue)
 {
     if (maxValue < minValue)
@@ -169,9 +148,9 @@ float loop_float_constrain(float Input, float minValue, float maxValue)
     return Input;
 }
 
-//弧度格式化为-PI~PI
+// 弧度格式化为-PI~PI
 
-//角度格式化为-180~180
+// 角度格式化为-180~180
 float theta_format(float Ang)
 {
     return loop_float_constrain(Ang, -180.0f, 180.0f);
