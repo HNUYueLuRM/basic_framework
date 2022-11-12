@@ -4,6 +4,13 @@
 
 [TOC]
 
+> TODO：
+>
+> 1. 添加一键编译+启用ozone调试/一键编译+下载的脚本，使得整个进一步流程自动化
+> 2. 增加更多的知识介绍
+
+
+
 ## 前言
 
 了解过嵌入式开发的你一定接触过Keil，这款20世纪风格UI的IDE伴随很多人度过了学习单片机的岁月。然而由于其缺少代码补全、高亮和静态检查的支持，以及为人诟病的一系列逆天的设置、极慢的编译速度（特别是在开发HAL库时），很多开发者开始转向其他IDE。
@@ -167,19 +174,109 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 ## VSCode编译和调试配置
 
+VSCode常用快捷键包括：
+
+| 功能                   | 快捷键        |
+| ---------------------- | ------------- |
+| 选中当前行             | Ctrl+L        |
+| 删除当前行             | Ctrl+Shift+K  |
+| 重命名变量             | F2            |
+| 跳转到定义             | Ctrl+点击     |
+| 在打开的文件页中切换   | Ctrl+Tab      |
+| 在当前文件查找         | Ctrl+F        |
+| 在整个项目文件夹中查找 | Ctrl+Shift+F  |
+| 查找所有引用           | Alt+Shift+F12 |
+| 返回上一动作           | Alt+左        |
+
+更多快捷键可以按ctrl+K再按ctrl+S显示，并且可以修改成你最习惯的方式。
+
 ### 编译
 
-用VSCode打开创建的项目文件夹，**Makefile Tools插件会询问你是否帮助配置intellisense，选择是。**
+用VSCode打开创建的项目文件夹，**Makefile Tools插件会询问你是否帮助配置intellisense，选择是。**此时就可以享受intellicode带来的各种便利的功能了。我们的项目使用Makefile进行编译，在之前的编译介绍中，以GCC为例，如果需要编译一个文件，要输入如下命令：
 
+```shell
+gcc your_source_code_name.c -o output
+```
 
+然而，你面对的是一个拥有几百个.c和.h文件以及大量的链接库，如果要将所有文件都输入进去，那将是一件苦恼的事。Makefile在gcc命令上提供了一层抽象，通过编写makefile来指定参与编译的文件和编译选项，再使用`make`命令进行编译，它会自动将makefile的内容“翻译”为gcc命令。这样，编译大型项目就不是一件困难的事了。
 
+> 实际上，在使用keil MDK开发的时候，它调用的仍然是底层的arm cc工具链中的编译器和链接器，在配置“魔术棒”添加项目文件以及包含目录的时候，实际做的使其和makefile差不多。keil使用的参数可以在魔棒的C/C++选项卡下看到。
 
+对于一个已经拥有makefile的项目，打开一个终端，输入：
 
+```shell
+mingw32-make -j24 # -j参数表示参与编译的线程数,一般使用-j12
+```
 
+> 注意，多线程编译的时候输出的报错信息有时候可能会被打乱（多个线程同时往一个terminal写入程序运行的信息），要是看不清报错，请使用`mingw32-make`，不要进行多线程编译。
 
+![image-20221112191712534](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112191712534.png)
 
+就会开始编译了。你可以看到大致如下的输出：
 
+```shell
+arm-none-eabi-gcc -c -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -IHAL_N_Middlewares/Inc -IHAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Inc -IHAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -IHAL_N_Middlewares/Drivers/CMSIS/Device/ST/STM32F4xx/Include -IHAL_N_Middlewares/Drivers/CMSIS/Include -IHAL_N_Middlewares/Drivers/CMSIS/DSP/Include -IHAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Core/Inc -IHAL_N_Middlewares/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/include -IHAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/include -IHAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT -IHAL_N_Middlewares/Middlewares/Third_Party/SEGGER/Config -IHAL_N_Middlewares/Middlewares/ST/ARM/DSP/Inc -Iapplication -Ibsp -Imodules/algorithm -Imodules/imu -Imodules/led_light -Imodules/master_machine -Imodules/motor -Imodules/referee -Imodules/remote -Imodules/super_cap  -Og -Wall -fdata-sections -ffunction-sections -g -gdwarf-2 -MMD -MP -MF"build/stm32f4xx_hal_pwr_ex.d" -Wa,-a,-ad,-alms=build/stm32f4xx_hal_pwr_ex.lst HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c -o build/stm32f4xx_hal_pwr_ex.o
+```
 
+仔细看你会发现，make命令根据makefile的内容，调用arm-none-eabi-gcc编译器，传入了一堆的参数以及编译选项然后运行。
+
+最后输出的结果如下：
+
+```shell
+  text    data     bss     dec     hex filename
+  31100     484   35916   67500   107ac build/basic_framework.elf
+arm-none-eabi-objcopy -O ihex build/basic_framework.elf build/basic_framework.hex
+arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framework.bin
+```
+
+代表了生成的可执行文件的大小以及格式和内容。.elf文件就是我们需要传递给调试器的东西，在[使用VSCode调试](###简单调试)部分会介绍。
+
+当然了，你可能觉得每次编译都要在命令行里输入参数，太麻烦了。我们可以编写一个`task.json`，这是VSCode的一个任务配置，内容大致如下：
+
+```json
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build task",         // 任务标签
+            "type": "shell",               // 任务类型,因为要调用mingw32-make,是在终端(CMD)里运行的,所以是shell任务
+            "command": "mingw32-make -j24",// 任务命令
+            "problemMatcher": [],          
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
+```
+
+这样，你就可以点击VSCode工具栏上方的Terminal->Run task选择你刚刚配置的任务开始编译了。**更方便的方法是使用快捷键：`ctrl+shift+B`。**
+
+![image-20221112192133103](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112192133103.png)
+
+> 还没配置任务的时候，需要在Terminal标签页中选择Configure Tasks... 创建一个新的.json文件。
+>
+> P.S. VSCode中的大部分配置都是通过json文件保存的。当前工作区的配置在项目文件夹中的.vscode下，全局配置在设置中修改。全局配置在当前工作区没有配置的时候会生效，反之被前者覆盖。
+
+### 如果你编写了新的代码文件...
+
+Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果新增了.c的源文件，你需要在`C_SOURCES`中新增：
+
+![image-20221112192509718](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112192509718.png)
+
+换行需要在行尾加反斜杠\\
+
+如果新增了头文件，在`C_INCLUDES`中新增头文件所在的文件夹：
+
+![image-20221112192610543](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112192610543.png)
+
+换行需要在行尾加反斜杠\\
+
+**添加完之后，重新编译即可**。
+
+> 和KEIL新增文件的方式很相似，但是更方便。
 
 ### 简单调试
 
@@ -193,7 +290,63 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 根目录下已经提供了C板所需的.svd和使用无线调试器时所用的openocd.cfg配置文件。
 
-然后选择run and debug标签页，在选项中选择你配置好的选项，开始调试。
+然后选择run and debug标签页，在选项中选择你配置好的选项，开始调试。**或者使用快捷键：`F5`。**
 
 ![image-20221112180103750](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112180103750.png)
+
+
+
+
+
+
+
+---
+
+
+
+
+
+## Ozone可视化调试和LOG功能
+
+### 配置调试项目
+
+
+
+
+
+### 常用调试窗口和功能
+
+
+
+
+
+#### 变量动态查看（可视化）
+
+
+
+
+
+#### 日志打印
+
+
+
+
+
+#### 外设查看
+
+
+
+
+
+#### 调用栈
+
+
+
+
+
+
+
+### 常用快捷键
+
+
 
