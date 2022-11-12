@@ -57,7 +57,7 @@ static void CANServiceInit()
 
 /* -----------------------two extern callable function -----------------------*/
 
-void CANRegister(can_instance *ins, can_instance_config config)
+void CANRegister(can_instance *ins, can_instance_config_s config)
 {
     static uint8_t idx;
     if (!idx)

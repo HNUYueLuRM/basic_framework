@@ -1,6 +1,15 @@
 # 湖南大学RoboMaster电控组通信协议
 
+<p align='right'>Seasky LIUWei</p>
+
+<p align='right'>modified by neozng1@hnu.edu.cn</p>
+
 可用于视觉，以及其他自研模块（仅限串口通信）
+
+> TODO:
+>
+> 1. 利用F4自带的硬件CRC模块计算校验码，提高速度
+> 2. 增加更多的数据类型支持，使得数据类型也为可配置的
 
 ## 一、串口配置
 

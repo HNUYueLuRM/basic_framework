@@ -18,7 +18,7 @@ static void DecodeDriven(can_instance *_instance)
     }
 }
 
-driven_instance *LKMotroInit(can_instance_config config)
+driven_instance *LKMotroInit(can_instance_config_s config)
 {
     static uint8_t idx;
     driven_motor_info[idx] = (driven_instance *)malloc(sizeof(driven_instance));

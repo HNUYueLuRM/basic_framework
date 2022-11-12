@@ -9,10 +9,9 @@
 #define I_MIN -2000
 #define I_MAX 2000
 
-#define LIMIT_MIN_MAX(x,min,max) (x) = (((x)<=(min))?(min):(((x)>=(max))?(max):(x)))
+#define LIMIT_MIN_MAX(x, min, max) (x) = (((x) <= (min)) ? (min) : (((x) >= (max)) ? (max) : (x)))
 
-
-typedef struct //9025
+typedef struct // 9025
 {
     uint16_t last_ecd;
     uint16_t ecd;
@@ -20,8 +19,8 @@ typedef struct //9025
     int16_t given_current;
     uint8_t temperate;
 
-    PID_t* pid;
-    can_instance* motor_can_instance;
+    PID_t *pid;
+    can_instance *motor_can_instance;
 
 } driven_instance;
 
@@ -30,10 +29,10 @@ typedef enum
     unused = 0,
 } driven_mode;
 
-driven_instance* LKMotroInit(can_instance_config config);
+driven_instance *LKMotroInit(can_instance_config_s config);
 
-void DrivenControl(int16_t motor1_current,int16_t motor2_current);
+void DrivenControl(int16_t motor1_current, int16_t motor2_current);
 
-void SetDrivenMode(driven_mode cmd,uint16_t motor_id);
+void SetDrivenMode(driven_mode cmd, uint16_t motor_id);
 
 #endif // LK9025_H

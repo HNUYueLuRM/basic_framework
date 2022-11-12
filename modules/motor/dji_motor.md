@@ -20,9 +20,14 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
 
 初始化电机时，你需要传入的参数包括：
 
-- 电机挂载的总线设置：CAN1 or CAN2，以及电机的id
+- **电机挂载的CAN总线设置**，CAN1 or CAN2，以及电机的id，使用`can_instance_config_s`封装，只需要设置这两个参数:
 
-- 电机类型：
+  ```c
+  CAN_HandleTypeDef *can_handle;
+  uint32_t tx_id; // tx_id设置为电机id,不需要查说明书计算，直接为电调的闪动次数或拨码开关值，为1-8
+  ```
+
+- **电机类型**，使用`Motor_Type_e`：
 
   ```c
   GM6020 = 0
@@ -30,74 +35,122 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
   M2006  = 2
   ```
 
-- 闭环类型
+- **电机控制设置**
 
-  ```c
-  OPEN_LOOP
-  CURRENT_LOOP 
-  SPEED_LOOP 
-  ANGLE_LOOP 
-  CURRENT_LOOP| SPEED_LOOP  			 // 同时对电流和速度闭环
-  SPEED_LOOP  | ANGLE_LOOP  			 // 同时对速度和位置闭环
-  CURRENT_LOOP| SPEED_LOOP |ANGLE_LOOP // 三环全开
-  ```
+  - 闭环类型
 
-- 是否反转
+    ```c
+    OPEN_LOOP
+    CURRENT_LOOP 
+    SPEED_LOOP 
+    ANGLE_LOOP 
+    CURRENT_LOOP| SPEED_LOOP  			 // 同时对电流和速度闭环
+    SPEED_LOOP  | ANGLE_LOOP  			 // 同时对速度和位置闭环
+    CURRENT_LOOP| SPEED_LOOP |ANGLE_LOOP // 三环全开
+    ```
 
-  ```c
-  MOTOR_DIRECTION_NORMAL 
-  MOTOR_DIRECTION_REVERSE
-  ```
+  - 是否反转
 
-- 是否其他反馈来源，以及他们对应的数据指针（如果有的话）
+    ```c
+    MOTOR_DIRECTION_NORMAL 
+    MOTOR_DIRECTION_REVERSE
+    ```
 
-  ```c
-  MOTOR_FEED = 0
-  OTHER_FEED = 1
-  ---
-  float *other_angle_feedback_ptr
-  float *other_speed_feedback_ptr
-  // 电流只能从电机传感器获得所以无法设置其他来源
-  ```
+  - 是否其他反馈来源，以及他们对应的数据指针（如果有的话）
 
-- 每个环的PID参数以及是否使用改进功能
+    ```c
+    MOTOR_FEED = 0
+    OTHER_FEED = 1
+    ---
+    
+    // 电流只能从电机传感器获得所以无法设置其他来源
+    ```
 
-  ```c
-  typedef struct // config parameter
-  {
-      float Kp;
-      float Ki;
-      float Kd;
-  	
-      float MaxOut;        // 输出限幅
-      // 以下是优化参数
-      float IntegralLimit; // 积分限幅
-      float DeadBand;      // 死区
-      float CoefA;         // For Changing Integral
-      float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
-      float Output_LPF_RC; // RC = 1/omegac
-      float Derivative_LPF_RC;
-      
-      PID_Improvement_e Improve; // 优化环节，定义在下一个代码块
-  } PID_Init_config_s;
-  // 只有当你设启用了对应的优化环节，优化参数才会生效
-  ```
+  - 每个环的PID参数以及是否使用改进功能，以及其他反馈来源指针（如果在上一步启用了其他数据来源）
 
-  ```c
-  typedef enum
-  {
-      NONE						= 0b00000000,                     
-      Integral_Limit 				= 0b00000001,           
-      Derivative_On_Measurement   = 0b00000010,   
-      Trapezoid_Intergral 	    = 0b00000100,       
-      Proportional_On_Measurement = 0b00001000, 
-      OutputFilter 				= 0b00010000,               
-      ChangingIntegrationRate 	= 0b00100000,    
-      DerivativeFilter 			= 0b01000000,            
-      ErrorHandle 				= 0b10000000,         
-  } PID_Improvement_e;
-  // 若希望使用多个环节的优化，这样就行：Integral_Limit |Trapezoid_Intergral|...|...
-  ```
+    ```c
+    typedef struct // config parameter
+    {
+        float Kp;
+        float Ki;
+        float Kd;
+    	
+        float MaxOut;        // 输出限幅
+        // 以下是优化参数
+        float IntegralLimit; // 积分限幅
+        float DeadBand;      // 死区
+        float CoefA;         // For Changing Integral
+        float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
+        float Output_LPF_RC; // RC = 1/omegac
+        float Derivative_LPF_RC;
+        
+        PID_Improvement_e Improve; // 优化环节，定义在下一个代码块
+    } PID_Init_config_s;
+    // 只有当你设启用了对应的优化环节，优化参数才会生效
+    ```
+
+    ```c
+    typedef enum
+    {
+        NONE						= 0b00000000,                     
+        Integral_Limit 				= 0b00000001,           
+        Derivative_On_Measurement   = 0b00000010,   
+        Trapezoid_Intergral 	    = 0b00000100,       
+        Proportional_On_Measurement = 0b00001000, 
+        OutputFilter 				= 0b00010000,               
+        ChangingIntegrationRate 	= 0b00100000,    
+        DerivativeFilter 			= 0b01000000,            
+        ErrorHandle 				= 0b10000000,         
+    } PID_Improvement_e;
+    // 若希望使用多个环节的优化，这样就行：Integral_Limit |Trapezoid_Intergral|...|...
+    ```
+
+    ```c
+    float *other_angle_feedback_ptr
+    float *other_speed_feedback_ptr
+    ```
+
+
+
+---
+
+
+
+推荐的初始化参数编写格式如下：
+
+```c
+Motor_Init_Config_s config = {
+		.motor_type = M3508,  // 要注册的电机为3508电机
+		.can_init_config = {.can_handle = &hcan1, // 挂载在CAN1
+							.tx_id = 1},          // C620每隔一段时间闪动1次,设置为1
+		// 采用电机编码器角度与速度反馈,启用速度环和电流环,不反转
+        .controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, 
+										   .close_loop_type = SPEED_LOOP | CURRENT_LOOP, 
+										   .speed_feedback_source = MOTOR_FEED, 
+										   .reverse_flag = MOTOR_DIRECTION_NORMAL},
+    	// 电流环和速度环PID参数的设置,不采用计算优化则不需要传入Improve参数
+        // 不使用其他数据来源(如IMU),不需要传入反馈数据变量指针
+		.controller_param_init_config = {.current_PID = {.Improve = 0,
+                                                         .Kp = 1,
+                                                         .Ki = 0,
+                                                         .Kd = 0,
+                                                         .DeadBand = 0,
+                                                         .MaxOut = 4000},
+										 .speed_PID = {.Improve = 0,
+                                                       .Kp = 1,
+                                                       .Ki = 0,
+                                                       .Kd = 0,
+                                                       .DeadBand = 0,
+                                                       .MaxOut = 4000}}};
+
+dji_motor_instance *djimotor = DJIMotorInit(config); // 设置好参数后进行初始化并保留返回的指针
+```
+
+
+
+---
+
+
 
 要控制一个DJI电机，我们提供了2个接口：
 
@@ -112,6 +165,16 @@ void DJIMotorChangeFeed(dji_motor_instance *motor,
 调用第一个并传入设定值，它会自动根据你设定的PID参数进行动作。
 
 调用第二个并设定要修改的反馈环节和反馈类型，它会将反馈数据指针切换到你设定好的变量（需要在初始化的时候设置反馈指针）。
+
+**如果需要获取电机的反馈数据**（如小陀螺模式需要根据麦克纳姆轮逆运动学解算底盘速度），直接通过你拥有的`dji_motor_instance`访问成员变量：
+
+```c
+// LeftForwardMotor是一个dji_motor_instance实例
+float speed=LeftForwardMotor->motor_measure->speed_rpm;
+...
+```
+
+
 
 ***现在，忘记PID的计算和发送、接收以及协议解析，专注于模块之间的逻辑交互吧。***
 

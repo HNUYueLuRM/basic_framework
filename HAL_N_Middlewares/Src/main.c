@@ -116,31 +116,31 @@ int main(void)
 	MX_USART6_UART_Init();
 	/* USER CODE BEGIN 2 */
 	RC_init(&huart3);
-	can_instance_config can_config = {.can_handle = &hcan1,
-									  .tx_id = 1};
-	Motor_Control_Setting_s motor_config = {.angle_feedback_source = MOTOR_FEED,
-											.close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-											.speed_feedback_source = MOTOR_FEED,
-											.reverse_flag = MOTOR_DIRECTION_NORMAL};
-	Motor_Controller_Init_s controller_init = {.current_PID = {
-												   .Improve = 0,
-												   .Kp = 1,
-												   .Ki = 0,
-												   .Kd = 0,
-												   .DeadBand = 0,
-												   .MaxOut = 4000,
-											   },
-											   .speed_PID = {
-												   .Improve = 0,
-												   .Kp = 1,
-												   .Ki = 0,
-												   .Kd = 0,
-												   .DeadBand = 0,
-												   .MaxOut = 4000,
-											   }};
-	Motor_Type_e type = M3508;
 	DWT_Init(168);
-	dji_motor_instance *djimotor = DJIMotorInit(can_config, motor_config, controller_init, type);
+	Motor_Init_Config_s config = {
+		.motor_type = M3508,
+		.can_init_config = {
+			.can_handle = &hcan1,
+			.tx_id = 1},
+		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, 
+										   .close_loop_type = SPEED_LOOP | CURRENT_LOOP, 
+										   .speed_feedback_source = MOTOR_FEED, 
+										   .reverse_flag = MOTOR_DIRECTION_NORMAL},
+		.controller_param_init_config = {.current_PID = {
+											 .Improve = 0,
+											 .Kp = 1,
+											 .Ki = 0,
+											 .Kd = 0,
+											 .DeadBand = 0,
+											 .MaxOut = 4000},
+										 .speed_PID = {
+											 .Improve = 0,
+											 .Kp = 1,
+											 .Ki = 0,
+											 .Kd = 0,
+											 .DeadBand = 0,
+											 .MaxOut = 4000}}};
+	dji_motor_instance *djimotor = DJIMotorInit(config);
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */

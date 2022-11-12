@@ -75,23 +75,12 @@ typedef struct
  *
  * @attention M3508和M2006的反馈报文都是0x200+id,而GM6020的反馈是0x204+id,请注意前两者和后者的id不要冲突.
  *            如果产生冲突,在初始化电机的时候会进入IDcrash_Handler(),可以通过debug来判断是否出现冲突.
- *
- * @param config 电机can设置,对于DJI电机仅需要将tx_id设置为电调闪动次数(c620,615,610)或拨码开关的值(GM6020)
- *               你不需要自己查表计算发送和接收id,我们会帮你处理好!
- *
- * @param motor_setting 电机的控制设置,包括是否反转,闭环类型和是否使用编码器之外的反馈值
- *
- * @param controller_init 电机控制器的参数设置,包括其他的反馈来源数据指针和三环PID的参数.
- *                        如果不需要其他数据来源或不需要三个环,将不需要指针置为NULL即可
- *
- * @param type 电机的类型枚举,包括m2006,m3508和gm6020
- *
- * @return dji_motor_instance* 返回一个电机实例指针给应用,方便其对电机的参考值进行设置,即调用DJIMotorSetRef()
+ * 
+ * @param config 电机初始化结构体,包含了电机控制设置,电机PID参数设置,电机类型以及电机挂载的CAN设置
+ * 
+ * @return dji_motor_instance* 
  */
-dji_motor_instance *DJIMotorInit(can_instance_config config,
-                                 Motor_Control_Setting_s motor_setting,
-                                 Motor_Controller_Init_s controller_init,
-                                 Motor_Type_e type);
+dji_motor_instance *DJIMotorInit(Motor_Init_Config_s config);
 
 /**
  * @brief 被application层的应用调用,给电机设定参考值.

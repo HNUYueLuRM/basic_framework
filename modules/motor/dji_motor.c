@@ -48,7 +48,7 @@ static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
  *
  * @param config
  */
-static void MotorSenderGrouping(can_instance_config *config)
+static void MotorSenderGrouping(can_instance_config_s *config)
 {
     uint8_t motor_id = config->tx_id - 1; // 下标从零开始,先减一方便赋值
     uint8_t motor_send_num;
@@ -146,29 +146,26 @@ static void DecodeDJIMotor(can_instance *_instance)
 }
 
 // 电机初始化,返回一个电机实例
-dji_motor_instance *DJIMotorInit(can_instance_config can_config,
-                                 Motor_Control_Setting_s motor_setting,
-                                 Motor_Controller_Init_s controller_init,
-                                 Motor_Type_e type)
+dji_motor_instance *DJIMotorInit(Motor_Init_Config_s config)
 {
     dji_motor_info[idx] = (dji_motor_instance *)malloc(sizeof(dji_motor_instance));
     memset(dji_motor_info[idx], 0, sizeof(dji_motor_instance));
 
     // motor basic setting
-    dji_motor_info[idx]->motor_type = type;
-    dji_motor_info[idx]->motor_settings = motor_setting;
+    dji_motor_info[idx]->motor_type = config.motor_type;
+    dji_motor_info[idx]->motor_settings = config.controller_setting_init_config;
 
     // motor controller init
-    PID_Init(&dji_motor_info[idx]->motor_controller.current_PID, &controller_init.current_PID);
-    PID_Init(&dji_motor_info[idx]->motor_controller.speed_PID, &controller_init.speed_PID);
-    PID_Init(&dji_motor_info[idx]->motor_controller.angle_PID, &controller_init.angle_PID);
-    dji_motor_info[idx]->motor_controller.other_angle_feedback_ptr = controller_init.other_angle_feedback_ptr;
-    dji_motor_info[idx]->motor_controller.other_speed_feedback_ptr = controller_init.other_speed_feedback_ptr;
+    PID_Init(&dji_motor_info[idx]->motor_controller.current_PID, &config.controller_param_init_config.current_PID);
+    PID_Init(&dji_motor_info[idx]->motor_controller.speed_PID, &config.controller_param_init_config.speed_PID);
+    PID_Init(&dji_motor_info[idx]->motor_controller.angle_PID, &config.controller_param_init_config.angle_PID);
+    dji_motor_info[idx]->motor_controller.other_angle_feedback_ptr = config.controller_param_init_config.other_angle_feedback_ptr;
+    dji_motor_info[idx]->motor_controller.other_speed_feedback_ptr = config.controller_param_init_config.other_speed_feedback_ptr;
     // group motors, because 4 motors share the same CAN control message
-    MotorSenderGrouping(&can_config);
+    MotorSenderGrouping(&config.can_init_config);
     // register motor to CAN bus
-    can_config.can_module_callback = DecodeDJIMotor; // set callback
-    CANRegister(&dji_motor_info[idx]->motor_can_instance, can_config);
+    config.can_init_config.can_module_callback = DecodeDJIMotor; // set callback
+    CANRegister(&dji_motor_info[idx]->motor_can_instance, config.can_init_config);
 
     return dji_motor_info[idx++];
 }
