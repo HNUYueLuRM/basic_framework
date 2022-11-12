@@ -8,7 +8,7 @@
 
   本框架使用stm32cubemx生成，基于makefile，使用gcc-arm-none-eabi编译（make命令）。若需使用keil5开发，请在stm32cubemx的`project manager`标签页下将工具链改为MDK，然后在keil中自行添加所需包含的.c文件和头文件。关于如何在keil下添加dsplib，请参考文档。
 
-  VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持。
+  VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持，具体的使用方法和环境配置教程在[VSCode+Ozone使用方法](./VSCode%2BOzone%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.md)中。
 
   推荐使用 SEGGER ozone进行调试（暂时只支持jlink，提供可视化模块）。
 

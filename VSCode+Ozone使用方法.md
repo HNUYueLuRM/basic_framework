@@ -288,6 +288,8 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 
 用于调试的配置参考这篇博客：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)
 
+***配置需要的文件已经全部在basic_framework中提供***，包括`openocd.cfg  STM32F407.svd  .vscode/launch.json`。
+
 你需要配置**arm gnu工具链的路径**，**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
 
 如果教程看不懂，请看`.vscode`下的`launch.json`，照葫芦画瓢。
