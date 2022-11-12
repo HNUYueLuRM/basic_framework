@@ -62,7 +62,7 @@ C语言代码由固定的词汇（关键字）按照固定的格式（语法）�
 
 对于单个.c文件，从C语言开始到单片机可识别的.bin文件，一般要经历以下几步：
 
-![img](https://pic3.zhimg.com/80/v2-2797ea99d0d38eb9996993bb0ad77ab2_720w.webp)
+![img](assets\v2-2797ea99d0d38eb9996993bb0ad77ab2_720w.webp)
 
 首先是编译**预处理**Preprocessing，这一步会展开宏并删除注释，将多余的空格去除。预处理之后会生成.i文件。
 
@@ -78,7 +78,7 @@ C语言代码由固定的词汇（关键字）按照固定的格式（语法）�
 
 ### C语言内存模型
 
-<img src="C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112160213066.png" alt="image-20221112160213066" style="zoom:80%;" />
+<img src="assets\image-20221112160213066.png" alt="image-20221112160213066" style="zoom:80%;" />
 
 以上是C语言常见的内存模型，即C语言的代码块以及运行时使用的内存（包括函数、变量等）的组织方式。
 
@@ -102,7 +102,7 @@ C语言代码由固定的词汇（关键字）按照固定的格式（语法）�
 
 ### Debug外设工作原理
 
-![image-20221112145717063](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112145717063.png)
+![image-20221112145717063](assets\image-20221112145717063.png)
 
 DBG支持模块（红框标注部分，也可以看作一个外设）通过一条专用的AHB-AP总线和调试接口相连（Jtag或swd），并且有与**数据**和**外设**总线直接相连的桥接器。它还同时连接了中断嵌套管理器（因此同样可以捕获中断并进行debug）和ITM、DWT、FPB这些调试支持模块。因此DBG可以直接获取内存或片上外设内的数据而不需要占用CPU的资源，并将这些数据通过专用外设总线发送给调试器，进而在上位机中读取。
 
@@ -122,31 +122,31 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 - 安装VSCode，并安装C/C++，Cortex-Debug，Cortex-Debug: Device Support Pack - STM32F4，Better C++ Syntax，IntelliCode，Makfile Tools，C/C++ Snippets插件
 
-  ![image-20221112172157533](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172157533.png)
+  ![image-20221112172157533](assets\image-20221112172157533.png)
 
-  ![image-20221112172208749](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172208749.png)
+  ![image-20221112172208749](assets\image-20221112172208749.png)
 
-  ![image-20221112172221756](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172221756.png)
+  ![image-20221112172221756](assets\image-20221112172221756.png)
 
-  ![image-20221112172239386](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172239386.png)
+  ![image-20221112172239386](assets\image-20221112172239386.png)
 
-  ![image-20221112172254809](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172254809.png)
+  ![image-20221112172254809](assets\image-20221112172254809.png)
 
 - 安装MinGW，等待界面如下：
 
-  ![image-20221112172051589](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172051589.png)
+  ![image-20221112172051589](assets\image-20221112172051589.png)
 
   安装好后，打开MinGW后将所有的支持包勾选，然后安装：
 
-  ![image-20221112172348408](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172348408.png)
+  ![image-20221112172348408](assets\image-20221112172348408.png)
 
-  ![image-20221112172420037](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172420037.png)
+  ![image-20221112172420037](assets\image-20221112172420037.png)
 
   安装完以后，将MinGW的bin文件夹添加到环境变量中的path下，按下菜单键搜索**编辑系统环境变量**打开之后：
 
-  ![image-20221112172716320](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172716320.png)
+  ![image-20221112172716320](assets\image-20221112172716320.png)
 
-  验证安装：
+  图片看不清请打开原图。验证安装：
 
   打开命令行（win+R，cmd，回车），输入`gcc -v`，如果没有报错，并输出了一堆路径和参数说明安装成功。
 
@@ -154,7 +154,7 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
   同上，将工具链的bin添加到PATH：
 
-  ![image-20221112172858593](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112172858593.png)
+  ![image-20221112172858593](assets\image-20221112172858593.png)
 
   <center>安装路径可能不一样，这里要使用你自己的路径而不是直接抄</center>
 
@@ -168,11 +168,11 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 - CubeMX生成代码的时候工具链选择makefile
 
-  ![image-20221112173534670](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112173534670.png)
+  ![image-20221112173534670](assets\image-20221112173534670.png)
 
   生成的目录结构如下：
 
-  ![image-20221112174211802](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112174211802.png)
+  ![image-20221112174211802](assets\image-20221112174211802.png)
 
   Makefile就是我们要使用的构建规则文件。
 
@@ -214,7 +214,7 @@ mingw32-make -j24 # -j参数表示参与编译的线程数,一般使用-j12
 
 > 注意，多线程编译的时候输出的报错信息有时候可能会被打乱（多个线程同时往一个terminal写入程序运行的信息），要是看不清报错，请使用`mingw32-make`，不要进行多线程编译。
 
-![image-20221112191712534](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112191712534.png)
+![image-20221112191712534](assets\image-20221112191712534.png)
 
 就会开始编译了。你可以看到大致如下的输出：
 
@@ -258,7 +258,7 @@ arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framewo
 
 这样，你就可以点击VSCode工具栏上方的Terminal->Run task选择你刚刚配置的任务开始编译了。**更方便的方法是使用快捷键：`ctrl+shift+B`。**
 
-![image-20221112192133103](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112192133103.png)
+![image-20221112192133103](assets\image-20221112192133103.png)
 
 > 还没配置任务的时候，需要在Terminal标签页中选择Configure Tasks... 创建一个新的.json文件。
 >
@@ -268,13 +268,13 @@ arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framewo
 
 Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果新增了.c的源文件，你需要在`C_SOURCES`中新增：
 
-![image-20221112192509718](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112192509718.png)
+![image-20221112192509718](assets\image-20221112192509718.png)
 
 换行需要在行尾加反斜杠\\
 
 如果新增了头文件，在`C_INCLUDES`中新增头文件所在的文件夹：
 
-![image-20221112192610543](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112192610543.png)
+![image-20221112192610543](assets\image-20221112192610543.png)
 
 换行需要在行尾加反斜杠\\
 
@@ -296,7 +296,7 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 
 然后选择run and debug标签页，在选项中选择你配置好的选项，开始调试。**或者使用快捷键：`F5`。**
 
-![image-20221112180103750](C:\Users\Neo\AppData\Roaming\Typora\typora-user-images\image-20221112180103750.png)
+![image-20221112180103750](assets\image-20221112180103750.png)
 
 
 
