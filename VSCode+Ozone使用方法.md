@@ -120,7 +120,13 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 - 安装STM32CubeMX，并安装F4支持包和DSP库支持包
 
-- 安装VSCode，并安装C/C++，Cortex-Debug，Cortex-Debug: Device Support Pack - STM32F4，Better C++ Syntax，IntelliCode，Makfile Tools，C/C++ Snippets插件
+- 安装VSCode，并安装以下插件：
+
+  - C/C++：提供C/C++的调试和代码高亮支持
+  - Better C++ Syntax：提供更丰富的代码高亮和智能提示
+  - C/C++ Snippets：提供代码块（关键字）补全
+  - Cortex-Debug，Cortex-Debug: Device Support Pack - STM32F4：提供调试支持
+  - IntelliCode，Makfile Tools：提供代码高亮支持
 
   ![image-20221112172157533](assets\image-20221112172157533.png)
 
@@ -196,7 +202,15 @@ VSCode常用快捷键包括：
 
 ### 编译
 
-用VSCode打开创建的项目文件夹，**Makefile Tools插件会询问你是否帮助配置intellisense，选择是。**此时就可以享受intellicode带来的各种便利的功能了。我们的项目使用Makefile进行编译，在之前的编译介绍中，以GCC为例，如果需要编译一个文件，要输入如下命令：
+为了提供完整的代码高亮支持，需要配置Makefile tools插件的make程序路径，`ctrl+,`打开设置，搜索make path找到设置并填写：
+
+![image-20221113152513343](assets\image-20221113152513343.png)
+
+> mingw32-make就是下面介绍的make工具（配合makefile替代手动调用gcc）。这里之所以只要输入mingw32-make而不用完整路径，是因为我们将mingw的bin文件夹加入环境变量了，因此系统会在PATH下自动寻找对应项
+
+用VSCode打开创建的项目文件夹，**Makefile Tools插件会询问你是否帮助配置intellisense，选择是。**
+
+此时就可以享受intellicode带来的各种便利的功能了。我们的项目使用Makefile进行编译，在之前的编译介绍中，以GCC编译器为例，如果需要编译一个文件，要输入如下命令：
 
 ```shell
 gcc your_source_code_name.c -o output
