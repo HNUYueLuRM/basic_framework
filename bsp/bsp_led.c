@@ -2,6 +2,7 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim5;
+static tmp_output_level=0;
 
 void aRGB_led_show(uint32_t aRGB)
 {

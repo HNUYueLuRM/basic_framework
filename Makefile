@@ -128,7 +128,12 @@ modules/super_cap/super_cap.c \
 modules/master_machine/seasky_protocol.c \
 modules/algorithm/crc8.c \
 modules/algorithm/crc16.c \
-modules/can_comm/can_comm.c 
+modules/can_comm/can_comm.c \
+\ \
+application/gimbal.c \
+application/chassis.c \
+application/shoot.c \
+application/robot_cmd.c 
 
 
 # ASM sources
