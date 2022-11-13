@@ -69,7 +69,7 @@ typedef struct
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
 
-    uint8_t Improve;
+    PID_Improvement_e Improve;
     //-----------------------------------
     // for calculating
     float Measure;

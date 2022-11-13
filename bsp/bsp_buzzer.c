@@ -4,6 +4,11 @@
 extern TIM_HandleTypeDef htim4;
 static uint8_t tmp_warning_level=0;
 
+void buzzer_init()
+{
+    HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
+}
+
 void buzzer_on(uint16_t psc, uint16_t pwm,uint8_t level)
 {
     if(level>tmp_warning_level)

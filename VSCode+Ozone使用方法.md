@@ -46,6 +46,8 @@ CubeMX进行初始化 --> VSCode编写代/进行编译/简单调试 --> Ozone变
 
 ***务必学完以上课程再开始本教程的学习。***
 
+> 4. 如果有可能，还应该学习：[哈佛大学公开课：计算机科学cs50](https://open.163.com/newview/movie/courseintro?newurl=%2Fspecial%2Fopencourse%2Fcs50.html)。你将会对单片机和计算机有不同的理解。
+
 ## 预备知识
 
 1. 软件安装(队伍NAS和资料硬盘内提供了所有必要的依赖,安装包和插件)
@@ -181,6 +183,8 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
   Makefile就是我们要使用的构建规则文件。
   
   > **如果你使用basic_framework，不需要重新生成代码。**
+  
+  
 
 ## VSCode编译和调试配置
 

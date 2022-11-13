@@ -2,12 +2,19 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim5;
-static tmp_output_level=0;
+static tmp_output_level = 0;
+
+void LED_init()
+{
+    HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
+}
 
 void aRGB_led_show(uint32_t aRGB)
 {
     static uint8_t alpha;
-    static uint16_t red,green,blue;
+    static uint16_t red, green, blue;
 
     alpha = (aRGB & 0xFF000000) >> 24;
     red = ((aRGB & 0x00FF0000) >> 16) * alpha;
@@ -18,5 +25,3 @@ void aRGB_led_show(uint32_t aRGB)
     __HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_2, green);
     __HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_3, red);
 }
-
-
