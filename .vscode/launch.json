@@ -31,10 +31,6 @@
             "showDevDebugOutput": "none",
             "servertype": "jlink",
             "interface": "swd",
-            //如果在cortex-debug的设置中写入了全局路径,这里不需要再写
-            "armToolchainPath": "D:\\gcc-arm-none-eabi\\bin",
-            //如果在cortex-debug的设置中写入了全局路径,这里不需要再写            
-            "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe",
             // "preLaunchTask": "build task",//先运行Build任务,取消注释即可使用
         }
     ]

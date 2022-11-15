@@ -303,25 +303,24 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 ### 简单的调试配置
 
 >  在VSCode中调试不能像Keil一样查看变量动态变化，但是支持以外的所有操作，如查看外设和反汇编代码，设置断点触发方式等。
+>
+>  用于调试的配置参考这篇博客：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)，这里包含了一些背景知识的介绍。你也可以直接查看下面的教程。
 
-用于调试的配置参考这篇博客：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)。
-
-你需要配置**arm gnu工具链的路径**（工具链包括编译器、链接器和调试器等），**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
+你需要配置**arm gnu工具链的路径**（工具链包括编译器、链接器和调试器等），**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），JlinkGDBServer的路径，以及该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
 
 VSCode `ctrl+,`进入设置，通过搜索找到cortex-debug插件的设置。
 
 1. 搜索**armToolchainPath**，设置你的arm gcc toolchain的`bin`文件夹。bin是binary的缩写，实际上文件夹内部是一些可执行文件，整个工具链都在这里（注意该文件夹是刚刚解压的**arm gcc toolchain的根目录**下的bin文件夹，里面有很多以arm-none-eabi为前缀的可执行文件)。
 2. 搜索**openocdPath**，设置你的openocd路径（需要包含到openocd的可执行文件）。
+3. 搜索**JLinkGBDServer**，设置JlinkGDBServerlCL.exe的路径（在Jlink安装目录下，CL代表command line命令行版本）。
 
 **注意**，windows下路径需要使用两个反斜杠`\\`代表下一级文件夹。
 
 ***其他配置需要的文件已经全部在basic_framework中提供***，包括`openocd.cfg  STM32F407.svd  .vscode/launch.json`。
 
+![image-20221115215531879](assets/image-20221115215531879.png)
 
-
-![image-20221113125439857](assets\image-20221113125439857.png)
-
-<center>主要需要配置这2个路径</center>
+<center>主要需要配置这三个路径，第四个gdbPath可以选配</center>
 
 如果教程中的启动json文件看不懂，请看仓库里的`.vscode`下的`launch.json`，照葫芦画瓢。
 
