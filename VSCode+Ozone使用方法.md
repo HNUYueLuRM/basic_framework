@@ -54,16 +54,16 @@ CubeMX进行初始化 --> VSCode编写代/进行编译/简单调试 --> Ozone变
 
    ```shell
    # 网盘中的文件:
-   basic_framework.zip 
-   daplink_register_license.rar
-   gcc-arm-none-eabi-10.3-2021.10-win32.zip
-   JLinkARM.dll
-   JLink_Windows_V722b.exe
-   mingw-get-setup.exe
-   OpenOCD.zip
-   Ozone_doc.pdf
-   Ozone_Windows_V324_x86.exe
-   VSCodeUserSetup-x64-1.73.1.exe
+   basic_framework.zip    # 本仓库文件,注意,可能不为最新,建议从仓库clone并定时pull
+   daplink_register_license.rar	# daplink license注册机
+   gcc-arm-none-eabi-10.3-2021.10-win32.zip # arm-gnu-toolchain
+   JLinkARM.dll # 修改过的jlink运行链接库
+   JLink_Windows_V722b.exe  # JLink软件包
+   mingw-get-setup.exe  # mingw工具链
+   OpenOCD.zip  # OpenOCD
+   Ozone_doc.pdf  # Ozone使用手册
+   Ozone_Windows_V324_x86.exe  # Ozone安装包
+   VSCodeUserSetup-x64-1.73.1.exe  # VSCode安装包
    ```
 
 1. C语言从源代码到.bin和.hex等机器代码的编译和链接过程
