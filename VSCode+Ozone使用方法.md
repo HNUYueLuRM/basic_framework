@@ -51,10 +51,25 @@ CubeMX进行初始化 --> VSCode编写代/进行编译/简单调试 --> Ozone变
 ## 预备知识
 
 1. 软件安装(队伍NAS和资料硬盘内提供了所有必要的依赖,安装包和插件，目录是`/EC/VSCode+Ozone环境配置`)，请以公共账号登陆网盘，ip地址为`49.123.113.2:5212`，账号`public@rm.cloud`,密码`public`。
-2. C语言从源代码到.bin和.hex等机器代码的编译和链接过程
-3. C语言的内存模型
-4. C语言标准，动态链接库和静态编译的区别，一些编译器的常用选项
-5. STM32F4系列的DBG外设工作原理
+
+   ```shell
+   # 网盘中的文件:
+   basic_framework.zip 
+   daplink_register_license.rar
+   gcc-arm-none-eabi-10.3-2021.10-win32.zip
+   JLinkARM.dll
+   JLink_Windows_V722b.exe
+   mingw-get-setup.exe
+   OpenOCD.zip
+   Ozone_doc.pdf
+   Ozone_Windows_V324_x86.exe
+   VSCodeUserSetup-x64-1.73.1.exe
+   ```
+
+1. C语言从源代码到.bin和.hex等机器代码的编译和链接过程
+2. C语言的内存模型
+3. C语言标准，动态链接库和静态编译的区别，一些编译器的常用选项
+4. STM32F4系列的DBG外设工作原理
 
 ### 编译全过程
 
@@ -394,6 +409,8 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
 **注意，如果希望支持daplink（包括正点原子无线调试器），请务必安装网盘对应的版本（Ozone3.24 32-bit和J-Link7.22b）。**
 
+>  经过测试发现只有32位的ozone3.24支持daplink。
+
 应该先安装Ozone，再安装jlink。以下为步骤：
 
 1. 安装Ozone
@@ -404,11 +421,15 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
 2. 安装jlink
 
-   ![image-20221116150254529](assets/image-20221116150254529.png)
+   ![image-20221116193340770](assets/image-20221116193340770.png)
 
-   这一步注意勾选update dll in other application，这样jlink会把ozone里面老的驱动和启动项替代掉。注意安装目的地和ozone一样，选择安装一个新的实例。如果安装了老的相同版本的jlink，请先卸载（版本相同不用管，直接新装一个）。然后安装过程中会出现如下提示，询问是否升级Jlink，**点击OK**即可。
+   这一步注意不要勾选update dll in other application，否则jlink会把ozone里面老的驱动和启动项替代掉。choose destination和ozone一样，选择install a new instance。如果安装了老的相同版本的jlink，请先卸载（版本相同不用管，直接新装一个）。
 
-   ![image-20221116150621396](assets/image-20221116150621396.png)
+3. **替换动态链接库**
+
+   **将网盘上下载的`JLinkARM.dll`放到JLink和Ozone的安装目录下，替换原来的库。下载下来的库经过修改，使得J-LinkOB在使用的时候不会报“The JLink is defective"和”you are using a clone version“的错误。**
+
+   **之后如果安装其他版本的jlink，也请注意*==不要勾选==*update DLL in other application，否则会替换掉修改过的动态链接库。**
 
 ### 配置调试项目
 
