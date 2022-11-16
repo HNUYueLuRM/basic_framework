@@ -706,7 +706,8 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # list of objects
 # OBJECTS保存了所有.c文件的文件名(不包含后缀),可以理解为一个文件名列表.notdir会判断是否是文件夹
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
-vpath %.c $(sort $(dir $(C_SOURCES))) # 对.c文件进行排序,百分号%是通配符,意为所有.c文件
+vpath %.c $(sort $(dir $(C_SOURCES))) # 对.c文件进行排序,百分号%是通配符,意为所有.c文件vpath是makefile会搜索的文件的路径.如果最终找不到编译中产生的依赖文件所在的路径且不指定搜索路径，makefile会报错没有规则制定目标(no rule to build target)
+
 # list of ASM program objects
 # 把所有.s文件的文件名加到OBJECTS里面
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
@@ -742,6 +743,7 @@ $(BUILD_DIR): # 如果makefile所处的文件目录下没有build文件夹,这�
 #######################################
 clean:
 	rm -r $(BUILD_DIR)
+
   
 #######################################
 # dependencies
