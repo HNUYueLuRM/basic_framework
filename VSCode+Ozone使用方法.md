@@ -408,7 +408,7 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
    这一步注意勾选update dll in other application，这样jlink会把ozone里面老的驱动和启动项替代掉。注意安装目的地和ozone一样，选择安装一个新的实例。如果安装了老的相同版本的jlink，请先卸载（版本相同不用管，直接新装一个）。然后安装过程中会出现如下提示，询问是否升级Jlink，**点击OK**即可。
 
-   ![image-20221116150621396](C:/Users/13313/AppData/Roaming/Typora/typora-user-images/image-20221116150621396.png)
+   ![image-20221116150621396](assets/image-20221116150621396.png)
 
 ### 配置调试项目
 
