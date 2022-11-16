@@ -127,7 +127,7 @@ FPB是flash patch breakpoint闪存指令断点的缩写，用于提供代码断�
 
 DWT是data watch trace数据观察与追踪单元的缩写，用于比较debug变量的大小，并追踪变量值的变化。当你设定了比较断点规则（当某个数据大于/小于某个值时暂停程序）或将变量加入watch进行查看，DWT就会开始工作。DWT还提供了一个额外的计时器，即所有可见的TIM资源之外的另一个硬件计时器（因为调试其他硬件定时器的计时由于时钟变化可能定时不准，而DWT定时器是始终正常运行的）。它用于给自身和其他调试器模块产生的信息打上时间戳。我们的bsp中也封装了dwt计时器，你可以使用它来计时。
 
-ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供非阻塞式的日志发送支持（相当于大家常用的串口调试），SEGGER RTT就可以利用这个模块，向上位机发送日志和信息。
+ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供非阻塞式的日志发送支持（相当于大家常用的串口调试），SEGGER RTT就可以利用这个模块，向上位机发送日志和信息。这个硬件还可以追踪CPU执行的所有指令，这也被称作**trace**（跟踪），并将执行过的指令全部通过调试器发送给上位机。当debug无法定位bug所在的时候，逐条查看cpu执行的指令是一个绝佳的办法，特别是你有大量的中断或开启了实时系统时。
 
 以上三个模块都需要通过TPIU（trace port interface unit）和外部调试器（j-link等）进行连接，TPIU会将三个模块发来的数据进行封装并通过DWT记录时间，发送给上位机。
 
@@ -235,7 +235,7 @@ VSCode常用快捷键包括：
 gcc your_source_code_name.c -o output
 ```
 
-然而，你面对的是一个拥有几百个.c和.h文件以及大量的链接库，如果要将所有文件都输入进去，那将是一件苦恼的事。Makefile在gcc命令上提供了一层抽象，通过编写makefile来指定参与编译的文件和编译选项，再使用`make`命令进行编译，它会自动将makefile的内容“翻译”为gcc命令。这样，编译大型项目就不是一件困难的事了。
+然而，你面对的是一个拥有几百个.c和.h文件以及大量的链接库，如果要将所有文件都输入进去，那将是一件苦恼的事。Makefile在gcc命令上提供了一层抽象，通过编写makefile来指定参与编译的文件和编译选项，再使用`make`命令进行编译，它会自动将makefile的内容“翻译”为gcc命令。这样，编译大型项目就不是一件困难的事了。更多关于makefile的指令介绍，参见[附录3](##附录3：Makefile指令介绍)。
 
 > 实际上，在使用keil MDK开发的时候，它调用的仍然是底层的arm cc工具链中的编译器和链接器，在配置“魔术棒”添加项目文件以及包含目录的时候，实际做的使其和makefile差不多。keil使用的参数可以在魔棒的C/C++选项卡下看到。
 
@@ -246,6 +246,8 @@ mingw32-make -j24 # -j参数表示参与编译的线程数,一般使用-j12
 ```
 
 > 注意，多线程编译的时候输出的报错信息有时候可能会被打乱（多个线程同时往一个terminal写入程序运行的信息），要是看不清报错，请使用`mingw32-make`，不要进行多线程编译。
+>
+> 我对make的编译命令进行了静默处理，只输出error和warning以及最后的生成文件信息。如果想要解除静默（就是下面所说的“你可以看到大致如下的输出”），需要修改Makefile。**本仓库下的makefile中已经用注释标明。**
 
 ![image-20221112191712534](assets\image-20221112191712534.png)
 
@@ -555,3 +557,209 @@ windows菜单搜索J-link license manager，点击添加license，将注册机�
 ## 附录2：在VSCode中启用SEGGER RTT日志
 
 > 待补充。
+
+
+
+
+
+## 附录3：Makefile指令介绍
+
+> 如果想要进一步学习Makefile，可以参考这个链接：[Makefile Tutorial By Example](https://makefiletutorial.com/)。你会发现，当项目越来越大的时候，makefile也会变得复杂起来，这就有了后继者**CMake**。cmake可以根据一定的规则，生成makefile，然后再利用make命令调用gcc进行程序的编译。~~也许以后还会有ccccmake~~
+
+```makefile
+# makefile是CubeMX自动生成的,我们需要自己添加新编写的源文件路径和头文件文件夹,也可以额外加入自己需要的参数满足需求
+######################################
+# target
+######################################
+TARGET = basic_framework # 编译生成的目标文件名,如本项目会生成basic_framework.elf/bin/hex三个
+# 注意,makefile会自动生成一个叫@的变量,其值等于TARGET.
+# 在makefile中获取变量的值需要通过$(var_name),即加上括号并在前面使用$
+
+######################################
+# building variables
+######################################
+# debug build?
+DEBUG = 1 # 是否启用debug编译.程序分为DEBUG版和RELEASE版,后者在编译时不会插入调试符号和调试信息相关支持的内容,使得程序运行速度提高.
+# optimization
+OPT = -Og # 编译优化等级,-Og表示调试级,常见的级别请看代码块下面的表格.
+
+
+
+#######################################
+# paths
+#######################################
+# Build path
+BUILD_DIR = build # 编译的中间文件和目标文件存放路径,为了区分项目文件和编译输出,一般构建一个build(构建)文件夹,用于存放上述文件. 这个表达式也在生成了一个BUILD_DIR变量(可以把Makefile当作一种语言)
+
+######################################
+# source
+######################################
+# C sources, 参与编译的C源代码全部放置于此.注意如果换行写需要在行尾空格之后加反斜杠,最后一行不要加
+# p.s. C语言的宏如果不能一行写完,也要在行尾加反斜杠,表示一行没有结束
+C_SOURCES =  \
+HAL_N_Middlewares/Src/main.c \
+HAL_N_Middlewares/Src/gpio.c \
+HAL_N_Middlewares/Src/adc.c \
+HAL_N_Middlewares/Src/can.c 
+
+# ASM sources 汇编源文件,第一个是stm32的启动文件,包含了bootloader的信息使得程序可以找到main函数的入口,第二个文件是添加对segger rtt viewer的支持.
+ASM_SOURCES +=  \
+startup_stm32f407xx.s \
+HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_ASM_ARMv7M.s
+
+#######################################
+# binaries, 下面是要执行的指令
+#######################################
+PREFIX = arm-none-eabi-  # 指令之前加的前缀,这里也是申明了一个变量
+# The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
+# either it can be added to the PATH environment variable.
+ifdef GCC_PATH # 和C语言的宏类似,如果在Makefile里定义或给make命令传递了GCC_PATH变量会执行以下内容.但实际上我们执行的是else的内容
+CC = $(GCC_PATH)/$(PREFIX)gcc 
+AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp 
+CP = $(GCC_PATH)/$(PREFIX)objcopy 
+SZ = $(GCC_PATH)/$(PREFIX)size
+else
+# 定义了一个cc变量,其保存的内容实际上是gcc编译器的路径.makefile中要获取一个变量的值,需通过$(var).这里makefile会自动在环境变量里寻找gcc路径.CC里保存的内容是arm-none-eabi-gcc,就是我们添加到环境变量的arm gnu工具链的路径下的一个可执行文件.你可以尝试在cmd中输入arm-none-eabi-gcc,会发现这是一个可执行的程序.之前我们在验证安装的时候就运行了arm-none-eabi-gcc -v命令.
+CC = $(PREFIX)gcc 
+# 定义了一个AS变量,稍后会用于C/ASM混合编译
+AS = $(PREFIX)gcc -x assembler-with-cpp 
+# 定义变量.objcopy能够将目标文件进行格式转换.我们实际上要生成的目标文件是.elf,objcopy可以将其转化为hex和bin格式,用于其他用途.
+CP = $(PREFIX)objcopy 
+# size命令可以获取可执行文件的大小和包含内容信息.
+SZ = $(PREFIX)size  
+endif
+HEX = $(CP) -O ihex # 这里用到了上面定义的CP,命令含义为将其转换成hex,i的前缀表示intel格式
+BIN = $(CP) -O binary -S # 转化为二进制文件
+ 
+#######################################
+# CFLAGS, 在编译C语言程序的时候给GCC编译器传入的参数
+#######################################
+# cpu
+CPU = -mcpu=cortex-m4 # 目标CPU类型.我们前面介绍过,不同的平台支持的汇编指令不同,一条相同的C语言表达式在翻译成汇编的时候会有不同的实现.比如8051单片机就只有加法器,因此他的乘除法都是通过多次加法和减法实现的,编译器就要完成这一工作.再比如STM32F4系列拥有浮点运算单元(FPU),可以直接在硬件上实现浮点数的加减法.这里指定编译的目标平台是cortex-m4内核的mcu.
+
+# fpu 上面说了我们的f407是有FPU的,需要传入特殊的参数.fpv4-sp-d16表示float point,m4内核,single presicion, 16个dword(4字节)运算寄存器.
+FPU = -mfpu=fpv4-sp-d16
+
+# float-abi 使用软件还是硬件实现浮点运算.也就是我们说的如果没有FPU就只能使用软件实现浮点运算.这里选择hard硬件
+FLOAT-ABI = -mfloat-abi=hard
+
+# mcu 把上面几个变量合起来弄成一条长的参数
+# Thumb是ARM体系结构中的一种16位指令集,这里-mthumb会启用它,感兴趣的同学可以进一步搜索.
+MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+
+# macros for gcc
+# AS defines
+AS_DEFS = # 汇编的一些宏定义
+
+# C defines
+C_DEFS =  \  # C语言的宏定义
+-DUSE_HAL_DRIVER \ # 使用HAL库.HAL库的许多头文件和源文件里会判断是否定义了这个宏
+-DSTM32F407xx \    # HAL库会根据使用的MCU的不同进行条件编译,这是一个很好的封装技术
+-DARM_MATH_CM4 \   # 启用ARM MATH运算库,我们在卡尔曼滤波和最小二乘法的时候会用到矩阵运算
+-DARM_MATH_MATRIX_CHECK \ # 启用矩阵乘法库
+-DARM_MATH_ROUNDING       # 对数学库的输出结果进行取整防止溢出?
+
+# AS includes
+AS_INCLUDES = # 汇编包含目录.汇编语言也和C一样可以多个文件联合编译,在没有C语言的时候大家都是利用这种方式开发的.在一些运算资源极其受限的情况下也会直接编写汇编.
+
+# C includes, C语言的包含目录,将所有参与编译的头文件目录放在这里,注意是目录不需要精确到每一个文件.
+# 不想一行写完记得行尾加\,最后一行不要加
+C_INCLUDES =  \
+-IHAL_N_Middlewares/Inc \
+-IHAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Inc
+
+
+# compile gcc flags, gcc的编译参数,这些参数自己感兴趣的话去搜索一下.这还将之前定义的一些参数以变量的形式放过来.
+ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -gdwarf-2
+endif
+
+
+# Generate dependency information
+CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
+
+
+#######################################
+# LDFLAGS,传递给链接器的参数
+#######################################
+# link script
+LDSCRIPT = STM32F407IGHx_FLASH.ld # 需要参与链接的文件.这个文件指明了特定MCU的内存分布情况,使得链接器可以按照此规则进行链接和地址重映射.
+
+# libraries,要添加的库,这里我们要使用编译好的math运算库.在CubeMX里面生成的时候可以在第三方库选择DSP运算库,生成makefile时会自动添加进来.
+LIBS = -lc -lm -lnosys  \
+-larm_cortexM4lf_math
+LIBDIR =  \ # 和上一行命令对应,这里引入库的目录,gcc会自动去目录里寻找需要的库文件
+-LHAL_N_Middlewares/Drivers/CMSIS/Lib/GCC
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+
+# default action: build all
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+
+
+#######################################
+# build the application
+#######################################
+# list of objects
+# OBJECTS保存了所有.c文件的文件名(不包含后缀),可以理解为一个文件名列表.notdir会判断是否是文件夹
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_SOURCES))) # 对.c文件进行排序,百分号%是通配符,意为所有.c文件
+# list of ASM program objects
+# 把所有.s文件的文件名加到OBJECTS里面
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_SOURCES))) # 对.s文件的文件名也进行排序
+
+# 以下是编译命令,命令之前被高亮的@就是静默输出的指令.删除前面的@会将输出显示到命令行.
+# 如@$(CC) -c $(CFLAGS) ...... 去掉第一个@即可.
+
+# 意味根据makefile,在BUILD_DIR变量指定的路径下将参与编译的所有.c文件编译成.o文件
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	# 上面这句话翻译一下实际上是gcc -c -many_param build/xxx -o build
+	# 意思是将所有参与编译的文件都列出来,传递一堆编译参数,让他们生成.o文件,并且放在build文件夹下
+# 意为根据makefile,将.s文件编译成.o文件,具体和上一条命令差不多
+$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
+	@$(AS) -c $(CFLAGS) $< -o $@
+# 根据前两步生成的目标文件(.o,这些文件的名字保存在OBJECTS变量里),进行链接生成最终的.elf
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
+	@$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	@$(SZ) $@ # 输出生成的.elf文件的大小和格式信息
+
+$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(HEX) $< $@ # elf转换成hex
+	
+$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(BIN) $< $@ # 转换成bin
+	
+$(BUILD_DIR): # 如果makefile所处的文件目录下没有build文件夹,这里会新建一个build文件夹.
+	@mkdir $@	
+
+#######################################
+# clean up,清除编译信息,可以在命令行中通过rm -r build执行,实际上就是把build文件夹删掉
+#######################################
+clean:
+	rm -r $(BUILD_DIR)
+  
+#######################################
+# dependencies
+#######################################
+-include $(wildcard $(BUILD_DIR)/*.d) # 包含所有的依赖文件(d=dependency),这是编译产生的中间文件,当hello.c包含hello.h而后者又包含了其他头文件时,会产生一个hello.d,它包含了hello.h中包括的其他的头文件的信息,提供给hello.c使用.
+
+# *** EOF ***
+
+```
+
+- **编译优化等级**:
+
+| 优化级别 | 说明                                             | 备注                                                         |
+| -------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| -O0      | 关闭所有优化                                     | 代码空间大，执行效率低                                       |
+| -O1      | 基本优化等级                                     | 编译器在不花费太多编译时间基础上，试图生成更快、更小的代码   |
+| -O2      | O1的升级版，推荐的优化级别                       | 编译器试图提高代码性能，而不会增大体积和占用太多编译时间     |
+| -O3      | 最危险的优化等级                                 | 会延长代码编译时间，生成更大体积、更耗内存的二进制文件，大大增加编译失败的几率和不可预知的程序行为，得不偿失 |
+| -Og      | O1基础上，去掉了那些影响调试的优化               | 如果最终是为了调试程序，可以使用这个参数。不过光有这个参数也是不行的，这个参数只是告诉编译器，编译后的代码不要影响调试，但调试信息的生成还是靠  -g 参数的 |
+| -Os      | O2基础上，进一步优化代码尺寸                     | 去掉了那些会导致最终可执行程序增大的优化，如果想要更小的可执行程序，可选择这个参数。 |
+| -Ofast   | 优化到破坏标准合规性的点(等效于-O3 -ffast-math ) | 是在 -O3 的基础上，添加了一些非常规优化，这些优化是通过打破一些国际标准（比如一些数学函数的实现标准）来实现的，所以一般不推荐使用该参数。 |

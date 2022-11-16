@@ -2,19 +2,23 @@
 
 当前版本更新日期：2022.11.03
 
-本说明仅针对电控组2023赛季框架，如有变动以日期靠后的版本为准
+本说明仅针对电控组2023赛季框架，如有变动以日期靠后的版本为准。**==由于当前仍然处在测试开发阶段，请定期拉取（`git pull`）获取最新更新。==**
 
 - 开发方式：
 
-  本框架使用stm32cubemx生成，基于makefile，使用gcc-arm-none-eabi编译（make命令）。若需使用keil5开发，请在stm32cubemx的`project manager`标签页下将工具链改为MDK，然后在keil中自行添加所需包含的.c文件和头文件。关于如何在keil下添加dsplib，请参考文档。
+  本框架使用stm32cubemx生成，基于makefile，使用gcc-arm-none-eabi编译（make命令）。
 
-  VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持，具体的使用方法和环境配置教程在[VSCode+Ozone使用方法](./VSCode%2BOzone%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.md)中。
+  > ！deprecated：若需使用keil5开发，请在stm32cubemx的`project manager`标签页下将工具链改为MDK，然后在keil中自行添加所需包含的.c文件和头文件。关于如何在keil下添加dsplib，请参考文档。
+  >
+  > ***强烈推荐使用VSCode进行开发，Ozone进行调试。***
 
-  推荐使用 SEGGER ozone进行调试（暂时只支持jlink，提供可视化模块）。
+  VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持，具体的使用方法和环境配置教程在[VSCode+Ozone使用方法](./VSCode+Ozone使用方法.md)中。
+
+  推荐使用 SEGGER ozone进行调试。
 
 - 分层：
 
-  本框架主要代码分为BSP、Module、APP三层。三层的代码分别存放在同名的三个文件夹中，这三个文件夹存放在根目录下。开发过程中主要编写APP层代码，Module层与BSP层不建议修改。如需添加module（如oled屏幕、其他传感器和外设等），请按照规范编写并联系组长提交commit到dev分支，完善后合并至主分支。
+  本框架主要代码分为**BSP、Module、APP**三层。三层的代码分别存放在同名的三个文件夹中，这三个文件夹存放在根目录下。开发过程中主要编写APP层代码，Module层与BSP层不建议修改。如需添加module（如oled屏幕、其他传感器和外设等），请按照规范编写并联系组长提交commit到dev分支，完善后合并至主分支。
 
   BSP层构建与HAL之上。HAL库和实时系统、DSP支持等文件都在`HAL_N_Middlewares`文件夹下（包括Cube生成的外设初始化的Inc和Src文件夹）。
 

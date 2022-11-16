@@ -260,6 +260,8 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
+# 以下是编译命令,命令之前被粉色高亮的@就是静默输出的指令.删除前面的@会将输出显示到命令行.
+# 如@$(CC) -c $(CFLAGS) ...... 去掉第一个@即可.
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
@@ -283,7 +285,7 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -r $(BUILD_DIR)
+	rm -r $(BUILD_DIR)
   
 #######################################
 # dependencies
