@@ -50,7 +50,7 @@ CubeMX进行初始化 --> VSCode编写代/进行编译/简单调试 --> Ozone变
 
 ## 预备知识
 
-1. 软件安装(队伍NAS和资料硬盘内提供了所有必要的依赖,安装包和插件)
+1. 软件安装(队伍NAS和资料硬盘内提供了所有必要的依赖,安装包和插件，目录是`/EC/VSCode+Ozone环境配置`)，请以公共账号登陆网盘，ip地址为`49.123.113.2:5212`，账号`public@rm.cloud`,密码`public`。
 2. C语言从源代码到.bin和.hex等机器代码的编译和链接过程
 3. C语言的内存模型
 4. C语言标准，动态链接库和静态编译的区别，一些编译器的常用选项
@@ -251,7 +251,7 @@ arm-none-eabi-objcopy -O ihex build/basic_framework.elf build/basic_framework.he
 arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framework.bin
 ```
 
-代表了生成的可执行文件的大小以及格式和内容。.elf文件就是我们需要传递给调试器的东西，在[使用VSCode调试](###简单调试)部分会介绍。
+由于使用了多线程编译，比KEIL的蜗牛单线程要快了不少。以上内容代表了生成的可执行文件的大小以及格式和内容。.elf文件就是我们需要传递给调试器的东西，在[使用VSCode调试](###简单调试)部分会介绍。
 
 当然了，你可能觉得每次编译都要在命令行里输入参数，太麻烦了。我们可以编写一个`task.json`，这是VSCode的一个任务配置，内容大致如下：
 
@@ -300,19 +300,21 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 
 > 和KEIL新增文件的方式很相似，但是更方便。
 
+
+
 ### 简单的调试配置
 
 >  在VSCode中调试不能像Keil一样查看变量动态变化，但是支持以外的所有操作，如查看外设和反汇编代码，设置断点触发方式等。
 >
 >  用于调试的配置参考这篇博客：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)，这里包含了一些背景知识的介绍。你也可以直接查看下面的教程。
 
-你需要配置**arm gnu工具链的路径**（工具链包括编译器、链接器和调试器等），**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），JlinkGDBServer的路径，以及该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
+你需要配置**arm gnu工具链的路径**（工具链包括编译器、链接器和调试器等），**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），**JlinkGDBServer**的路径，以及该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
 
-VSCode `ctrl+,`进入设置，通过搜索找到cortex-debug插件的设置。
+VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
-1. 搜索**armToolchainPath**，设置你的arm gcc toolchain的`bin`文件夹。bin是binary的缩写，实际上文件夹内部是一些可执行文件，整个工具链都在这里（注意该文件夹是刚刚解压的**arm gcc toolchain的根目录**下的bin文件夹，里面有很多以arm-none-eabi为前缀的可执行文件)。
-2. 搜索**openocdPath**，设置你的openocd路径（需要包含到openocd的可执行文件）。
-3. 搜索**JLinkGBDServer**，设置JlinkGDBServerlCL.exe的路径（在Jlink安装目录下，CL代表command line命令行版本）。
+1. 搜索**armToolchainPath**，设置你的arm gcc toolchain的`bin`文件夹。bin是binary的缩写，实际上文件夹内部是一些可执行文件，整个工具链都在这里（注意该文件夹是刚刚解压的**arm gcc toolchain的根目录**下的bin文件夹，里面有很多以arm-none-eabi为前缀的可执行文件)。此路径必须配置。
+2. 搜索**openocdPath**，设置你的openocd路径（需要包含到openocd的可执行文件）。使用daplink调试需要配置这个路径。
+3. 搜索**JLinkGBDServer**，设置JlinkGDBServerlCL.exe的路径（在Jlink安装目录下，CL代表command line命令行版本）。使用jlink调试需要配置这个路径。
 
 **注意**，windows下路径需要使用两个反斜杠`\\`代表下一级文件夹。
 
@@ -382,27 +384,47 @@ VSCode `ctrl+,`进入设置，通过搜索找到cortex-debug插件的设置。
 
 ## Ozone可视化调试和LOG功能
 
-> Ozone暂时只支持jlink。
+> ~~Ozone暂时只支持jlink。~~
+>
+> 22/11/16**重要更新**：安装Ozone3.24 32-bit和J-Link7.22b目前可以支持Jlink和**dap-link（包括ATK无线调试器）**
 
 ### 软件安装
 
 安装Ozone和J-link工具箱（驱动、gdb以及各种调试工具）。安装包都在网盘里。
 
+**注意，如果希望支持daplink（包括正点原子无线调试器），请务必安装网盘对应的版本（Ozone3.24 32-bit和J-Link7.22b）。**
+
+应该先安装Ozone，再安装jlink。以下为步骤：
+
+1. 安装Ozone
+
+   ![image-20221116150122397](assets/image-20221116150122397.png)
+
+   这一步注意选择install a new instance（安装一个新的实例）。后续一路确认即可。
+
+2. 安装jlink
+
+   ![image-20221116150254529](assets/image-20221116150254529.png)
+
+   这一步注意勾选update dll in other application，这样jlink会把ozone里面老的驱动和启动项替代掉。注意安装目的地和ozone一样，选择安装一个新的实例。如果安装了老的相同版本的jlink，请先卸载（版本相同不用管，直接新装一个）。然后安装过程中会出现如下提示，询问是否升级Jlink，**点击OK**即可。
+
+   ![image-20221116150621396](C:/Users/13313/AppData/Roaming/Typora/typora-user-images/image-20221116150621396.png)
+
 ### 配置调试项目
 
-打开ozone后会显示一个new project wizard，如果没有打开，在工具栏的File-> New -> New project wizard。
+安装好两个软件之后，打开ozone后会显示一个new project wizard，如果没有打开，在工具栏的File-> New -> New project wizard。
 
 ![image-20221113133904084](assets\image-20221113133904084.png)
 
 选择M4内核，为了能够查看外设寄存器的值还需要svd文件。所有mcu的svd都在图中的文件夹里提供，当然你也可以使用我们仓库根目录下的文件。
 
-![image-20221113134025339](assets\image-20221113134025339.png)
+![image-20221116150901418](assets/image-20221116150901418.png)
 
-接口选择swd，接口速度不需要太高，如果调试的时候需要观察大量的变量并且使用日志功能，可以调高这个值。如果连接了jlikn，下面的窗口中会显示。
+接口选择swd，接口速度不需要太高，如果调试的时候需要观察大量的变量并且使用日志功能，可以调高这个值。如果连接了jlikn，上面的窗口中会显示。如果链接了dap-link，比如无线调试器，会出现Unknown CMSIS-dap。选择你要使用的调试器，然后继续。
 
 ![image-20221113134252407](assets\image-20221113134252407.png)
 
-选择构建之后生成的.elf文件。这是调试器专用的文件格式，对其内容感兴趣可以自行搜索细节。此外ozone还支持.bin .hex .axf（最后一个是amr-cc，也就是keil的工具链会生成的）等格式。
+选择构建之后生成的.elf文件（在项目文件夹下的build中）。这是调试器专用的文件格式，对其内容感兴趣可以自行搜索细节。此外ozone还支持.bin .hex .axf（最后一个是amr-cc，也就是keil的工具链会生成的）等格式。
 
 ![image-20221113134605331](assets\image-20221113134605331.png)
 
@@ -415,16 +437,28 @@ VSCode `ctrl+,`进入设置，通过搜索找到cortex-debug插件的设置。
 ![](assets\ozone.png)
 
 1. 调试控制：和vscode类似
+
 2. 变量watch窗口，这里的变量不会实时更新，只有在暂停或遇到断点的时候才会更新。若希望实时查看，在这里右键选择需要动态查看的变量，选择Graph，他就会出现在**窗口8**的位置。
+
 3. 断点和运行追踪管理
+
 4. 调试控制台，输出调试器的信息。
+
 5. 终端，支持一些jlink script的命令。**单片机通过log模块发送的日志也会显示在这里。**
+
 6. 代码窗口，用于添加断点、添加查看等。鼠标悬停在变量上可以快速查看变量值和类型。希望打开整个项目文件，点击工具栏的view选项卡，单击Source Files就可以打开一个项目中所有源文件的窗口。右键点击函数或变量可以跳转到定义和声明、查看汇编代码等。按**F12**跳转到定义。
+
 7. **变量可视化窗口，这就是Ozone的大杀器。**在变量添加到查看（watch）之后，右键点击watch中的变量选择Graph，变量会被添加到可视化查看中。你可以选择“示波器”的显示时间步长以及颜色等信息，还可以更改采样率。
+
+   **注意，如果添加到动态调试窗口中没有反应，请在窗口8中修改一下”Sample Freq“为100Hz或200Hz即可**。
+
 8. 窗口8和7配合。在窗口8中会实时显示变量值，并且统计平均值和最大最小值，**而且还会将所有采样值保存到一个csv文件当中**，如果需要进一步分析可以导出这个数据文件。
+
 9. 内存视图。可以直接查看任意内存位置的值。
 
 > 再次注意，这些窗口是否开启以及位置都是可以自定义的。
+>
+> **另外，如果使用dap-link，调试过程中可能会反复提示没有license，请查阅[附录1](##附录1：为daplink添加license)获取解决方案。**
 
 #### 变量动态查看（可视化）
 
@@ -480,3 +514,23 @@ CPU选项卡可以查看CPU的寄存器。
 ### 保存调试项目
 
 退出时可以将调试项目保存在项目的根目录下，方便下次调试使用，不需要重新设置。
+
+
+
+
+
+## 附录1：为daplink添加license
+
+在网盘上下载`daplink_register_license.rar`，解压出来之后打开。**请关闭杀毒软件。**
+
+![image-20221116152032104](assets/image-20221116152032104.png)
+
+根据Ozone打开时提示的daplink的序列号，将其输入注册机，电机generate，就会生成5个license。
+
+windows菜单搜索J-link license manager，点击添加license，将注册机生成的五个license依次复制黏贴并添加到的license manager中即可。
+
+
+
+## 附录2：在VSCode中启用SEGGER RTT日志
+
+> 待补充。
