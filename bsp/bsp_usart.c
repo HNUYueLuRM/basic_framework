@@ -66,6 +66,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         if (huart == instance[i]->usart_handle)
         {
             instance[i]->module_callback();
+            memset(instance[i]->recv_buff,0,instance[i]->recv_buff_size);
             HAL_UARTEx_ReceiveToIdle_DMA(instance[i]->usart_handle, instance[i]->recv_buff, instance[i]->recv_buff_size);
             __HAL_DMA_DISABLE_IT(instance[i]->usart_handle->hdmarx, DMA_IT_HT);
             break;
