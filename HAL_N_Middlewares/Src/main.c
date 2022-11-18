@@ -38,6 +38,7 @@
 #include "can.h"
 #include "dji_motor.h"
 #include "motor_task.h"
+#include "referee.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -125,6 +126,8 @@ int main(void)
 		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, .close_loop_type = SPEED_LOOP | CURRENT_LOOP, .speed_feedback_source = MOTOR_FEED, .reverse_flag = MOTOR_DIRECTION_NORMAL},
 		.controller_param_init_config = {.current_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
 	dji_motor_instance *djimotor = DJIMotorInit(config);
+
+	referee_init(&huart6);
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */

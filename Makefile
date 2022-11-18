@@ -120,6 +120,7 @@ modules/motor/HT04.c \
 modules/motor/LK9025.c \
 modules/mode/step_motor.c \
 modules/motor/motor_task.c \
+modules/referee/crc.c \
 modules/referee/referee.c \
 modules/referee/referee_UI.c \
 modules/referee/referee_communication.c \

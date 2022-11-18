@@ -5,7 +5,7 @@
 #include "main.h"
 
 #define DEVICE_USART_CNT 3     // C板至多分配3个串口
-#define USART_RXBUFF_LIMIT 128 // if your protocol needs bigger buff, modify here
+#define USART_RXBUFF_LIMIT 512 // if your protocol needs bigger buff, modify here
 
 /* application callback,which resolves specific protocol,解析协议的回调函数 */
 typedef void (*usart_module_callback)();
