@@ -1,6 +1,7 @@
 #ifndef LK9025_H
 #define LK9025_H
 
+#include <stdint-gcc.h>
 #include "bsp_can.h"
 #include "controller.h"
 #include "motor_def.h"
