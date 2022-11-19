@@ -1,15 +1,13 @@
 #ifndef LK9025_H
 #define LK9025_H
 
-#include "struct_typedef.h"
 #include "bsp_can.h"
 #include "controller.h"
+#include "motor_def.h"
 
 #define LK_MOTOR_CNT 2
 #define I_MIN -2000
 #define I_MAX 2000
-
-#define LIMIT_MIN_MAX(x, min, max) (x) = (((x) <= (min)) ? (min) : (((x) >= (max)) ? (max) : (x)))
 
 typedef struct // 9025
 {

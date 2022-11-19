@@ -13,6 +13,9 @@
 #define MOTOR_DEF_H
 
 #include "controller.h"
+#include <stdint-gcc.h>
+
+#define LIMIT_MIN_MAX(x, min, max) (x) = (((x) <= (min)) ? (min) : (((x) >= (max)) ? (max) : (x)))
 
 /**
  * @brief 闭环类型,如果需要多个闭环,则使用或运算

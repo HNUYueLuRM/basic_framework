@@ -260,13 +260,13 @@ vpath %.s $(sort $(dir $(ASM_SOURCES)))
 # 以下是编译命令,命令之前被粉色高亮的@就是静默输出的指令.删除前面的@会将输出显示到命令行.
 # 如@$(CC) -c $(CFLAGS) ...... 去掉第一个@即可.
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
-	$(AS) -c $(CFLAGS) $< -o $@
+	@$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	@$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
@@ -276,13 +276,13 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 	
 $(BUILD_DIR):
-	mkdir $@	
+	@mkdir $@	
 
 #######################################
 # clean up
 #######################################
 clean:
-	-rm -r $(BUILD_DIR)
+	-rm -r -Force $(BUILD_DIR)
   
 #######################################
 # dependencies
