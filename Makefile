@@ -97,7 +97,6 @@ HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_
 HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_printf.c \
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT.c \
-\ \
 bsp/bsp_dwt.c \
 bsp/bsp_temperature.c \
 bsp/bsp_led.c \
@@ -106,7 +105,6 @@ bsp/bsp_buzzer.c \
 bsp/bsp_usart.c \
 bsp/bsp_log.c \
 bsp/bsp_init.c \
-\ \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
 modules/algorithm/QuaternionEKF.c \
@@ -129,7 +127,6 @@ modules/master_machine/seasky_protocol.c \
 modules/algorithm/crc8.c \
 modules/algorithm/crc16.c \
 modules/can_comm/can_comm.c \
-\ \
 application/gimbal.c \
 application/chassis.c \
 application/shoot.c \
@@ -144,7 +141,7 @@ HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_ASM_ARMv7M.s
 #######################################
 # binaries
 #######################################
-PREFIX = arm-none-eabi-
+PREFIX = ccache arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
@@ -189,7 +186,7 @@ C_DEFS =  \
 -DARM_MATH_ROUNDING
 
 # AS includes
-AS_INCLUDES = 
+AS_INCLUDES = -IHAL_N_Middlewares/Inc
 
 # C includes
 C_INCLUDES =  \
@@ -263,14 +260,14 @@ vpath %.s $(sort $(dir $(ASM_SOURCES)))
 # 以下是编译命令,命令之前被粉色高亮的@就是静默输出的指令.删除前面的@会将输出显示到命令行.
 # 如@$(CC) -c $(CFLAGS) ...... 去掉第一个@即可.
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	@$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
-	@$(AS) -c $(CFLAGS) $< -o $@
+	$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	@$(CC) $(OBJECTS) $(LDFLAGS) -o $@
-	@$(SZ) $@
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
@@ -279,7 +276,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 	
 $(BUILD_DIR):
-	@mkdir $@	
+	mkdir $@	
 
 #######################################
 # clean up

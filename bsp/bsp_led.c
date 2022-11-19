@@ -2,7 +2,7 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim5;
-static tmp_output_level = 0;
+static uint8_t tmp_output_level = 0;
 
 void LED_init()
 {

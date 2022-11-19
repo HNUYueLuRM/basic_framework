@@ -1,6 +1,11 @@
 #ifndef STRUCT_TYPEDEF_H
 #define STRUCT_TYPEDEF_H
 
+
+#ifndef __PACKED
+#define __packed __attribute__((pakced))
+#endif // !__PACKED
+
 typedef signed char int8_t;
 typedef signed short int int16_t;
 
