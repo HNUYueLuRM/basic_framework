@@ -22,10 +22,7 @@ typedef unsigned int uint32_t;
 
 typedef unsigned long long uint64_t;
 typedef unsigned char bool_t;
-typedef float fp32;
+typedef float float;
 typedef double fp64;
 
 #endif
-
-
-

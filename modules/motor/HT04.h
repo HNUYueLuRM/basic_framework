@@ -1,7 +1,7 @@
 #ifndef HT04_H
 #define HT04_H
 
-#include "struct_typedef.h"
+#include <stdint-gcc.h>
 #include "bsp_can.h"
 #include "controller.h"
 

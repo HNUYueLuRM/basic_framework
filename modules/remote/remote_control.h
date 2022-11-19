@@ -13,7 +13,7 @@
 #ifndef REMOTE_CONTROL_H
 #define REMOTE_CONTROL_H
 
-#include "struct_typedef.h"
+#include <stdint-gcc.h>
 #include "main.h"
 
 #define RC_CH_VALUE_MIN ((uint16_t)364)

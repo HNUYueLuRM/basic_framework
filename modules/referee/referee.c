@@ -13,7 +13,6 @@ usart_instance referee_usart_instance;
 
 /**************裁判系统数据******************/
 referee_info_t referee_info;
-bool_t Judge_Data_TF = FALSE;	  //裁判数据是否可用,辅助函数调用
 uint8_t Judge_Self_ID;		  //当前机器人的ID
 uint16_t Judge_SelfClient_ID; //发送者机器人对应的客户端ID
 
@@ -21,7 +20,7 @@ uint16_t Judge_SelfClient_ID; //发送者机器人对应的客户端ID
 
 static void ReceiveCallback()
 {
-	Judge_Data_TF=Judge_Read_Data(referee_usart_instance.recv_buff);
+	Judge_Read_Data(referee_usart_instance.recv_buff);
 }
 
 void referee_init(UART_HandleTypeDef *referee_usart_handle)
@@ -39,9 +38,8 @@ void referee_init(UART_HandleTypeDef *referee_usart_handle)
  * @retval 是否对正误判断做处理
  * @attention  在此判断帧头和CRC校验,无误再写入数据，不重复判断帧头
  */
-bool_t Judge_Read_Data(uint8_t *ReadFromUsart)
+void Judge_Read_Data(uint8_t *ReadFromUsart)
 {
-	bool_t retval_tf = FALSE; //数据正确与否标志,每次调用读取裁判系统数据函数都先默认为错误
 	uint16_t judge_length;	//统计一帧数据长度
 //	referee_info.CmdID = 0; //数据命令码解析
 	//空数据包，则不作任何处理
@@ -64,7 +62,6 @@ bool_t Judge_Read_Data(uint8_t *ReadFromUsart)
 			//帧尾CRC16校验
 			if (Verify_CRC16_Check_Sum(ReadFromUsart, judge_length) == TRUE)
 			{
-				retval_tf = TRUE; //都校验过了则说明数据可用
 				// 2个8位拼成16位int
 				referee_info.CmdID = (ReadFromUsart[6] << 8 | ReadFromUsart[5]);
 				//解析数据命令码,将数据拷贝到相应结构体中(注意拷贝数据的长度)
@@ -129,21 +126,8 @@ bool_t Judge_Read_Data(uint8_t *ReadFromUsart)
             
 		}
 	}
-			
-	return retval_tf; //返回此次接收到的数据是否时有效的
 }
 
-
-/**
- * @brief  数据是否可用
- * @param  void
- * @retval  TRUE可用   FALSE不可用
- * @attention  在裁判读取函数中实时改变返回值
- */
-bool_t JUDGE_sGetDataState(void)
-{
-	return Judge_Data_TF;
-}
 /**
  * @brief  读取瞬时功率
  * @param  void

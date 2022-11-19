@@ -342,9 +342,7 @@ typedef struct
 extern referee_info_t referee_info;
 
 void referee_init(UART_HandleTypeDef *referee_usart_handle);
-bool_t Judge_Read_Data(uint8_t *ReadFromUsart);
-
-bool_t JUDGE_sGetDataState(void);
+void Judge_Read_Data(uint8_t *ReadFromUsart);
 float JUDGE_fGetChassisPower(void);
 
 #endif // !REFEREE_H

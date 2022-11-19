@@ -1,6 +1,8 @@
 {
     "files.associations": {
-        "memory.h": "c"
+        "memory.h": "c",
+        "stdint-gcc.h": "c",
+        "led_task.h": "c",
+        "stdint.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
 }
