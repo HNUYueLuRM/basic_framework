@@ -13,6 +13,7 @@ typedef void (*usart_module_callback)();
 /* usart_instance struct,each app would have one instance */
 typedef struct
 {
+    // 更新:弃用malloc方案,使用了固定大小的数组方便debug时查看
     uint8_t recv_buff[USART_RXBUFF_LIMIT]; // 预先定义的最大buff大小,如果太小请修改USART_RXBUFF_LIMIT
     uint8_t recv_buff_size;                // 模块接收一包数据的大小
     UART_HandleTypeDef *usart_handle;      // 实例对应的usart_handle

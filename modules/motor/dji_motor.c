@@ -209,6 +209,7 @@ void DJIMotorControl()
             motor_controller = &motor->motor_controller;
             motor_measure = &motor->motor_measure;
 
+            // pid_ref会顺次通过被启用的环充当数据的载体
             if (motor_setting->close_loop_type & ANGLE_LOOP) // 计算位置环
             {
                 if (motor_setting->angle_feedback_source == OTHER_FEED)
@@ -233,7 +234,7 @@ void DJIMotorControl()
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, motor_controller->pid_ref);
             }
 
-            set = (int16_t)motor_controller->pid_ref;
+            set = (int16_t)motor_controller->pid_ref; // 获取最终输出
             if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE) // 设置反转
                 set *= -1;
 

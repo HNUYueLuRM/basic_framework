@@ -3,7 +3,8 @@
         "memory.h": "c",
         "stdint-gcc.h": "c",
         "led_task.h": "c",
-        "stdinf.h": "c"
+        "stdinf.h": "c",
+        "usart.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 }

@@ -127,7 +127,7 @@ int main(void)
 		.controller_param_init_config = {.current_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
 	dji_motor_instance *djimotor = DJIMotorInit(config);
 
-	referee_init(&huart6);
+	RefereeInit(&huart6);
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
