@@ -1,9 +1,9 @@
 /**
  * @file referee.h
- * @author your name (you@domain.com)
+ * @author kidneygood (you@domain.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-04
+ * @date 2022-11-18
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -14,10 +14,6 @@
 
 #include"bsp_usart.h"
 #include"usart.h"
-// #include "struct_typedef.h"
-// #include "main.h"
-
-
 
 #define FALSE 0
 #define TRUE 1
@@ -90,7 +86,7 @@ typedef enum
 } JudgeDataLength;
 
 /* 自定义帧头 */
-typedef __packed struct
+typedef  struct
 {
 	uint8_t SOF;
 	uint16_t DataLength;
@@ -100,7 +96,7 @@ typedef __packed struct
 } xFrameHeader;
 
 /* ID: 0x0001  Byte:  3    比赛状态数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t game_type : 4;
 	uint8_t game_progress : 4;
@@ -108,18 +104,13 @@ typedef __packed struct
 } ext_game_state_t;
 
 /* ID: 0x0002  Byte:  1    比赛结果数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t winner;
 } ext_game_result_t;
 
-/* ID: 0x0003  Byte:  2    比赛机器人血量数据 */
-// typedef __packed struct
-// {
-// 	uint16_t robot_legion;
-// } ext_game_robot_survivors_t;
-
-typedef __packed struct
+/* ID: 0x0003  Byte:  32    比赛机器人血量数据 */
+typedef struct
 {
 	uint16_t red_1_robot_HP;
 	uint16_t red_2_robot_HP;
@@ -138,15 +129,15 @@ typedef __packed struct
 	uint16_t blue_outpost_HP;
 	uint16_t blue_base_HP;
 } ext_game_robot_HP_t;
-///////////////////////////////////////////////////////////
+
 /* ID: 0x0101  Byte:  4    场地事件数据 */
-typedef __packed struct
+typedef struct
 {
 	uint32_t event_type;
 } ext_event_data_t;
 
 /* ID: 0x0102  Byte:  3    场地补给站动作标识数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t supply_projectile_id;
 	uint8_t supply_robot_id;
@@ -155,7 +146,7 @@ typedef __packed struct
 } ext_supply_projectile_action_t;
 
 /* ID: 0X0201  Byte: 27    机器人状态数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t robot_id;
 	uint8_t robot_level;
@@ -177,7 +168,7 @@ typedef __packed struct
 } ext_game_robot_state_t;
 
 /* ID: 0X0202  Byte: 14    实时功率热量数据 */
-typedef __packed struct
+typedef struct
 {
 	uint16_t chassis_volt;
 	uint16_t chassis_current;
@@ -188,7 +179,7 @@ typedef __packed struct
 } ext_power_heat_data_t;
 
 /* ID: 0x0203  Byte: 16    机器人位置数据 */
-typedef __packed struct
+typedef struct
 {
 	float x;
 	float y;
@@ -197,26 +188,26 @@ typedef __packed struct
 } ext_game_robot_pos_t;
 
 /* ID: 0x0204  Byte:  1    机器人增益数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t power_rune_buff;
 } ext_buff_musk_t;
 
 /* ID: 0x0205  Byte:  1    空中机器人能量状态数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t attack_time;
 } aerial_robot_energy_t;
 
 /* ID: 0x0206  Byte:  1    伤害状态数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t armor_id : 4;
 	uint8_t hurt_type : 4;
 } ext_robot_hurt_t;
 
 /* ID: 0x0207  Byte:  7    实时射击数据 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t bullet_type;
 	uint8_t shooter_id;
@@ -256,7 +247,7 @@ typedef __packed struct
 	0x0116，空中操作手客户端(蓝)。
 */
 /* 交互数据接收信息：0x0301  */
-typedef __packed struct
+typedef struct
 {
 	uint16_t data_cmd_id;
 	uint16_t send_ID;
@@ -277,7 +268,7 @@ typedef __packed struct
 	18 			1 		自定义 8 位数据 4
 
 */
-typedef __packed struct
+typedef struct
 {
 	float data1;
 	float data2;
@@ -300,14 +291,14 @@ typedef __packed struct
 	6 			n 		数据段 			n 需要小于 113
 
 */
-typedef __packed struct
+typedef struct
 {
 	uint8_t data[10]; //数据段,n需要小于113
 } robot_interactive_data_t;
 
 //发送给客户端的信息
 //帧头  命令码   数据段头结构  数据段   帧尾
-typedef __packed struct
+typedef struct
 {
 	xFrameHeader txFrameHeader;							   //帧头
 	uint16_t CmdID;										   //命令码
@@ -317,7 +308,7 @@ typedef __packed struct
 } ext_SendClientData_t;
 
 //机器人交互信息
-typedef __packed struct
+typedef struct
 {
 	xFrameHeader txFrameHeader;							   //帧头
 	uint16_t CmdID;										   //命令码

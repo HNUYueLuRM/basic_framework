@@ -10,6 +10,7 @@
  */
 #include "bsp_usart.h"
 #include "stdlib.h"
+#include "memory.h"
 
 /* usart service instance, modules' info would be recoreded here using USARTRegister() */
 /* usart服务实例,所有注册了usart的模块信息会被保存在这里 */
@@ -67,6 +68,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         {
             instance[i]->module_callback();
             memset(instance[i]->recv_buff,0,instance[i]->recv_buff_size);
+            
             HAL_UARTEx_ReceiveToIdle_DMA(instance[i]->usart_handle, instance[i]->recv_buff, instance[i]->recv_buff_size);
             __HAL_DMA_DISABLE_IT(instance[i]->usart_handle->hdmarx, DMA_IT_HT);
             break;

@@ -119,7 +119,7 @@ int main(void)
 	RC_init(&huart3);
 	DWT_Init(168);
 	Motor_Init_Config_s config = {
-		.motor_type = M3508,
+		.motor_type = M2006,
 		.can_init_config = {
 			.can_handle = &hcan1,
 			.tx_id = 1},

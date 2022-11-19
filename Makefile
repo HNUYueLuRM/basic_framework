@@ -97,7 +97,6 @@ HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_
 HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_printf.c \
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT.c \
-\ \
 bsp/bsp_dwt.c \
 bsp/bsp_temperature.c \
 bsp/bsp_led.c \
@@ -106,7 +105,6 @@ bsp/bsp_buzzer.c \
 bsp/bsp_usart.c \
 bsp/bsp_log.c \
 bsp/bsp_init.c \
-\ \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
 modules/algorithm/QuaternionEKF.c \
@@ -130,7 +128,6 @@ modules/master_machine/seasky_protocol.c \
 modules/algorithm/crc8.c \
 modules/algorithm/crc16.c \
 modules/can_comm/can_comm.c \
-\ \
 application/gimbal.c \
 application/chassis.c \
 application/shoot.c \
@@ -190,7 +187,7 @@ C_DEFS =  \
 -DARM_MATH_ROUNDING
 
 # AS includes
-AS_INCLUDES = 
+AS_INCLUDES = -IHAL_N_Middlewares/Inc 
 
 # C includes
 C_INCLUDES =  \
