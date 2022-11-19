@@ -4,5 +4,5 @@
         "stdint-gcc.h": "c",
         "led_task.h": "c",
         "stdinf.h": "c"
-    },,
+    },
 }
