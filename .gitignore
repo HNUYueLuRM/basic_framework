@@ -49,6 +49,6 @@ Mkfile.old
 dkms.conf
 build
 ./idea
-.cortex-debug.peripherals.state.json
-.cortex-debug.registers.state.json
-settings.json
+.vscode/.cortex-debug.peripherals.state.json
+.vscode/.cortex-debug.registers.state.json
+.vscode/settings.json
