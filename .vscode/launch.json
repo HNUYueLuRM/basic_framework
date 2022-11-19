@@ -1,8 +1,8 @@
 {
     "version": "0.2.0",
     "configurations": [
-// 使用dap-link(如无线调试器时的参考配置)
-        { 
+        // 使用dap-link(如无线调试器时的参考配置)
+        {
             "name": "Debug-dap",
             "cwd": "${workspaceRoot}",
             "executable": "${workspaceRoot}\\build\\basic_framework.elf", // 要下载到调试器的文件
@@ -13,14 +13,14 @@
             // 该项目的根目录已经提供了C型开发板使用的外设svd文件
             "servertype": "openocd", //使用的GDB Server
             "configFiles": [
-                ".\\openocd.cfg", // 配置文件已经在根目录提供,若要修改以此类推
+                ".\\openocd.cfg", // 配置文件已经在根目录提供,若要修改以此类推,openocd的路径下的share/scripts中有各种写好的配置文件
             ],
             // path to your gcc-arm-none-eabi/arm-none-eabi-gdb.exe,如果在cortex-debug的设置中写入了全局路径,这里不需要再写
             // "gdbPath": "D:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gdb.exe",
             //"preLaunchTask": "build task",//先运行Build任务,取消注释即可使用
         },
-// 使用j-link时的参考配置
-        { 
+        // 使用j-link时的参考配置
+        {
             "name": "Debug-jlink",
             "cwd": "${workspaceFolder}",
             "executable": "${workspaceRoot}\\build\\basic_framework.elf",

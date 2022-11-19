@@ -151,7 +151,7 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 ## 环境配置
 
-- ***所有需要编辑的配置文件都已经在basic_framework的仓库中提供，如果不会写，照猫画虎。***
+> ***所有需要编辑的配置文件都已经在basic_framework的仓库中提供，如果不会写，照猫画虎。***
 
 - 安装STM32CubeMX，并安装F4支持包和DSP库支持包
 
@@ -173,7 +173,13 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
   ![image-20221112172254809](assets\image-20221112172254809.png)
 
-- 安装MinGW，等待界面如下：
+  
+
+  > MinGW、Arm GNU toolchain和OpenOCD也可以通过**MSYS2**使用pacman包管理器（和apt/yum类似）直接安装，这种方法一步到位，**==这是更推荐使用的方式==**，请参看[附录5](##附录5：利用MSYS2安装依赖环境)。
+  >
+  > **当然，你也可以直接按照下面的方法安装这两个工具。**不过，强烈推荐使用附录5中的方法。下面的方法将在发布完整版更新的时候被删除。
+
+- 安装MinGW，等待界面如下：（will be deprecated soon，请注意这种方法将会在主分支发布正式版的时候删除）
 
   ![image-20221112172051589](assets\image-20221112172051589.png)
 
@@ -191,7 +197,7 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
   打开命令行（win+R，cmd，回车），输入`gcc -v`，如果没有报错，并输出了一堆路径和参数说明安装成功。
 
-- 配置gcc-arm-none-eabi环境变量，**把压缩包解压以后放在某个地方**，然后同上，将工具链的bin添加到PATH：
+- 配置gcc-arm-none-eabi环境变量，**把压缩包解压以后放在某个地方**，然后同上，将工具链的bin添加到PATH：（will be deprecated soon，请注意这种方法将会在主分支发布正式版的时候删除）
 
   ![image-20221112172858593](assets\image-20221112172858593.png)
 
@@ -203,9 +209,13 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 > 添加到环境变量PATH的意思是，当一些程序需要某些依赖或者要打开某些程序时，系统会自动前往PATH下寻找对应项。**一般需要重启使环境变量生效。**
 
-- **将OpenOCD解压到一个文件夹里**，稍后需要在VSCode的插件中设置这个路径。
+- **将OpenOCD解压到一个文件夹里**，稍后需要在VSCode的插件中设置这个路径。（will be deprecated soon，请注意这种方法将会在主分支发布正式版的时候删除）
 
-- CubeMX生成代码的时候工具链选择makefile
+
+
+- **CubeMX生成代码**：
+
+  在project manager标签页工具链选择makefile
 
   ![image-20221112173534670](assets\image-20221112173534670.png)
 
@@ -214,9 +224,9 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
   ![image-20221112174211802](assets\image-20221112174211802.png)
 
   Makefile就是我们要使用的构建规则文件。
-  
+
   > **如果你使用basic_framework，不需要重新生成代码。**
-  
+
   
 
 ## VSCode编译和调试配置
@@ -341,7 +351,7 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 
 >  在VSCode中调试不能像Keil一样查看变量动态变化，但是支持以外的所有操作，如查看外设和反汇编代码，设置断点触发方式等。
 >
->  用于调试的配置参考这篇博客：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)，这里包含了一些背景知识的介绍。你也可以直接查看下面的教程。
+>  **用于调试的配置参考这篇博客**：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)，这里包含了一些背景知识的介绍。你也可以直接查看下面的教程。
 
 你需要配置**arm gnu工具链的路径**（工具链包括编译器、链接器和调试器等），**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），**JlinkGDBServer**的路径，以及该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
 
@@ -353,13 +363,15 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
 **注意**，windows下路径需要使用两个反斜杠`\\`代表下一级文件夹。
 
+> 如果你使用附录5中的方法安装，前两个的路径都在Msys2/mingw64/bin下。
+
 ***其他配置需要的文件已经全部在basic_framework中提供***，包括`openocd.cfg  STM32F407.svd  .vscode/launch.json`。
 
 ![image-20221115215531879](assets/image-20221115215531879.png)
 
 <center>主要需要配置这三个路径，第四个gdbPath可以选配</center>
 
-如果教程中的启动json文件看不懂，请看仓库里的`.vscode`下的`launch.json`，照葫芦画瓢。
+如果教程中的启动json文件看不懂，请看仓库里的`.vscode`下的`launch.json`，照葫芦画瓢。注意把我写的路径替换掉或注释掉。`launch.json`已经添加了详细的注释。
 
 根目录下已经提供了C板所需的.svd和使用无线调试器时所用的openocd.cfg配置文件。
 
@@ -714,7 +726,9 @@ C_DEFS =  \  # C语言的宏定义
 -DARM_MATH_ROUNDING       # 对数学库的输出结果进行取整防止溢出?
 
 # AS includes
-AS_INCLUDES = # 汇编包含目录.汇编语言也和C一样可以多个文件联合编译,在没有C语言的时候大家都是利用这种方式开发的.在一些运算资源极其受限的情况下也会直接编写汇编.
+AS_INCLUDES = -IHAL_N_Middlewares/Inc
+# 汇编包含目录.汇编语言也和C一样可以多个文件联合编译,在没有C语言的时候大家都是利用这种方式开发的.在一些运算资源极其受限的情况下也会直接编写汇编.
+# CubeMX生成的HAL包含目录Inc下有一些头文件里面就包含了一些汇编要用到的头文件
 
 # C includes, C语言的包含目录,将所有参与编译的头文件目录放在这里,注意是目录不需要精确到每一个文件.
 # 不想一行写完记得行尾加\,最后一行不要加
@@ -825,3 +839,33 @@ clean:
 ## 附录4：VSCode直接烧录代码
 
 有时候你对自己的代码特别自信，不想debug想直接下载代码，那么直接通过J-Flash即可（随jlink一起安装）。要是觉得这样有点麻烦还要再开一个软件，J-Flash支持通过命令行执行。你可以在vscode中编写一个`download_task.json`：
+
+
+
+
+
+## 附录5：利用MSYS2安装依赖环境
+
+之所以要使用Linux进行C++开发，是因为在开发环境中配置依赖包、依赖应用和库非常的方便。Debian系有apt，Fedora和Redhat系有yum，他们都可以方便地帮助我们下载开发软件必须的一些文件和工具。在windows的宇宙最强IDEVisual Studio中配置头文件和动态链接库可以称得上是最折磨的事。好在，现在Windows下也有可以使用的包管理工具了：[MSYS2](https://www.msys2.org/)。
+
+安装包已经上传到了网盘的`EC/VSCode+Ozone环境配置/msys2-x86_64-20221028.exe`下。安装之后，打开MSYS2 MSYS软件，他是一个类shell的界面：
+
+![image-20221119222946103](assets/image-20221119222946103.png)
+
+输入以下命令然后一路回车即可：
+
+```shell
+pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-arm-none-eabi-toolchain mingw-w64-x86_64-ccache  mingw-w64-x86_64-openocd
+# 需要注意ctrl+V不是黏贴快捷键,而是Ins+Shift.或者右键点击空白处选择黏贴也可以.
+```
+
+![image-20221119223148604](assets/image-20221119223148604.png)
+
+<center>比如上面这样，会让你选择，直接敲回车即可，等待安装</center>
+
+刚进来第一次安装可能还会更新一下数据库，也是全部更新就行。
+
+安装好之后，把Msys2下的mingw64的bin加入PATH环境变量：`D:\Msys2\mingw64\bin`（这是我的路径，注意要选自己的）。
+
+注意，如果选用此安装方式，**OpenOCD的可执行文件也会被放在上面这个路径下**，记得稍后在VSCode中配置的时候找到这里。相应的scripts放在`D:\Msys2\mingw64\share\openocd`下。
+
