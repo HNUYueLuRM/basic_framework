@@ -142,7 +142,8 @@ HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_ASM_ARMv7M.s
 #######################################
 # binaries
 #######################################
-PREFIX = ccache arm-none-eabi-
+PREFIX = arm-none-eabi-
+# PREFIX = ccache arm-none-eabi- 可以通过安装ccache来缓存makefile内容加速编译
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH

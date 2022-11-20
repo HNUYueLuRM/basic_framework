@@ -296,7 +296,9 @@ arm-none-eabi-objcopy -O ihex build/basic_framework.elf build/basic_framework.he
 arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framework.bin
 ```
 
-由于使用了多线程编译，比KEIL的蜗牛单线程要快了不少。以上内容代表了生成的可执行文件的大小以及格式和内容。.elf文件就是我们需要传递给调试器的东西，在[使用VSCode调试](###简单调试)部分会介绍。
+由于使用了多线程编译，比KEIL的蜗牛单线程要快了不少。以上内容代表了生成的可执行文件的大小以及格式和内容。.elf文件就是我们需要传递给调试器的东西，在[使用VSCode调试](###简单调试)部分会介绍。典型的编译时间大致如下：
+1. 从零开始重新编译：~10s
+2. 修改文件后编译：~3s
 
 当然了，你可能觉得每次编译都要在命令行里输入参数，太麻烦了。我们可以编写一个`task.json`，这是VSCode的一个任务配置，内容大致如下：
 
@@ -308,7 +310,7 @@ arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framewo
         {
             "label": "build task",         // 任务标签
             "type": "shell",               // 任务类型,因为要调用mingw32-make,是在终端(CMD)里运行的,所以是shell任务
-            "command": "mingw32-make -j24",// 任务命令
+            "command": "mingw32-make -j24",// 要执行的任务命令
             "problemMatcher": [],          
             "group": {
                 "kind": "build",
@@ -319,7 +321,7 @@ arm-none-eabi-objcopy -O binary -S build/basic_framework.elf build/basic_framewo
 }
 ```
 
-这样，你就可以点击VSCode工具栏上方的Terminal->Run task选择你刚刚配置的任务开始编译了。**更方便的方法是使用快捷键：`ctrl+shift+B`。**
+这样，你就可以点击VSCode工具栏上方的Terminal->Run task选择你刚刚配置的任务开始编译了。**更方便的方法是使用快捷键：`ctrl+shift+B`。** 之后要配置下载任务和调试任务等，也可以利用这种方法，新建一个xxx_task，实现一键下载、一键调试等。
 
 ![image-20221112192133103](assets\image-20221112192133103.png)
 
@@ -872,6 +874,8 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-arm-none-eabi-toolchain mi
 安装好之后，把Msys2下的mingw64的bin加入PATH环境变量：`D:\Msys2\mingw64\bin`（这是我的路径，注意要选自己的）。
 
 注意，如果选用此安装方式，**OpenOCD的可执行文件也会被放在上面这个路径下**，记得稍后在VSCode中配置的时候找到这里。相应的scripts放在`D:\Msys2\mingw64\share\openocd`下。
+
+通过这种方式安装之后，还可以选用ccache加速编译。ccache会根据之前的编译输出建立缓存，使得之后编译时可以直接读取缓存。要开启这个功能，直接在Makefile中搜索PREFIX，将下面一行的内容替代原有内容（即增加ccache在arm-none-eabi-之前）。
 
 
 
