@@ -1,7 +1,7 @@
 #include "dji_motor.h"
 
 #define PI2 3.141592f
-#define ECD_ANGLE_COEF 3.835e-4 // ecd/8192*pi
+#define ECD_ANGLE_COEF 0.043945f // 360/8192
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
 
@@ -139,7 +139,7 @@ static void DecodeDJIMotor(can_instance *_instance)
                 measure->total_round--;
             else if (measure->ecd - measure->last_ecd < -4096)
                 measure->total_round++;
-            measure->total_angle = measure->total_round * PI2 + measure->ecd * ECD_ANGLE_COEF; // @todo simplify the calculation
+            measure->total_angle = measure->total_round * 360 + measure->ecd * ECD_ANGLE_COEF; // @todo simplify the calculation
             break;
         }
     }
