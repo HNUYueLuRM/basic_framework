@@ -353,6 +353,10 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 >
 >  **用于调试的配置参考这篇博客**：[Cortex-debug 调试器使用介绍](https://blog.csdn.net/qq_40833810/article/details/106713462)，这里包含了一些背景知识的介绍。你也可以直接查看下面的教程。
 
+> ❗❗❗***==注意==***❗❗❗
+>
+> **如果你的用户名是中文，请先按照[附录6](##附录6：Windows修改用户名为英文)将自己的用户名改成英文。**
+
 你需要配置**arm gnu工具链的路径**（工具链包括编译器、链接器和调试器等），**OpenOCD的路径**（使得GDB调试器可以找到OpenOCD并调用它，从而连接硬件调试器如j-link等），**JlinkGDBServer**的路径，以及该工作区（文件夹）的**launch.json文件**（用于启动vscode的调试任务）。
 
 VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
@@ -868,4 +872,42 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-arm-none-eabi-toolchain mi
 安装好之后，把Msys2下的mingw64的bin加入PATH环境变量：`D:\Msys2\mingw64\bin`（这是我的路径，注意要选自己的）。
 
 注意，如果选用此安装方式，**OpenOCD的可执行文件也会被放在上面这个路径下**，记得稍后在VSCode中配置的时候找到这里。相应的scripts放在`D:\Msys2\mingw64\share\openocd`下。
+
+
+
+## 附录6：Windows修改用户名为英文
+
+1. 右键【任务栏win徽标】->【计算机管理】->【本地用户和组】->【用户】->右键【中文用户名】->【重命名】
+
+   > 如果是win10，则是：右键【计算机（一般放在桌面上，如果没有的话桌面右键选择个性化，然后打开桌面图标）】->【管理】->【本地用户和组】->【用户】->右键【中文用户名】->【重命名】
+
+   **注意这个英文用户名后续还要使用**
+
+2. **以管理员权限**启动命令提示符，输入
+
+   ```shell
+   net user administrator /active:yes
+   ```
+
+   如果杀毒软件提示恶意修改，请放行
+
+3. 重启电脑，登录的时候选择**Administrator**账户，需要进行一些简单的设置，直接一路确定即可。
+
+4. 进入C盘的用户文件夹下，把你原来的用户文件夹名称改成刚刚设定的英文用户名。
+
+5. 【Windows+R】->【运行】->输入 regedit ->回车
+
+   找到`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Profilelist`，把这个标签页下每个选项都点开看，其中有一个页面对应的`ProfileImagePath`值是以你用户名命名的文件夹路径，比如我的路径是`C:\User\小曾`。
+
+   双击，把这个路径改成你新设的用户名，比如我的`C:\User\Neo`
+
+6. 重启电脑，进入修改好的用户，
+
+7. **以管理员权限**启动命令提示符，输入
+
+   ```shell
+   net user administrator /active:no
+   ```
+
+   如果杀毒软件提示恶意修改，请放行。这会关闭Administator账户。
 
