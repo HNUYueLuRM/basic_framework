@@ -95,7 +95,7 @@ static void MotorSenderGrouping(can_instance_config_s *config)
             motor_grouping = config->can_handle == &hcan1 ? 2 : 5;
         }
 
-        config->rx_id = 0x204 + motor_id;
+        config->rx_id = 0x204 + motor_id + 1;
         sender_enable_flag[motor_grouping] = 1;
         dji_motor_info[idx]->message_num = motor_send_num;
         dji_motor_info[idx]->sender_group = motor_grouping;
@@ -234,7 +234,7 @@ void DJIMotorControl()
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, motor_controller->pid_ref);
             }
 
-            set = (int16_t)motor_controller->pid_ref; // 获取最终输出
+            set = (int16_t)motor_controller->pid_ref;                   // 获取最终输出
             if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE) // 设置反转
                 set *= -1;
 
