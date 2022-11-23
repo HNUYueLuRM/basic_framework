@@ -118,10 +118,10 @@ int main(void){
 	RC_init(&huart3);
 	DWT_Init(168);
 	Motor_Init_Config_s config = {
-		.motor_type = M3508,
+		.motor_type = GM6020,
 		.can_init_config = {
 			.can_handle = &hcan1,
-			.tx_id = 2},
+			.tx_id = 6},
 		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, .close_loop_type = SPEED_LOOP | ANGLE_LOOP, .speed_feedback_source = MOTOR_FEED, .reverse_flag = MOTOR_DIRECTION_NORMAL},
 		.controller_param_init_config = {.angle_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
 	dji_motor_instance *djimotor = DJIMotorInit(config);
