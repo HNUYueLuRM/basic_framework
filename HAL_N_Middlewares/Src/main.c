@@ -77,8 +77,7 @@ void MX_FREERTOS_Init(void);
  * @brief  The application entry point.
  * @retval int
  */
-int main(void)
-{
+int main(void){
 	/* USER CODE BEGIN 1 */
 
 	/* USER CODE END 1 */
@@ -119,12 +118,12 @@ int main(void)
 	RC_init(&huart3);
 	DWT_Init(168);
 	Motor_Init_Config_s config = {
-		.motor_type = M2006,
+		.motor_type = M3508,
 		.can_init_config = {
 			.can_handle = &hcan1,
-			.tx_id = 1},
-		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, .close_loop_type = SPEED_LOOP | CURRENT_LOOP, .speed_feedback_source = MOTOR_FEED, .reverse_flag = MOTOR_DIRECTION_NORMAL},
-		.controller_param_init_config = {.current_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
+			.tx_id = 2},
+		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, .close_loop_type = SPEED_LOOP | ANGLE_LOOP, .speed_feedback_source = MOTOR_FEED, .reverse_flag = MOTOR_DIRECTION_NORMAL},
+		.controller_param_init_config = {.angle_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
 	dji_motor_instance *djimotor = DJIMotorInit(config);
 
 	RefereeInit(&huart6);
@@ -143,7 +142,7 @@ int main(void)
 	{
 		/* USER CODE END WHILE */
 
-		DJIMotorSetRef(djimotor, get_remote_control_point()->rc.ch[0]);
+		DJIMotorSetRef(djimotor, 10);
 		MotorControlTask();
 		HAL_Delay(100);
 		/* USER CODE BEGIN 3 */

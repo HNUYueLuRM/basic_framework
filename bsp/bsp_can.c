@@ -29,13 +29,30 @@ static void CANAddFilter(can_instance *_instance)
 
     can_filter_conf.FilterMode = CAN_FILTERMODE_IDLIST;
     can_filter_conf.FilterScale = CAN_FILTERSCALE_16BIT;
-    can_filter_conf.FilterFIFOAssignment = (_instance->rx_id & 1) ? CAN_RX_FIFO0 : CAN_RX_FIFO1;
+    can_filter_conf.FilterFIFOAssignment = CAN_RX_FIFO1;
     can_filter_conf.SlaveStartFilterBank = 14;
     can_filter_conf.FilterIdLow = _instance->rx_id << 5;
+    can_filter_conf.FilterIdHigh = _instance->rx_id << 5;
+    can_filter_conf.FilterMaskIdLow = _instance->rx_id << 5;
+    can_filter_conf.FilterMaskIdHigh = _instance->rx_id << 5;
     can_filter_conf.FilterBank = _instance->can_handle == &hcan1 ? (can1_filter_idx++) : (can2_filter_idx++);
     can_filter_conf.FilterActivation = CAN_FILTER_ENABLE;
 
     HAL_CAN_ConfigFilter(_instance->can_handle, &can_filter_conf);
+
+    // CAN_FilterTypeDef can_filter_st;
+    // can_filter_st.FilterActivation = ENABLE;
+    // can_filter_st.FilterMode = CAN_FILTERMODE_IDMASK;
+    // can_filter_st.FilterScale = CAN_FILTERSCALE_32BIT;
+    // can_filter_st.FilterIdHigh = 0x0000;
+    // can_filter_st.FilterIdLow = 0x0000;
+    // can_filter_st.FilterMaskIdHigh = 0x0000;
+    // can_filter_st.FilterMaskIdLow = 0x0000;
+    // can_filter_st.FilterBank = 0;
+    // can_filter_st.FilterFIFOAssignment = CAN_RX_FIFO0;
+    // HAL_CAN_ConfigFilter(&hcan1, &can_filter_st);
+    // HAL_CAN_Start(&hcan1);
+    // HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
 /**

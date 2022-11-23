@@ -26,13 +26,14 @@ const float xb[3] = {1, 0, 0};
 const float yb[3] = {0, 1, 0};
 const float zb[3] = {0, 0, 1};
 
+// 用于获取两次采样之间的时间间隔
 uint32_t INS_DWT_Count = 0;
 static float dt = 0, t = 0;
-uint8_t ins_debug_mode = 0;
-float RefTemp = 40;
+float RefTemp = 40; // 恒温设定温度
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
 
+/* 调用此函数获得姿态数据指针 */
 attitude_t *GetINSptr()
 {
     return (attitude_t *)&INS.Roll;
@@ -45,13 +46,12 @@ attitude_t *GetINSptr()
 static void IMU_Temperature_Ctrl(void)
 {
     PID_Calculate(&TempCtrl, BMI088.Temperature, RefTemp);
-
     imu_pwm_set(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
 void INS_Init(void)
 {
-    // while (BMI088_init(&hspi1, 1) != BMI088_NO_ERROR);
+    while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR);
     IMU_Param.scale[X] = 1;
     IMU_Param.scale[Y] = 1;
     IMU_Param.scale[Z] = 1;
@@ -75,6 +75,7 @@ void INS_Init(void)
     INS.AccelLPF = 0.0085;
 }
 
+/* 注意以1kHz的频率运行此任务 */
 void INS_Task(void)
 {
     static uint32_t count = 0;
@@ -134,12 +135,10 @@ void INS_Task(void)
         IMU_Temperature_Ctrl();
     }
 
-    if ((count % 1000) == 0)
+    if ((count++ % 1000) == 0)
     {
-        // 200hz
+        // 1Hz 可以加入monitor函数,检查IMU是否正常运行/离线
     }
-
-    count++;
 }
 
 /**

@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ins_task.h"
+#include "motor_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +52,9 @@ osThreadId defaultTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+void StartINSTASK(void const * argument);
+
+void StartMOTORTASK(void const * argument);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -106,6 +110,12 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
+  osThreadDef(instask, StartINSTASK, osPriorityNormal, 0, 1024);
+  defaultTaskHandle = osThreadCreate(osThread(instask), NULL);
+
+  osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 256);
+  defaultTaskHandle = osThreadCreate(osThread(motortask), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -134,5 +144,24 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void StartINSTASK(void const * argument)
+{
+  while (1)
+  {
+    INS_Task();
+    osDelay(1);
+  }
+  
+}
+
+void StartMOTORTASK(void const * argument)
+{
+  while (1)
+  {
+    MotorControlTask();
+    osDelay(1);
+  }
+}
+
 
 /* USER CODE END Application */

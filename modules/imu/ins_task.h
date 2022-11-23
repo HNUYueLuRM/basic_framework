@@ -2,12 +2,14 @@
  ******************************************************************************
  * @file    ins_task.h
  * @author  Wang Hongxi
+ * @author  annotation and modification by NeoZeng
  * @version V2.0.0
  * @date    2022/2/23
  * @brief
  ******************************************************************************
- * @attention
- *
+ * @attention INS任务的初始化不要放入实时系统!应该由application拥有实例,随后在
+ *            应用层调用初始化函数.
+ * 
  ******************************************************************************
  */
 #ifndef __INS_TASK_H
@@ -29,7 +31,7 @@ typedef struct
     float Pitch;
     float Yaw;
     float YawTotalAngle;
-} attitude_t;
+} attitude_t; //最终解算得到的角度,以及yaw转动的总角度(方便多圈控制)
 
 typedef struct
 {
@@ -57,10 +59,7 @@ typedef struct
     float YawTotalAngle;
 } INS_t;
 
-/**
- * @brief 用于修正安装误差的参数
- *
- */
+/* 用于修正安装误差的参数 */
 typedef struct
 {
     uint8_t flag;

@@ -1,16 +1,3 @@
-/**
- ******************************************************************************
- * @file    BMI088driver.h
- * @author
- * @version V1.1.2
- * @version V1.2.0
- * @date    2022/3/8
- * @brief
- ******************************************************************************
- * @attention
- *
- ******************************************************************************
- */
 #ifndef BMI088DRIVER_H
 #define BMI088DRIVER_H
 
@@ -44,7 +31,7 @@
 #define BMI088_GYRO_250_SEN 0.00013315805450396191230191732547673f
 #define BMI088_GYRO_125_SEN 0.000066579027251980956150958662738366f
 
-// ���ֶ��޸�
+// ���ֶ��޸�
 #if INFANTRY_ID == 0
 #define GxOFFSET 0.00247530174f
 #define GyOFFSET 0.000393082853f
@@ -72,6 +59,7 @@
 #define gNORM 9.876785f
 #endif
 
+/* IMU数据结构体 */
 typedef struct
 {
     float Accel[3];
@@ -87,6 +75,7 @@ typedef struct
     float gNorm;
 } IMU_Data_t;
 
+/* BMI088错误码枚举 */
 enum
 {
     BMI088_NO_ERROR = 0x00,
@@ -109,13 +98,36 @@ enum
     BMI088_NO_SENSOR = 0xFF,
 };
 
-void BMI088_Init(SPI_HandleTypeDef *bmi088_SPI, uint8_t calibrate);
-extern uint8_t BMI088_init(SPI_HandleTypeDef *bmi088_SPI, uint8_t calibrate);
-extern uint8_t bmi088_accel_init(void);
-extern uint8_t bmi088_gyro_init(void);
-
 extern IMU_Data_t BMI088;
 
+/**
+ * @brief 初始化BMI088,传入连接的SPI总线handle,以及是否进行在线标定
+ * 
+ * @param bmi088_SPI handle
+ * @param calibrate  1为进行在线标定,0使用离线数据
+ * @return uint8_t   成功则返回BMI088_NO_ERROR
+ */
+extern uint8_t BMI088Init(SPI_HandleTypeDef *bmi088_SPI, uint8_t calibrate);
+
+/**
+ * @brief 加速计初始化
+ * 
+ * @return uint8_t 
+ */
+extern uint8_t bmi088_accel_init(void);
+
+/**
+ * @brief 陀螺仪初始化
+ * 
+ * @return uint8_t 
+ */
+extern uint8_t bmi088_gyro_init(void);
+
+/**
+ * @brief 读取一次BMI088的数据,包括gyro和accel
+ * 
+ * @param bmi088 传入BMI088实例(结构体)
+ */
 extern void BMI088_Read(IMU_Data_t *bmi088);
 
 #endif

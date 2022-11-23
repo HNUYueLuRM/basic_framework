@@ -242,7 +242,7 @@ void DJIMotorControl()
             group = motor->sender_group;
             num = motor->message_num;
             sender_assignment[group].tx_buff[num] = 0xff & set >> 8;
-            sender_assignment[group].tx_buff[num + 1] = 0xff & set;
+            sender_assignment[group].tx_buff[2*num + 1] = 0xff & set;
         }
         else // 遇到空指针说明所有遍历结束,退出循环
             break;
