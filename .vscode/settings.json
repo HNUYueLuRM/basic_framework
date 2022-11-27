@@ -9,7 +9,9 @@
         "ins_task.h": "c",
         "task.h": "c",
         "user_lib.h": "c",
-        "chassis.h": "c"
+        "chassis.h": "c",
+        "can_comm.h": "c",
+        "string.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
     "C_Cpp.intelliSenseEngineFallback": "enabled",

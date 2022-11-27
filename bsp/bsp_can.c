@@ -102,12 +102,17 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff);
     for (size_t i = 0; i < DEVICE_CAN_CNT; i++)
     {
-        if (_hcan == instance[i]->can_handle && rxconf.StdId == instance[i]->rx_id)
+        if(instance[i]!=NULL)
         {
-            memcpy(instance[i]->rx_buff, can_rx_buff, 8);
-            instance[i]->can_module_callback(instance[i]);
-            break;
+            if (_hcan == instance[i]->can_handle && rxconf.StdId == instance[i]->rx_id)
+            {
+                memcpy(instance[i]->rx_buff, can_rx_buff, 8);
+                instance[i]->can_module_callback(instance[i]);
+                break;
+            }
         }
+        else
+            break;
     }
 }
 

@@ -14,10 +14,10 @@
 // PID优化环节函数声明
 static void f_Trapezoid_Intergral(PID_t *pid);       // 梯形积分
 static void f_Integral_Limit(PID_t *pid);            // 积分限幅
-static void f_Derivative_On_Measurement(PID_t *pid); // 微分先行(仅使用反馈微分)
-static void f_Changing_Integration_Rate(PID_t *pid); // 变速积分
-static void f_Output_Filter(PID_t *pid);             // 输出滤波
-static void f_Derivative_Filter(PID_t *pid);         // 微分滤波(采集时)
+static void f_Derivative_On_Measurement(PID_t *pid); // 微分先行(仅使用反馈值而不计参考输入的微分)
+static void f_Changing_Integration_Rate(PID_t *pid); // 变速积分(误差小时积分作用更强)
+static void f_Output_Filter(PID_t *pid);             // 输出滤波(平滑输出)
+static void f_Derivative_Filter(PID_t *pid);         // 微分滤波(采集时,滤除高频噪声)
 static void f_Output_Limit(PID_t *pid);              // 输出限幅
 static void f_PID_ErrorHandle(PID_t *pid);           // 堵转保护
 
