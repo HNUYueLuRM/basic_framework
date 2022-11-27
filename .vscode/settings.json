@@ -11,7 +11,10 @@
         "user_lib.h": "c",
         "chassis.h": "c",
         "can_comm.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stdlib.h": "c",
+        "crc8.h": "c",
+        "main.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
     "C_Cpp.intelliSenseEngineFallback": "enabled",

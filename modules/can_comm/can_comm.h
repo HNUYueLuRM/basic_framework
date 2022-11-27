@@ -13,7 +13,6 @@
 
 
 #include "bsp_can.h"
-#include "crc8.h" 
 
 #define MX_CAN_COMM_COUNT 4 //注意均衡负载,一条总线上不要挂载过多的外设
 
