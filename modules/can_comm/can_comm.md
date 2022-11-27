@@ -2,7 +2,10 @@
 
 <p align='right'>neozng1@hnu.edu.cn</p>
 
-双板CAN通信模块
+> TODO:
+>
+> 1. 增加数据长度可变的协议支持
+> 2. 简化接收流程
 
 ## 总览和封装说明
 

@@ -86,6 +86,14 @@ void CANTransmit(can_instance *_instance)
     HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
 }
 
+void CANSetDLC(can_instance *_instance, uint8_t length)
+{
+    if (length > 8)
+        while (1)
+            ;
+    _instance->txconf.DLC = length;
+}
+
 /* -----------------------belows are callback definitions--------------------------*/
 
 /**
@@ -102,11 +110,12 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff);
     for (size_t i = 0; i < DEVICE_CAN_CNT; i++)
     {
-        if(instance[i]!=NULL)
+        if (instance[i] != NULL)
         {
             if (_hcan == instance[i]->can_handle && rxconf.StdId == instance[i]->rx_id)
             {
-                memcpy(instance[i]->rx_buff, can_rx_buff, 8);
+                instance[i]->rx_len=rxconf.DLC;
+                memcpy(instance[i]->rx_buff, can_rx_buff, rxconf.DLC);
                 instance[i]->can_module_callback(instance[i]);
                 break;
             }

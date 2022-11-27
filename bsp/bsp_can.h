@@ -19,6 +19,7 @@ typedef struct _
     uint8_t tx_buff[8];
     uint8_t rx_buff[8];
     uint32_t rx_id;
+    uint8_t rx_len;
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
 } can_instance;
 
@@ -48,5 +49,13 @@ void CANTransmit(can_instance *_instance);
  * @return can_instance* can instance owned by module
  */
 void CANRegister(can_instance *instance, can_instance_config_s config);
+
+/**
+ * @brief 修改CAN发送报文的数据帧长度;注意最大长度为8,在没有进行修改的时候,默认长度为8
+ * 
+ * @param _instance 要修改长度的can实例
+ * @param length    设定长度
+ */
+void CANSetDLC(can_instance *_instance,uint8_t length);
 
 #endif
