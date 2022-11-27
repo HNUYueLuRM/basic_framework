@@ -108,11 +108,15 @@ bsp/bsp_init.c \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
 modules/algorithm/QuaternionEKF.c \
+modules/algorithm/crc8.c \
+modules/algorithm/crc16.c \
+modules/algorithm/user_lib.c \
 modules/imu/BMI088driver.c \
 modules/imu/BMI088Middleware.c \
 modules/imu/ins_task.c \
 modules/led_light/led_task.c \
 modules/master_machine/master_process.c \
+modules/master_machine/seasky_protocol.c \
 modules/motor/dji_motor.c \
 modules/motor/HT04.c \
 modules/motor/LK9025.c \
@@ -124,14 +128,13 @@ modules/referee/referee_UI.c \
 modules/referee/referee_communication.c \
 modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
-modules/master_machine/seasky_protocol.c \
-modules/algorithm/crc8.c \
-modules/algorithm/crc16.c \
 modules/can_comm/can_comm.c \
-application/gimbal.c \
-application/chassis.c \
-application/shoot.c \
-application/robot_cmd.c 
+application/gimbal/gimbal.c \
+application/chassis/chassis.c \
+application/shoot/shoot.c \
+application/cmd/chassis_cmd.c \
+application/cmd/gimbal_cmd.c \
+application/robot.c 
 
 
 # ASM sources

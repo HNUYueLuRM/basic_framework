@@ -39,6 +39,7 @@
 #include "dji_motor.h"
 #include "motor_task.h"
 #include "referee.h"
+#include "ins_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -138,13 +139,15 @@ int main(void){
 	/* We should never get here as control is now taken by the scheduler */
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+	INS_Init();
 	while (1)
 	{
 		/* USER CODE END WHILE */
 
 		DJIMotorSetRef(djimotor, 10);
 		MotorControlTask();
-		HAL_Delay(100);
+		HAL_Delay(1);
+		INS_Task();
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */
