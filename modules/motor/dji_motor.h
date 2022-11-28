@@ -53,7 +53,7 @@ typedef struct
     Motor_Controller_s motor_controller;
 
     /* the CAN instance own by motor instance*/
-    can_instance motor_can_instance;
+    can_instance* motor_can_instance;
 
     /* sender assigment*/
     uint8_t sender_group;

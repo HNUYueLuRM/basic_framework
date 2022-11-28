@@ -17,7 +17,8 @@
         "main.h": "c",
         "can.h": "c",
         "bsp_can.h": "c",
-        "dji_motor.h": "c"
+        "dji_motor.h": "c",
+        "master_process.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
     "C_Cpp.intelliSenseEngineFallback": "enabled",

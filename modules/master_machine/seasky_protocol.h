@@ -24,7 +24,7 @@ typedef enum
 
 typedef enum
 {
-	NONE = 0,
+	NO_TARGET_NUM = 0,
 	HERO1 = 1,
 	ENGINEER2 = 2,
 	INFANTRY3 = 3,

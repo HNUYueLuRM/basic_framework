@@ -28,7 +28,7 @@ static void CANCommRxCallback(can_instance *_instance)
 {
     for (size_t i = 0; i < idx; i++)
     {
-        if (&can_comm_instance[i]->can_ins == _instance) // 遍历,找到对应的接收CAN COMM实例
+        if (can_comm_instance[i]->can_ins == _instance) // 遍历,找到对应的接收CAN COMM实例
         {
             /* 接收状态判断 */
             if (_instance->rx_buff[0] == CAN_COMM_HEADER && can_comm_instance[i]->recv_state == 0) // 尚未开始接收且新的一包里有帧头
@@ -91,7 +91,7 @@ CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
     can_comm_instance[idx]->raw_sendbuf[comm_config->send_data_len + CAN_COMM_OFFSET_BYTES - 1] = CAN_COMM_TAIL;
 
     comm_config->can_config.can_module_callback = CANCommRxCallback;
-    CANRegister(&can_comm_instance[idx]->can_ins, &comm_config->can_config);
+    can_comm_instance[idx]->can_ins=CANRegister(&comm_config->can_config);
     return can_comm_instance[idx++];
 }
 
@@ -106,9 +106,9 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data)
     for (size_t i = 0; i < instance->send_buf_len; i += 8)
     {   // 如果是最后一包,send len将会小于8,要修改CAN的txconf中的DLC位,调用bsp_can提供的接口即可
         send_len = instance->send_buf_len - i >= 8 ? 8 : instance->send_buf_len - i;
-        CANSetDLC(&instance->can_ins, send_len);
-        memcpy(instance->can_ins.tx_buff, instance->raw_sendbuf+i, send_len);
-        CANTransmit(&instance->can_ins);
+        CANSetDLC(instance->can_ins, send_len);
+        memcpy(instance->can_ins->tx_buff, instance->raw_sendbuf+i, send_len);
+        CANTransmit(instance->can_ins);
     }
 }
 

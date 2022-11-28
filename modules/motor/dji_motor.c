@@ -78,7 +78,7 @@ static void MotorSenderGrouping(can_instance_config_s *config)
         // 检查是否发生id冲突
         for (size_t i = 0; i < idx; i++)
         {
-            if (dji_motor_info[i]->motor_can_instance.can_handle == config->can_handle && dji_motor_info[i]->motor_can_instance.rx_id == config->rx_id)
+            if (dji_motor_info[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_info[i]->motor_can_instance->rx_id == config->rx_id)
                 IDcrash_Handler(i, idx);
         }
         break;
@@ -102,7 +102,7 @@ static void MotorSenderGrouping(can_instance_config_s *config)
 
         for (size_t i = 0; i < idx; i++)
         {
-            if (dji_motor_info[i]->motor_can_instance.can_handle == config->can_handle && dji_motor_info[i]->motor_can_instance.rx_id == config->rx_id)
+            if (dji_motor_info[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_info[i]->motor_can_instance->rx_id == config->rx_id)
                 IDcrash_Handler(i, idx);
         }
         break;
@@ -126,7 +126,7 @@ static void DecodeDJIMotor(can_instance *_instance)
 
     for (size_t i = 0; i < DJI_MOTOR_CNT; i++)
     {
-        if (&dji_motor_info[i]->motor_can_instance == _instance)
+        if (dji_motor_info[i]->motor_can_instance == _instance)
         {
             rxbuff = _instance->rx_buff;
             measure = &dji_motor_info[i]->motor_measure;
@@ -168,7 +168,7 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
     MotorSenderGrouping(&config->can_init_config);
     // register motor to CAN bus
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
-    CANRegister(&dji_motor_info[idx]->motor_can_instance, &config->can_init_config);
+    dji_motor_info[idx]->motor_can_instance=CANRegister(&config->can_init_config);
 
     return dji_motor_info[idx++];
 }

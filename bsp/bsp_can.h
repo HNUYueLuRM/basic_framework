@@ -51,7 +51,7 @@ void CANTransmit(can_instance *_instance);
  * @param config init config
  * @return can_instance* can instance owned by module
  */
-void CANRegister(can_instance *instance, can_instance_config_s *config);
+can_instance* CANRegister(can_instance_config_s *config);
 
 /**
  * @brief 修改CAN发送报文的数据帧长度;注意最大长度为8,在没有进行修改的时候,默认长度为8

@@ -55,28 +55,30 @@ static void CANServiceInit()
     HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO1_MSG_PENDING);
 }
 
-/* -----------------------two extern callable function -----------------------*/
+/* ----------------------- two extern callable function -----------------------*/
 
-void CANRegister(can_instance *ins, can_instance_config_s* config)
+can_instance* CANRegister(can_instance_config_s* config)
 {
     static uint8_t idx;
     if (!idx)
     {
         CANServiceInit();
     }
-    instance[idx] = ins;
+    instance[idx] = (can_instance*)malloc(sizeof(can_instance));
+    memset(instance[idx],0,sizeof(can_instance));
 
     instance[idx]->txconf.StdId = config->tx_id;
     instance[idx]->txconf.IDE = CAN_ID_STD;
     instance[idx]->txconf.RTR = CAN_RTR_DATA;
-    instance[idx]->txconf.DLC = 0x08;
+    instance[idx]->txconf.DLC = 0x08; // 默认发送长度为8
 
     instance[idx]->can_handle = config->can_handle;
     instance[idx]->tx_id = config->tx_id;
     instance[idx]->rx_id = config->rx_id;
     instance[idx]->can_module_callback = config->can_module_callback;
 
-    CANAddFilter(instance[idx++]);
+    CANAddFilter(instance[idx]);
+    return instance[idx++];
 }
 
 void CANTransmit(can_instance *_instance)

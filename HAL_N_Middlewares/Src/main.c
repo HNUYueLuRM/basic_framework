@@ -41,6 +41,7 @@
 #include "referee.h"
 #include "ins_task.h"
 #include "can_comm.h"
+#include "master_process.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -143,7 +144,8 @@ int main(void)
 	volatile float tx = 32;
 	
 	RefereeInit(&huart6);
-
+	Vision_Recv_s* recv=VisionInit(&huart1);
+	Vision_Send_s send={.pitch=1,.roll=2,.yaw=3};
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
@@ -160,14 +162,13 @@ int main(void)
 	while (1)
 	{
 		/* USER CODE END WHILE */
-
-
-		// DJIMotorSetRef(djimotor, 10);
-		// MotorControlTask();
+		DJIMotorSetRef(djimotor, 10);
+		MotorControlTask();
 		HAL_Delay(10);
 		CANCommSend(in, (uint8_t*)&tx);
 		tx+=1;
-		 rx=(sdf*)CANCommGet(in);
+		rx=(sdf*)CANCommGet(in);
+		VisionSend(&send);
 		// INS_Task();
 		/* USER CODE BEGIN 3 */
 	}

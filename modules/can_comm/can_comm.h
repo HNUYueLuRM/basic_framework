@@ -24,7 +24,7 @@
 /* CAN comm 结构体, 拥有CAN comm的app应该包含一个CAN comm指针 */
 typedef struct
 {
-    can_instance can_ins;
+    can_instance* can_ins;
     /* 发送部分 */
     uint8_t send_data_len;
     uint8_t send_buf_len;

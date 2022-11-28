@@ -31,11 +31,19 @@ static void USARTServiceInit(usart_instance *_instance)
     __HAL_DMA_DISABLE_IT(_instance->usart_handle->hdmarx, DMA_IT_HT);
 }
 
-void USARTRegister(usart_instance *_instance)
+usart_instance* USARTRegister(USART_Init_Config_s *init_config)
 {
-    static uint8_t instance_idx;
-    USARTServiceInit(_instance);
-    instance[instance_idx++] = _instance;
+    static uint8_t idx;
+
+    instance[idx]=(usart_instance*)malloc(sizeof(usart_instance));
+    memset(instance[idx],0,sizeof(usart_instance));
+
+    instance[idx]->module_callback=init_config->module_callback;
+    instance[idx]->recv_buff_size=init_config->recv_buff_size;
+    instance[idx]->usart_handle=init_config->usart_handle;
+    USARTServiceInit(instance[idx]);
+
+    return instance[idx++];
 }
 
 /* @todo 当前仅进行了形式上的封装,后续要进一步考虑是否将module的行为与bsp完全分离 */

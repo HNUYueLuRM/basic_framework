@@ -7,7 +7,7 @@
 // 遥控器数据
 static RC_ctrl_t rc_ctrl;
 // 遥控器拥有的串口实例
-static usart_instance rc_usart_instance;
+static usart_instance* rc_usart_instance;
 
 /**
  * @brief          remote control protocol resolution
@@ -52,19 +52,15 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf, RC_ctrl_t *rc_ctrl)
  */
 static void ReceiveCallback()
 {
-    sbus_to_rc(rc_usart_instance.recv_buff, &rc_ctrl);
+    sbus_to_rc(rc_usart_instance->recv_buff, &rc_ctrl);
 }
 
 RC_ctrl_t *RC_init(UART_HandleTypeDef *rc_usart_handle)
 {
-    rc_usart_instance.module_callback = ReceiveCallback;
-    rc_usart_instance.usart_handle = rc_usart_handle;
-    rc_usart_instance.recv_buff_size = REMOTE_CONTROL_FRAME_SIZE;
-    USARTRegister(&rc_usart_instance);
-    return &rc_ctrl;
-}
-
-const RC_ctrl_t *get_remote_control_point(void)
-{
+    USART_Init_Config_s conf;
+    conf.module_callback = ReceiveCallback;
+    conf.usart_handle = rc_usart_handle;
+    conf.recv_buff_size = REMOTE_CONTROL_FRAME_SIZE;
+    rc_usart_instance = USARTRegister(&conf);
     return &rc_ctrl;
 }

@@ -8,7 +8,7 @@
 #define RE_RX_BUFFER_SIZE 200
 
 // static usart_instance referee_usart_instance;
-usart_instance referee_usart_instance;
+static usart_instance* referee_usart_instance;
 
 /**************裁判系统数据******************/
 referee_info_t referee_info;
@@ -17,15 +17,16 @@ uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
 
 static void ReceiveCallback()
 {
-	JudgeReadData(referee_usart_instance.recv_buff);
+	JudgeReadData(referee_usart_instance->recv_buff);
 }
 
 void RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 {
-	referee_usart_instance.module_callback = ReceiveCallback;
-	referee_usart_instance.usart_handle = referee_usart_handle;
-	referee_usart_instance.recv_buff_size = RE_RX_BUFFER_SIZE;
-	USARTRegister(&referee_usart_instance);
+	USART_Init_Config_s conf;
+	conf.module_callback = ReceiveCallback;
+	conf.usart_handle = referee_usart_handle;
+	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
+	referee_usart_instance=USARTRegister(&conf);
 }
 
 /**

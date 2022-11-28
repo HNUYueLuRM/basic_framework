@@ -20,12 +20,20 @@ typedef struct
     usart_module_callback module_callback; // 解析收到的数据的回调函数
 } usart_instance;
 
+/* usart 初始化配置结构体 */
+typedef struct
+{
+    uint8_t recv_buff_size;                // 模块接收一包数据的大小
+    UART_HandleTypeDef *usart_handle;      // 实例对应的usart_handle
+    usart_module_callback module_callback; // 解析收到的数据的回调函数
+} USART_Init_Config_s;
+
 /**
  * @brief 注册一个串口实例.
  *
- * @param _instance 传入一个由module拥有的串口实例,注意在传入前进行基本信息的配置,详见usart_instance的struct定义
+ * @param init_config 传入串口初始化结构体
  */
-void USARTRegister(usart_instance *_instance);
+usart_instance* USARTRegister(USART_Init_Config_s *init_config);
 
 /**
  * @todo 是否需要进一步封装发送buff和size,并创建一个串口任务以一定频率自动发送?
