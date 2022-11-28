@@ -210,6 +210,10 @@ C_INCLUDES =  \
 -IHAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT \
 -IHAL_N_Middlewares/Middlewares/Third_Party/SEGGER/Config \
 -IHAL_N_Middlewares/Middlewares/ST/ARM/DSP/Inc \
+-Iapplication/chassis \
+-Iapplication/shoot \
+-Iapplication/gimbal \
+-Iapplication/cmd \
 -Iapplication \
 -Ibsp \
 -Imodules/algorithm \
@@ -219,7 +223,8 @@ C_INCLUDES =  \
 -Imodules/motor \
 -Imodules/referee \
 -Imodules/remote \
--Imodules/super_cap 
+-Imodules/super_cap \
+-Imodules/can_comm
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

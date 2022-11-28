@@ -57,7 +57,7 @@ static void CANServiceInit()
 
 /* -----------------------two extern callable function -----------------------*/
 
-void CANRegister(can_instance *ins, can_instance_config_s config)
+void CANRegister(can_instance *ins, can_instance_config_s* config)
 {
     static uint8_t idx;
     if (!idx)
@@ -66,15 +66,15 @@ void CANRegister(can_instance *ins, can_instance_config_s config)
     }
     instance[idx] = ins;
 
-    instance[idx]->txconf.StdId = config.tx_id;
+    instance[idx]->txconf.StdId = config->tx_id;
     instance[idx]->txconf.IDE = CAN_ID_STD;
     instance[idx]->txconf.RTR = CAN_RTR_DATA;
     instance[idx]->txconf.DLC = 0x08;
 
-    instance[idx]->can_handle = config.can_handle;
-    instance[idx]->tx_id = config.tx_id;
-    instance[idx]->rx_id = config.rx_id;
-    instance[idx]->can_module_callback = config.can_module_callback;
+    instance[idx]->can_handle = config->can_handle;
+    instance[idx]->tx_id = config->tx_id;
+    instance[idx]->rx_id = config->rx_id;
+    instance[idx]->can_module_callback = config->can_module_callback;
 
     CANAddFilter(instance[idx++]);
 }

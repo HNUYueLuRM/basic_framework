@@ -20,6 +20,8 @@
 #include "motor_def.h"
 
 #define DJI_MOTOR_CNT 12
+
+/* 滤波系数设置为1的时候即关闭滤波 */
 #define SPEED_SMOOTH_COEF 0.85f   // better to be greater than 0.8
 #define CURRENT_SMOOTH_COEF 0.98f // this coef must be greater than 0.95
 
@@ -77,7 +79,7 @@ typedef struct
  *
  * @return dji_motor_instance*
  */
-dji_motor_instance *DJIMotorInit(Motor_Init_Config_s config);
+dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config);
 
 /**
  * @brief 被application层的应用调用,给电机设定参考值.
@@ -102,5 +104,6 @@ void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedba
  * @todo  增加前馈功能
  */
 void DJIMotorControl();
+
 
 #endif // !DJI_MOTOR_H

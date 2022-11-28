@@ -40,7 +40,7 @@ joint_instance *HTMotorInit(can_instance_config_s config)
 {
     static uint8_t idx;
     joint_motor_info[idx] = (joint_instance *)malloc(sizeof(joint_instance));
-    CANRegister(joint_motor_info[idx++]->motor_can_instace, config);
+    CANRegister(joint_motor_info[idx++]->motor_can_instace, &config);
     return joint_motor_info[idx++];
 }
 

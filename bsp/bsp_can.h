@@ -9,7 +9,9 @@
 #define MX_CAN_FILTER_CNT (2 * 14) // temporarily useless
 #define DEVICE_CAN_CNT 2           // CAN1,CAN2
 
+
 /* can instance typedef, every module registered to CAN should have this variable */
+#pragma pack(1)
 typedef struct _
 {
     CAN_HandleTypeDef *can_handle;
@@ -22,6 +24,7 @@ typedef struct _
     uint8_t rx_len;
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
 } can_instance;
+#pragma pack()
 
 /* this structure is used as initialization*/
 typedef struct
@@ -32,8 +35,8 @@ typedef struct
     void (*can_module_callback)(can_instance *);
 } can_instance_config_s;
 
-/* module callback,which resolve protocol when new mesg arrives*/
-typedef void (*can_callback)(can_instance *);
+/* module callback,which resolve protocol when new mesg arrives */
+typedef void (*can_callback)(can_instance*);
 
 /**
  * @brief transmit mesg through CAN device
@@ -48,14 +51,14 @@ void CANTransmit(can_instance *_instance);
  * @param config init config
  * @return can_instance* can instance owned by module
  */
-void CANRegister(can_instance *instance, can_instance_config_s config);
+void CANRegister(can_instance *instance, can_instance_config_s *config);
 
 /**
  * @brief 修改CAN发送报文的数据帧长度;注意最大长度为8,在没有进行修改的时候,默认长度为8
- * 
+ *
  * @param _instance 要修改长度的can实例
  * @param length    设定长度
  */
-void CANSetDLC(can_instance *_instance,uint8_t length);
+void CANSetDLC(can_instance *_instance, uint8_t length);
 
 #endif

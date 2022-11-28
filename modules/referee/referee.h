@@ -346,4 +346,5 @@ void RefereeInit(UART_HandleTypeDef *referee_usart_handle);
 void JudgeReadData(uint8_t *ReadFromUsart);
 float JudgeGetChassisPower(void);
 
+#pragma pack()
 #endif // !REFEREE_H

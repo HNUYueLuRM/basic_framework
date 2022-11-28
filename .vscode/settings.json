@@ -14,7 +14,10 @@
         "string.h": "c",
         "stdlib.h": "c",
         "crc8.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "can.h": "c",
+        "bsp_can.h": "c",
+        "dji_motor.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
     "C_Cpp.intelliSenseEngineFallback": "enabled",

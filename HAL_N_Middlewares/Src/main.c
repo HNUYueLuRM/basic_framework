@@ -40,6 +40,7 @@
 #include "motor_task.h"
 #include "referee.h"
 #include "ins_task.h"
+#include "can_comm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,14 +72,21 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+typedef struct 
+{
+	float a;
+	float b;
+	float c;
+}sdf;
+volatile sdf* rx;
 /* USER CODE END 0 */
 
 /**
  * @brief  The application entry point.
  * @retval int
  */
-int main(void){
+int main(void)
+{
 	/* USER CODE BEGIN 1 */
 
 	/* USER CODE END 1 */
@@ -125,9 +133,17 @@ int main(void){
 			.tx_id = 6},
 		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, .close_loop_type = SPEED_LOOP | ANGLE_LOOP, .speed_feedback_source = MOTOR_FEED, .reverse_flag = MOTOR_DIRECTION_NORMAL},
 		.controller_param_init_config = {.angle_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
-	dji_motor_instance *djimotor = DJIMotorInit(config);
+	dji_motor_instance *djimotor = DJIMotorInit(&config);
 
+	CANComm_Init_Config_s cconfig = {
+		.can_config = {.can_handle=&hcan1,.tx_id=0x02,.rx_id=0x03},
+		.send_data_len = 4,
+		.recv_data_len = 12};
+	CANCommInstance* in = CANCommInit(&cconfig);
+	volatile float tx = 32;
+	
 	RefereeInit(&huart6);
+
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
@@ -139,15 +155,20 @@ int main(void){
 	/* We should never get here as control is now taken by the scheduler */
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	INS_Init();
+	// INS_Init();
+
 	while (1)
 	{
 		/* USER CODE END WHILE */
 
-		DJIMotorSetRef(djimotor, 10);
-		MotorControlTask();
-		HAL_Delay(1);
-		INS_Task();
+
+		// DJIMotorSetRef(djimotor, 10);
+		// MotorControlTask();
+		HAL_Delay(10);
+		CANCommSend(in, (uint8_t*)&tx);
+		tx+=1;
+		 rx=(sdf*)CANCommGet(in);
+		// INS_Task();
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */
