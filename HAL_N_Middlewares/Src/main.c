@@ -42,6 +42,8 @@
 #include "ins_task.h"
 #include "can_comm.h"
 #include "master_process.h"
+#include "led_task.h"
+#include "bsp_led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -127,6 +129,7 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 	RC_init(&huart3);
 	DWT_Init(168);
+	
 	Motor_Init_Config_s config = {
 		.motor_type = GM6020,
 		.can_init_config = {
@@ -146,6 +149,7 @@ int main(void)
 	RefereeInit(&huart6);
 	Vision_Recv_s* recv=VisionInit(&huart1);
 	Vision_Send_s send={.pitch=1,.roll=2,.yaw=3};
+	LED_init();
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
@@ -164,11 +168,12 @@ int main(void)
 		/* USER CODE END WHILE */
 		DJIMotorSetRef(djimotor, 10);
 		MotorControlTask();
-		HAL_Delay(10);
+		HAL_Delay(1);
 		CANCommSend(in, (uint8_t*)&tx);
 		tx+=1;
 		rx=(sdf*)CANCommGet(in);
 		VisionSend(&send);
+		led_RGB_flow_task();
 		// INS_Task();
 		/* USER CODE BEGIN 3 */
 	}

@@ -5,9 +5,9 @@
  * @brief 湖南大学RoBoMatster串口通信协议
  * @version 0.1
  * @date 2022-11-03
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "seasky_protocol.h"
@@ -38,7 +38,7 @@ static uint16_t CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
 }
 
 /*检验数据帧头*/
-static uint8_t protocol_heade_Check(protocol_rm_struct *pro,uint8_t *rx_buf)
+static uint8_t protocol_heade_Check(protocol_rm_struct *pro, uint8_t *rx_buf)
 {
     if (rx_buf[0] == PROTOCOL_CMD_ID)
     {
@@ -58,12 +58,12 @@ static uint8_t protocol_heade_Check(protocol_rm_struct *pro,uint8_t *rx_buf)
     此函数根据待发送的数据更新数据帧格式以及内容，实现数据的打包操作
     后续调用通信接口的发送函数发送tx_buf中的对应数据
 */
-void get_protocol_send_data(uint16_t send_id,        //信号id
+void get_protocol_send_data(uint16_t send_id,        // 信号id
                             uint16_t flags_register, // 16位寄存器
-                            float *tx_data,          //待发送的float数据
+                            float *tx_data,          // 待发送的float数据
                             uint8_t float_length,    // float的数据长度
-                            uint8_t *tx_buf,         //待发送的数据帧
-                            uint16_t *tx_buf_len)    //待发送的数据帧长度
+                            uint8_t *tx_buf,         // 待发送的数据帧
+                            uint16_t *tx_buf_len)    // 待发送的数据帧长度
 {
     static uint16_t crc16;
     static uint16_t data_len;
@@ -71,9 +71,9 @@ void get_protocol_send_data(uint16_t send_id,        //信号id
     data_len = float_length * 4 + 2;
     /*帧头部分*/
     tx_buf[0] = PROTOCOL_CMD_ID;
-    tx_buf[1] = data_len & 0xff;               //低位在前
-    tx_buf[2] = (data_len >> 8) & 0xff;        //低位在前
-    tx_buf[3] = Get_CRC8_Check(&tx_buf[0], 3); //获取CRC8校验位
+    tx_buf[1] = data_len & 0xff;        // 低位在前
+    tx_buf[2] = (data_len >> 8) & 0xff; // 低位在前
+    tx_buf[3] = crc_8(&tx_buf[0], 3);   // 获取CRC8校验位
 
     /*数据的信号id*/
     tx_buf[4] = send_id & 0xff;
@@ -90,7 +90,7 @@ void get_protocol_send_data(uint16_t send_id,        //信号id
     }
 
     /*整包校验*/
-    crc16 = Get_CRC16_Check(&tx_buf[0], data_len + 6);
+    crc16 = crc_16(&tx_buf[0], data_len + 6);
     tx_buf[data_len + 6] = crc16 & 0xff;
     tx_buf[data_len + 7] = (crc16 >> 8) & 0xff;
 
@@ -100,21 +100,21 @@ void get_protocol_send_data(uint16_t send_id,        //信号id
     此函数用于处理接收数据，
     返回数据内容的id
 */
-uint16_t get_protocol_info(uint8_t *rx_buf,          //接收到的原始数据
-                           uint16_t *flags_register, //接收数据的16位寄存器地址
-                           uint8_t *rx_data)           //接收的float数据存储地址
+uint16_t get_protocol_info(uint8_t *rx_buf,          // 接收到的原始数据
+                           uint16_t *flags_register, // 接收数据的16位寄存器地址
+                           uint8_t *rx_data)         // 接收的float数据存储地址
 {
     static protocol_rm_struct pro;
     static uint16_t date_length;
-    volatile size_t s=sizeof(pro);
-    volatile size_t aa=sizeof(Vision_Recv_s);
+    volatile size_t s = sizeof(pro);
+    volatile size_t aa = sizeof(Vision_Recv_s);
     if (protocol_heade_Check(&pro, rx_buf))
     {
         date_length = OFFSET_BYTE + pro.header.data_length;
         if (CRC16_Check_Sum(&rx_buf[0], date_length))
         {
             *flags_register = (rx_buf[7] << 8) | rx_buf[6];
-            memcpy(rx_data,rx_buf+8,4*sizeof(pro.header.data_length - 2));
+            memcpy(rx_data, rx_buf + 8, 4 * sizeof(pro.header.data_length - 2));
             return pro.cmd_id;
         }
     }

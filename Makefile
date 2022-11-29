@@ -292,8 +292,19 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -r -Force $(BUILD_DIR)
-  
+	rmdir /q $(BUILD_DIR)
+
+#######################################
+# download without debugging
+#######################################
+OPENOCD_FLASH_START = 0x08000000 # 如果切换芯片可能需要修改此值
+
+download_dap:
+	openocd -f openocd_dap.cfg -c init -c halt -c "flash write_image erase $(BUILD_DIR)/$(TARGET).hex $(OPENOCD_FLASH_START)" -c reset -c shutdown
+
+download_jlink:
+	openocd -f openocd_jlink.cfg -c init -c halt -c "flash write_image erase $(BUILD_DIR)/$(TARGET).hex $(OPENOCD_FLASH_START)" -c reset -c shutdown
+
 #######################################
 # dependencies
 #######################################
