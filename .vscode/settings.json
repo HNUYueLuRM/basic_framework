@@ -18,8 +18,9 @@
         "can.h": "c",
         "bsp_can.h": "c",
         "dji_motor.h": "c",
-        "master_process.h": "c"
+        "master_process.h": "c",
+        "seasky_protocol.h": "c",
+        "bsp_usart.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
-    "C_Cpp.intelliSenseEngineFallback": "enabled",
 }

@@ -5,17 +5,20 @@
  * @version beta
  * @date 2022-11-03
  * @todo 增加对串口调试助手协议的支持,包括vofa和serial debug
- * @copyright Copyright (c) 2022 
+ * @copyright Copyright (c) 2022
  *
  */
-#include "Master_process.h"
+#include "master_process.h"
+#include "bsp_usart.h"
+#include "usart.h"
+#include "seasky_protocol.h"
 
 /* use usart1 as vision communication*/
-static Vision_Recv_s recv_data;
+Vision_Recv_s recv_data;
 // @todo:由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务,或由IMU采集完成产生的中断唤醒的任务,
 // 使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
 // static Vision_Send_s send_data;
-static usart_instance* vision_usart_instance;
+static usart_instance *vision_usart_instance;
 
 /**
  * @brief 接收解包回调函数,将在bsp_usart.c中被usart rx callback调用
@@ -25,18 +28,18 @@ static usart_instance* vision_usart_instance;
 static void DecodeVision()
 {
     static uint16_t flag_register;
-    get_protocol_info(vision_usart_instance->recv_buff, &flag_register, &recv_data.pitch);
+    get_protocol_info(vision_usart_instance->recv_buff, &flag_register, (uint8_t*)&recv_data.pitch);
     // TODO: code to resolve flag_register;
 }
 
 /* 视觉通信初始化 */
-Vision_Recv_s* VisionInit(UART_HandleTypeDef *handle)
+Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
 {
     USART_Init_Config_s conf;
     conf.module_callback = DecodeVision;
     conf.recv_buff_size = VISION_RECV_SIZE;
-    conf.usart_handle = handle;
-    vision_usart_instance=USARTRegister(&conf);
+    conf.usart_handle = _handle;
+    vision_usart_instance = USARTRegister(&conf);
     return &recv_data;
 }
 
@@ -60,8 +63,7 @@ void VisionSend(Vision_Send_s *send)
     USARTSend(vision_usart_instance, send_buff, tx_len);
 }
 
-
-Vision_Recv_s* VisionGetcmd()
+Vision_Recv_s *VisionGetcmd()
 {
     return &recv_data;
 }

@@ -13,39 +13,32 @@
 #include "seasky_protocol.h"
 #include "crc8.h"
 #include "crc16.h"
+#include "memory.h"
 
-/*获取CRC8校验码*/
-uint8_t Get_CRC8_Check(uint8_t *pchMessage, uint16_t dwLength)
-{
-    return crc_8(pchMessage, dwLength);
-}
 /*检验CRC8数据段*/
-uint8_t CRC8_Check_Sum(uint8_t *pchMessage, uint16_t dwLength)
+static uint8_t CRC8_Check_Sum(uint8_t *pchMessage, uint16_t dwLength)
 {
     uint8_t ucExpected = 0;
     if ((pchMessage == 0) || (dwLength <= 2))
         return 0;
-    ucExpected = Get_CRC8_Check(pchMessage, dwLength - 1);
+    ucExpected = crc_8(pchMessage, dwLength - 1);
     return (ucExpected == pchMessage[dwLength - 1]);
 }
-/*获取CRC16校验码*/
-uint16_t Get_CRC16_Check(uint8_t *pchMessage, uint32_t dwLength)
-{
-    return crc_16(pchMessage, dwLength);
-}
+
 /*检验CRC16数据段*/
-uint16_t CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
+static uint16_t CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
 {
     uint16_t wExpected = 0;
     if ((pchMessage == 0) || (dwLength <= 2))
     {
         return 0;
     }
-    wExpected = Get_CRC16_Check(pchMessage, dwLength - 2);
+    wExpected = crc_16(pchMessage, dwLength - 2);
     return (((wExpected & 0xff) == pchMessage[dwLength - 2]) && (((wExpected >> 8) & 0xff) == pchMessage[dwLength - 1]));
 }
+
 /*检验数据帧头*/
-uint8_t protocol_heade_Check(protocol_rm_struct *pro,uint8_t *rx_buf)
+static uint8_t protocol_heade_Check(protocol_rm_struct *pro,uint8_t *rx_buf)
 {
     if (rx_buf[0] == PROTOCOL_CMD_ID)
     {
@@ -61,15 +54,6 @@ uint8_t protocol_heade_Check(protocol_rm_struct *pro,uint8_t *rx_buf)
     return 0;
 }
 
-float float_protocol(uint8_t *dat_t)
-{
-    uint8_t f_data[4];
-    f_data[0] = *(dat_t + 0);
-    f_data[1] = *(dat_t + 1);
-    f_data[2] = *(dat_t + 2);
-    f_data[3] = *(dat_t + 3);
-    return *(float *)f_data;
-}
 /*
     此函数根据待发送的数据更新数据帧格式以及内容，实现数据的打包操作
     后续调用通信接口的发送函数发送tx_buf中的对应数据
@@ -118,24 +102,19 @@ void get_protocol_send_data(uint16_t send_id,        //信号id
 */
 uint16_t get_protocol_info(uint8_t *rx_buf,          //接收到的原始数据
                            uint16_t *flags_register, //接收数据的16位寄存器地址
-                           float *rx_data)           //接收的float数据存储地址
+                           uint8_t *rx_data)           //接收的float数据存储地址
 {
     static protocol_rm_struct pro;
     static uint16_t date_length;
+    volatile size_t s=sizeof(pro);
+    volatile size_t aa=sizeof(Vision_Recv_s);
     if (protocol_heade_Check(&pro, rx_buf))
     {
         date_length = OFFSET_BYTE + pro.header.data_length;
-        while (CRC16_Check_Sum(&rx_buf[0], date_length))
+        if (CRC16_Check_Sum(&rx_buf[0], date_length))
         {
             *flags_register = (rx_buf[7] << 8) | rx_buf[6];
-            for (int i = 0; i < (pro.header.data_length - 2) / 4; i++)
-            {
-                rx_data[i] = float_protocol(&rx_buf[8 + 4 * i]);
-            }
-            for (int i = 0; i < date_length; i++)
-            {
-                rx_buf[i] = 0;
-            }
+            memcpy(rx_data,rx_buf+8,4*sizeof(pro.header.data_length - 2));
             return pro.cmd_id;
         }
     }
