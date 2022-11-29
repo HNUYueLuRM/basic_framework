@@ -844,9 +844,49 @@ clean:
 
 ## 附录4：VSCode直接烧录代码
 
-有时候你对自己的代码特别自信，不想debug想直接下载代码，那么直接通过J-Flash即可（随jlink一起安装）。要是觉得这样有点麻烦还要再开一个软件，J-Flash支持通过命令行执行。你可以在vscode中编写一个`download_task.json`：
+有时候你对自己的代码特别自信，不想debug想直接下载代码，那么直接通过openocd或J-Flash即可（随jlink一起安装）。要是觉得这样有点麻烦还要再开一个软件，他们两者都支持通过命令行执行。你可以在vscode的tasks.json中编写一个额外的任务来实现。这里，我通过给Makefile添加伪构建目标来利用make命令执行下载操作：
 
+```makefile
+#######################################
+# download without debugging
+#######################################
+OPENOCD_FLASH_START = 0x08000000 # 如果切换芯片可能需要修改此值
 
+download_dap:
+	openocd -f openocd_dap.cfg -c init -c halt -c "flash write_image erase $(BUILD_DIR)/$(TARGET).hex $(OPENOCD_FLASH_START)" -c reset -c shutdown
+
+download_jlink:
+	openocd -f openocd_jlink.cfg -c init -c halt -c "flash write_image erase $(BUILD_DIR)/$(TARGET).hex $(OPENOCD_FLASH_START)" -c reset -c shutdown
+```
+
+首先设定了flash烧录区的起始地址，下面两个构建目标分别用于daplink和jlink的下载。我们统一使用openocd进行烧录。命令中，`-c`表明的是启动openocd之后要执行的命令，openocd作为一个gdbserver是用作调试的，因此这里我们在`flash write_image`之后直接`reset`让单片机复位开始运行程序，然后立刻退出调试，从而达到下载程序运行但不调试的目的。
+
+接下来我们希望能够直接下载，不要在命令行里面输入`make download_dap`这么复杂的指令，因此在tasks.json中添加如下两个任务：
+
+```json
+ {
+     "label": "download dap",
+     "type": "shell",
+     "command":"make download_dap",
+     "group": {
+     	"kind": "build",
+    	 "isDefault": false,
+     	},
+ },
+ {
+     "label": "download jlink",
+     "type": "shell",
+     "command":"make download_jlink",
+     "group": {
+         "kind": "build",
+         "isDefault": false,
+         }
+ },
+```
+
+这样，在工具栏的Terminal页面，就可以选择对应的任务直接下载执行了。你也可以通过快捷键`ctrl+shift+B`唤起任务执行页面进行选择。如果你希望立刻检验你代码修改的效果，在下载之前进行编译，那么在`command`信息下新增加一个`mingw32-make -j24`即可，或者添加一个`preLaunchTask`。对于调试，如果不想点两下想在修改代码之后直接调试，也可以在launch.json中增加`preLaunchTask`（文件中已经添加，需要的话取消注释即可）。
+
+> 实际上换用arm gnu工具链之后，可以指定多线程编译，因此消耗的时间非常短，建议都加上先编译的选项，不会占用额外的时间。可以把默认task设置成编译后下载，把默认debug设置成编译后调试，提升开发效率。
 
 
 

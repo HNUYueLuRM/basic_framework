@@ -14,9 +14,9 @@
         },
         {
             "label": "download dap",
-            "type": "shell",
-            "command":"make download_dap",
-            "group": {
+            "type": "shell",               // 如果希望在下载前编译,可以把command换成下面的命令
+            "command":"make download_dap", // "mingw32-make -j24 && make download_dap",
+            "group": {                     // 如果没有修改代码,编译任务不会消耗时间,因此推荐使用上面的替换.
                 "kind": "build",
                 "isDefault": false,
             },
