@@ -104,10 +104,10 @@ uint16_t get_protocol_info(uint8_t *rx_buf,          // 接收到的原始数据
                            uint16_t *flags_register, // 接收数据的16位寄存器地址
                            uint8_t *rx_data)         // 接收的float数据存储地址
 {
+    // 放在静态区,避免反复申请栈上空间
     static protocol_rm_struct pro;
     static uint16_t date_length;
-    volatile size_t s = sizeof(pro);
-    volatile size_t aa = sizeof(Vision_Recv_s);
+
     if (protocol_heade_Check(&pro, rx_buf))
     {
         date_length = OFFSET_BYTE + pro.header.data_length;
