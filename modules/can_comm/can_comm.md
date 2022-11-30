@@ -81,6 +81,49 @@ static void CANCommRxCallback(can_instance *_instance);
 
 `CANCommRxCallback()`是CAN comm初始化can实例时的回调函数，用于can接收中断，进行协议解析。
 
+## 使用范例
+
+例如，这里要发送的数据是一个float，接收的数据是如下的`struct`，**==注意要使用pack==**：
+
+```c
+#pragma pack(1)
+struct test
+{
+	float aa;
+	float bb;
+	float cc;
+	uint16_t dd;
+};
+#pragma pack()
+```
+
+初始化时设置如下：
+
+```c
+CANComm_Init_Config_s cconfig = {
+		.can_config = {
+            .can_handle=&hcan1,
+            .tx_id=0x02,
+            .rx_id=0x03},
+		.send_data_len = sizeof(float),
+		.recv_data_len = sizeof(struct test)
+};
+CANCommInstance* ins = CANCommInit(&cconfig);
+```
+
+通过`CANCommGet()`并使用强制类型转换获得接收到的数据指针：
+
+```c
+struct test* data_ptr=(struct test*)CANCommGet(ins)
+```
+
+发送通过`CANCommSend()`，建议使用强制类型转换：
+
+```c
+float tx=114.514;
+CANCommSend(ins, (uint8_t*)&tx);
+```
+
 ## 接收解析流程
 
 CAN comm的通信协议如下：

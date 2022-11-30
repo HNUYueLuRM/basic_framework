@@ -7,8 +7,6 @@
 > 1. 给不同的电机设置不同的低通滤波器惯性系数而不是统一使用宏
 > 2. 为M2006和M3508增加开环的零位校准函数
 
-
-
 ## 总览和封装说明
 
 > 如果你不需要理解该模块的工作原理，你只需要查看这一小节。
@@ -393,3 +391,49 @@ static void DecodeDJIMotor(can_instance *_instance)
 - `DecodeDJIMotor()`是解析电机反馈报文的函数，在`DJIMotorInit()`中会将其注册到该电机实例对应的`can_instance`中（即`can_instance`的`can_module_callback()`）。这样，当该电机的反馈报文到达时，`bsp_can.c`中的回调函数会调用解包函数进行反馈数据解析。
 
   该函数还会对电流和速度反馈值进行滤波，消除高频噪声；同时计算多圈角度和单圈绝对角度。
+
+## 使用范例
+
+```c
+//初始化设置
+Motor_Init_Config_s config = {
+		.motor_type = GM6020,
+		.can_init_config = {
+			.can_handle = &hcan1,
+			.tx_id = 6
+        },
+		.controller_setting_init_config = {
+            .angle_feedback_source = MOTOR_FEED, 
+            .close_loop_type = SPEED_LOOP | ANGLE_LOOP, 
+            .speed_feedback_source = MOTOR_FEED, 
+            .reverse_flag = MOTOR_DIRECTION_NORMAL
+        },
+		.controller_param_init_config = {
+            .angle_PID = {
+                .Improve = 0, 
+                .Kp = 1, 
+                .Ki = 0, 
+                .Kd = 0, 
+                .DeadBand = 0, 
+                .MaxOut = 4000}, 
+            .speed_PID = {
+                .Improve = 0, 
+                .Kp = 1, 
+                .Ki = 0, 
+                .Kd = 0, 
+                .DeadBand = 0, 
+                .MaxOut = 4000
+            }
+        }
+};
+//注册电机并保存实例指针
+dji_motor_instance *djimotor = DJIMotorInit(&config);
+```
+
+然后在任务中修改电机设定值即可实现控制：
+
+```
+DJIMotorSetRef(djimotor, 10);
+```
+
+前提是已经将`MotorTask()`放入实时系统任务当中。你也可以单独执行`MotorControl()`。

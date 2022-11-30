@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "ins_task.h"
 #include "motor_task.h"
+#include "led_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,6 +138,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    led_RGB_flow_task();
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */

@@ -11,6 +11,7 @@
 
 void RobotInit()
 {
+    
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
 
 #endif 

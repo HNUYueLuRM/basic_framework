@@ -14,7 +14,7 @@
 
   VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持，具体的使用方法和环境配置教程在[VSCode+Ozone使用方法](./VSCode+Ozone使用方法.md)中。
 
-  推荐使用 SEGGER ozone进行调试。
+  推荐使用 **SEGGER ozone** 进行调试。
 
 - 分层：
 

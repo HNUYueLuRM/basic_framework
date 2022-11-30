@@ -294,7 +294,8 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	rmdir /q $(BUILD_DIR)
+	rd /s/q $(BUILD_DIR)
+# linux: rm -rf $(BUILD_DIR)
 
 #######################################
 # download without debugging

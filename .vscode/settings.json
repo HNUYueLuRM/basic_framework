@@ -21,7 +21,9 @@
         "master_process.h": "c",
         "seasky_protocol.h": "c",
         "bsp_usart.h": "c",
-        "message_center.h": "c"
+        "message_center.h": "c",
+        "stddef.h": "c",
+        "stm32_hal_legacy.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 }

@@ -32,19 +32,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "remote_control.h"
-#include "bsp_usart.h"
-#include "bsp_can.h"
-#include "can.h"
-#include "dji_motor.h"
-#include "motor_task.h"
-#include "referee.h"
-#include "ins_task.h"
-#include "can_comm.h"
-#include "master_process.h"
-#include "led_task.h"
-#include "bsp_led.h"
-#include "message_center.h"
+#include "robot.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,13 +64,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-typedef struct 
-{
-	float a;
-	float b;
-	float c;
-}sdf;
-volatile sdf* rx;
+
 /* USER CODE END 0 */
 
 /**
@@ -128,64 +110,24 @@ int main(void)
 	MX_USART1_UART_Init();
 	MX_USART6_UART_Init();
 	/* USER CODE BEGIN 2 */
-	RC_init(&huart3);
-	DWT_Init(168);
-	
-	Motor_Init_Config_s config = {
-		.motor_type = GM6020,
-		.can_init_config = {
-			.can_handle = &hcan1,
-			.tx_id = 6},
-		.controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, .close_loop_type = SPEED_LOOP | ANGLE_LOOP, .speed_feedback_source = MOTOR_FEED, .reverse_flag = MOTOR_DIRECTION_NORMAL},
-		.controller_param_init_config = {.angle_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}, .speed_PID = {.Improve = 0, .Kp = 1, .Ki = 0, .Kd = 0, .DeadBand = 0, .MaxOut = 4000}}};
-	dji_motor_instance *djimotor = DJIMotorInit(&config);
 
-	CANComm_Init_Config_s cconfig = {
-		.can_config = {.can_handle=&hcan1,.tx_id=0x02,.rx_id=0x03},
-		.send_data_len = 4,
-		.recv_data_len = 12};
-	CANCommInstance* in = CANCommInit(&cconfig);
-	volatile float tx = 32;
-	
-	RefereeInit(&huart6);
-	Vision_Recv_s* recv=VisionInit(&huart1);
-	Vision_Send_s send={.pitch=1,.roll=2,.yaw=3};
-	LED_init();
+	RobotInit();
 
-
-	float *subsub;
-	float* sub2;
-	float test=1;
-	PublisherRegister("test",&test);
-	SubscribeEvent("test",&subsub);
-	SubscribeEvent("test",&sub2);
-	PublisherRegister("test",sub2);
-	MessageInit();
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
-	// MX_FREERTOS_Init();
+	MX_FREERTOS_Init();
 
-	// /* Start scheduler */
-	// osKernelStart();
+	/* Start scheduler */
+	osKernelStart();
 
 	/* We should never get here as control is now taken by the scheduler */
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	// INS_Init();
-
 	while (1)
 	{
 		/* USER CODE END WHILE */
-		DJIMotorSetRef(djimotor, 10);
-		MotorControlTask();
-		HAL_Delay(1);
-		CANCommSend(in, (uint8_t*)&tx);
-		tx+=1;
-		rx=(sdf*)CANCommGet(in);
-		VisionSend(&send);
-		led_RGB_flow_task();
-		// INS_Task();
+
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */

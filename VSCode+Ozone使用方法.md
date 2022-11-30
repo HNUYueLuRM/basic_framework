@@ -196,6 +196,8 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
   图片看不清请打开原图。验证安装：
 
   打开命令行（win+R，cmd，回车），输入`gcc -v`，如果没有报错，并输出了一堆路径和参数说明安装成功。
+  
+  安装完之后，建议将ming的bin文件夹下的ming32-make.exe复制一份，并将copy更名为make.exe
 
 - 配置gcc-arm-none-eabi环境变量，**把压缩包解压以后放在某个地方**，然后同上，将工具链的bin添加到PATH：（will be deprecated soon，请注意这种方法将会在主分支发布正式版的时候删除）
 
