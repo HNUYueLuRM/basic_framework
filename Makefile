@@ -129,6 +129,7 @@ modules/referee/referee_communication.c \
 modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
 modules/can_comm/can_comm.c \
+modules/message_center/message_center.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
@@ -224,7 +225,8 @@ C_INCLUDES =  \
 -Imodules/referee \
 -Imodules/remote \
 -Imodules/super_cap \
--Imodules/can_comm
+-Imodules/can_comm \
+-Imodules/message_center 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

@@ -44,6 +44,7 @@
 #include "master_process.h"
 #include "led_task.h"
 #include "bsp_led.h"
+#include "message_center.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -150,6 +151,16 @@ int main(void)
 	Vision_Recv_s* recv=VisionInit(&huart1);
 	Vision_Send_s send={.pitch=1,.roll=2,.yaw=3};
 	LED_init();
+
+
+	float *subsub;
+	float* sub2;
+	float test=1;
+	PublisherRegister("test",&test);
+	SubscribeEvent("test",&subsub);
+	SubscribeEvent("test",&sub2);
+	PublisherRegister("test",sub2);
+	MessageInit();
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
