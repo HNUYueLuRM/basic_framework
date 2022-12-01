@@ -69,11 +69,10 @@ typedef struct mqt
 typedef struct ent  
 {   
     /* 事件名称 */
-    char event_name[MAX_EVENT_NAME_LEN];
+    char event_name[MAX_EVENT_NAME_LEN+2];
     uint8_t data_len;
     /* 指向第一个订阅了该事件的订阅者,通过链表访问所有订阅者 */
     Subscriber_t* first_subs;
-    Subscriber_t* iter;// 用于遍历所有订阅了该事件的订阅者的指针
     /* 指向下一个Publisher的指针 */
     struct ent* next_event_node;
 

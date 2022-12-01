@@ -65,13 +65,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-	typedef struct 
-	{
-		float a;
-		uint8_t b;
-		uint32_t c;
-		/* data */
-	}good;
+
 /* USER CODE END 0 */
 
 /**
@@ -120,17 +114,7 @@ int main(void)
 
 	RobotInit();
 
-	 good asdf;
-	 good asdfsadf;
-	good pub={.a=1,.b=2,.c=3};
-	Subscriber_t* s=SubRegister("test\0",sizeof(good));
-	Subscriber_t* ss=SubRegister("test\0",sizeof(good));
-	Publisher_t* p=PubRegister("test\0",sizeof(asdf));
-	PubPushMessage(p,&pub);
-	PubPushMessage(p,&pub);
-	volatile uint8_t d= SubGetMessage(s,&asdf);
-	d=SubGetMessage(s,&asdf);
-	d=SubGetMessage(ss,&asdfsadf);
+	
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */
