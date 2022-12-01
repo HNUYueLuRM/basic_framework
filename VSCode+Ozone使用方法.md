@@ -6,9 +6,9 @@
 
 > TODO：
 >
-> 1. 添加一键编译+启用ozone调试/一键编译+下载的脚本，使得整个进一步流程自动化
+> 1. 添加一键编译+启用ozone调试d 脚本，使得整个进一步流程自动化
 > 2. 增加更多的背景知识介绍
-> 3. 增加VSCode下RTT viewer的支持和一键下载(不调试)的支持
+> 3. 增加VSCode下RTT viewer的支持
 
 
 
@@ -162,16 +162,18 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 > 支持一键配置Arm GNU工具链、MinGW64（make工具）和OpenOCD！可以尝试使用这个插件替代下面的配置流程。并且，此插件还提供了一键下载、一键调试的支持，只需要选择合适的下载器配置即可，全部都是图形化界面的操作！
 >
 > 你可以尝试使用这个插件进行环境的配置。当然，环境变量仍然需要手动添加。
+>
+> ==**另外，如果你不想配置太多东西也不想了解底层的信息，可以尝试Embedded IDE插件。它支持直接在VSCode中编辑KEIL MDK的项目，相关信息请自行查阅，或直接查看EIDE的项目网站：**==[https://em-ide.com](https://em-ide.com/)
 
 - 安装STM32CubeMX，并安装F4支持包和DSP库支持包
 
 - 安装VSCode，并安装以下插件：
 
-  - C/C++：提供C/C++的调试和代码高亮支持
-  - Better C++ Syntax：提供更丰富的代码高亮和智能提示
-  - C/C++ Snippets：提供代码块（关键字）补全
-  - Cortex-Debug，Cortex-Debug: Device Support Pack - STM32F4：提供调试支持
-  - IntelliCode，Makfile Tools：提供代码高亮支持
+  - **C/C++**：提供C/C++的调试和代码高亮支持
+  - **Better C++ Syntax**：提供更丰富的代码高亮和智能提示
+  - **C/C++ Snippets**：提供代码块（关键字）补全
+  - **Cortex-Debug**，**Cortex-Debug: Device Support Pack - STM32F4**：提供调试支持
+  - **IntelliCode**，**Makfile Tools**：提供代码高亮支持
 
   ![image-20221112172157533](assets\image-20221112172157533.png)
 
@@ -442,6 +444,16 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 > 如果你想在VSCode中也使用segger RTT viewer的功能（即bsp_log提供的日志功能），请参阅[附录2](##附录2：在VSCode中启用SEGGER RTT日志)。
 >
 > 如果想直接下载代码不想调试，参阅[附录4](##附录4：VSCode直接烧录代码)。
+
+
+
+### 更好的编辑体验
+
+建议安装以下插件：
+
+1. Hex Hover Converter，鼠标悬停在数值上的时候会自动显示其对应的16、2、10进制值和编码
+2. Hex Editor，在查看汇编代码和机器代码的时候，提供2、10、16进制转换，并且可以以16进制或2进制的格式编辑文件。
+3. GitLens，提供强大的可视化Git支持
 
 
 

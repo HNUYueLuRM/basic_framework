@@ -5,22 +5,23 @@
  * @brief 流水灯效
  * @version 0.1
  * @date 2022-11-30
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "led_task.h"
+
+#include <stdint-gcc.h>
+
 #include "bsp_led.h"
 #include "main.h"
-#include <stdint-gcc.h>
 
 #define RGB_FLOW_COLOR_CHANGE_TIME 1000
 #define RGB_FLOW_COLOR_LENGHT 6
 
 // 蓝 -> 绿(灭) -> 红 -> 蓝(灭) -> 绿 -> 红(灭) -> 蓝
 uint32_t RGB_flow_color[RGB_FLOW_COLOR_LENGHT + 1] = {0xFF0000FF, 0x0000FF00, 0xFFFF0000, 0x000000FF, 0xFF00FF00, 0x00FF0000, 0xFF0000FF};
-
 
 void led_RGB_flow_task()
 {
@@ -55,5 +56,4 @@ void led_RGB_flow_task()
 			aRGB_led_show(aRGB);
 		}
 	}
-
 }
