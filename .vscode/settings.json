@@ -23,7 +23,8 @@
         "bsp_usart.h": "c",
         "message_center.h": "c",
         "stddef.h": "c",
-        "stm32_hal_legacy.h": "c"
+        "stm32_hal_legacy.h": "c",
+        "message_buffer.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 }

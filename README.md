@@ -52,15 +52,13 @@
 
 - TODO：
 
-  1. 添加pub-sub（订阅-发布消息机制）的支持，以进一步隔离不同的模块完成封装。
-  2. 增加模块离线/错误检测模块（官方例程中的`deteck_task`）。
-  3. 增加超级电容模块
-  4. 增加步进电机模块
-  5. 增加双板CAN通信模块
-  6. 增加裁判系统接收、多机通信、UI绘制模块
-  7. 增加舵机模块
-  8. 增加单点激光模块
-
+  1. 增加模块离线/错误检测模块（官方例程中的`deteck_task`）。
+  2. 增加超级电容模块
+  3. 增加步进电机模块
+  4. 增加裁判系统多机通信、UI绘制模块
+  5. 增加舵机模块
+  6. 增加单点激光模块
+  
 - 主要功能：实现对设备的封装
 
 - 子文件与子文件夹
@@ -81,7 +79,7 @@
 
   - 函数：
 
-    .c中存放的相当于这个类的private函数，.h中的则相当于public。相似的driver的public函数应较为统一。由于通信格式，使用方法等的不同，不同通信设备在读取操作、数据格式上可能有所不同，这些不同应该在driver的内部处理。
+    .c中存放的static函数和static变量相当于这个类的private函数，.h中的则相当于public。相似的driver的public函数应较为统一。由于通信格式，使用方法等的不同，不同通信设备在读取操作、数据格式上可能有所不同，这些不同应该在driver的内部处理。**由于C语言没有对象的概念，对于通信类的module，不同的实例需要在module.c中保存一份指针，用于处理数据接收的解析。**
 
   - 封装程度：
 
@@ -111,34 +109,50 @@ Module层主要存放的是类型定义和实例指针数组，在该层没有�
 ```shell
 ROOT:.
 │  .gitignore             # git版本管理忽略文件
-│  .mxproject			        # CubeMX项目文件
+│  .mxproject			  # CubeMX项目文件
 │  basic_framework.ioc	  # CubeMX初始化配置文件
-│  Makefile               # 编译管理文件,为make命令的目标
-│  openocd.cfg            # 用于OpenOCD调试使用的配置文件
+│  Makefile               # 编译管理文件,为make(mingw32-make)命令的目标
+│  openocd_dap.cfg		  # 用于OpenOCD调试使用的配置文件
+│  openocd_jlink.cfg	  # 同上
 │  README.md              # 本说明文档
 │  startup_stm32f407xx.s  # F407汇编启动文件
 │  STM32F407.svd          # F407外设地址映射文件,用于调试 
 │  STM32F407IGHx_FLASH.ld # F407IGH(C板使用的MCU)的文件目标FLASH地址,用于烧录和调试
-│  VSCode+Ozone使用方法.md # 开发环境配置
+│  VSCode+Ozone使用方法.md # 开发环境配置和前置知识介绍
 |
-├─.vscode
+├─.vscode       
 │      launch.json  # 用于VSCode插件CORTEX-DEBUG调试的配置文件
-|      task.json    # 启动编译的任务配置文件     
-│
+│      settings.json# 工作区配置文件,设置了代码缩进和format风格等
+│      tasks.json   # 启动编译的任务配置文件
 ├─assets # markdown存放图片和外链文件夹
 |
-├─application # 应用层,包括底盘控制,云台控制和发射控制
-│      chassis.c
-│      chassis.h
-│      chassis.md
-│      gimbal.c
-│      gimbal.h
-│      gimbal.md
-│      shoot.c
-│      shoot.h
-│      shoot.md
-|      robot_cmd.c
-|      robot_cmd.h
+├─application
+│  │  application.md
+│  │  APP层应用编写指引.md
+│  │  robot.c
+│  │  robot.h
+│  │  robot_def.h
+│  │
+│  ├─chassis
+│  │      chassis.c
+│  │      chassis.h
+│  │      chassis.md
+│  │
+│  ├─cmd
+│  │      chassis_cmd.c
+│  │      chassis_cmd.h
+│  │      gimbal_cmd.c
+│  │      gimbal_cmd.h
+│  │
+│  ├─gimbal
+│  │      gimbal.c
+│  │      gimbal.h
+│  │      gimbal.md
+│  │
+│  └─shoot
+│          shoot.c
+│          shoot.h
+│          shoot.md
 │
 ├─bsp  # 板级支持包,提供对硬件的封装,将接口暴露给module层
 │      bsp.md
@@ -149,7 +163,7 @@ ROOT:.
 │      bsp_can.md
 │      bsp_dwt.c
 │      bsp_dwt.h
-│      bsp_init.c
+│      bsp_init.c # bsp初始化
 │      bsp_init.h
 │      bsp_led.c
 │      bsp_led.h
@@ -161,11 +175,14 @@ ROOT:.
 │      bsp_usart.c
 │      bsp_usart.h
 │      bsp_usart.md
-│      struct_typedef.h
 │
-├─HAL_N_Middlewares # HAL库对寄存器操作的封装,以及FreeRTOS等中间件
+|
+├─HAL_N_Middlewares # HAL库对寄存器操作的封装,以及FreeRTOS/Segger RTT等中间件
+|
 |
 └─modules  # 模块层,使用BSP提供的接口构建对应的功能模块,将模块实例提供给应用层
+	|   module.md
+	|
     ├─algorithm # 算法
     │      algorithm.md
     │      controller.c # 控制器
@@ -209,6 +226,11 @@ ROOT:.
     │      seasky_protocol.h
     │      湖南大学RoboMaster电控组通信协议.md
     │
+    ├─message_center # 发布-订阅机制,app层应用之间交换数据用
+    │      message_center.c
+    │      message_center.h
+    │      message_center.md
+    |
     ├─motor # 电机模块
     │      dji_motor.c  # DJI智能电机
     │      dji_motor.h
@@ -231,8 +253,9 @@ ROOT:.
     │      remote_control.h
     │
     └─super_cap # 超级电容
-            super_cap.c
-            super_cap.h
+           super_cap.c
+           super_cap.h
+    	   super_cap.md
 ```
 
 ## BSP/Module/Application介绍

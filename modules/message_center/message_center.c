@@ -101,8 +101,9 @@ Subscriber_t* SubRegister(char* name,uint8_t data_len)
     } 
     //遍历完,发现尚未注册事件,那么创建一个事件.此时node是publisher链表的最后一个结点
     node->next_event_node=(Publisher_t*)malloc(sizeof(Publisher_t)); 
+    memset(node->next_event_node,0,sizeof(Publisher_t));
     strcpy(node->next_event_node->event_name,name);
-    node->next_event_node->next_event_node=NULL; //新publisher的下一个节点置为NULL
+    node->next_event_node->data_len=data_len;
     //创建subscriber作为新事件的第一个订阅者
     Subscriber_t* ret=(Subscriber_t*)malloc(sizeof(Subscriber_t));
     memset(ret,0,sizeof(Subscriber_t));
@@ -141,7 +142,7 @@ uint8_t SubGetMessage(Subscriber_t* sub,void* data_ptr)
     {
         return 0;
     }
-    memcpy(sub->queue[sub->front_idx],data_ptr,sub->data_len);
+    memcpy(data_ptr,sub->queue[sub->front_idx],sub->data_len);
     sub->front_idx=(sub->front_idx++)%QUEUE_SIZE;
     sub->temp_size--;
     return 1;
@@ -149,19 +150,19 @@ uint8_t SubGetMessage(Subscriber_t* sub,void* data_ptr)
 
 void PubPushMessage(Publisher_t* pub,void* data_ptr)
 {
-    static Subscriber_t* node;
-    node->next_subs_queue=pub->first_subs;
-    while (node->next_subs_queue) //遍历订阅了当前事件的所有订阅者,依次填入最新消息
+    pub->iter=pub->first_subs;
+    while (pub->iter) //遍历订阅了当前事件的所有订阅者,依次填入最新消息
     {
-        node=node->next_subs_queue;
-        if(node->temp_size==QUEUE_SIZE) //如果队列已满,则需要删除最老的数据(头部),再填入
+        if(pub->iter->temp_size==QUEUE_SIZE) //如果队列已满,则需要删除最老的数据(头部),再填入
         {   //头索引增加,相当于移动到新一个位置上
-            node->front_idx=(node->front_idx+1)%QUEUE_SIZE;
-            node->temp_size--; //相当于出队,size-1
+            pub->iter->front_idx=(pub->iter->front_idx+1)%QUEUE_SIZE;
+            pub->iter->temp_size--; //相当于出队,size-1
         }
         // 将Pub的数据复制到队列的尾部(最新)
-        memcpy(node->queue[node->back_idx],data_ptr,pub->data_len);
-        node->back_idx=(node->back_idx+1)%QUEUE_SIZE; //队列尾部前移
-        node->temp_size++; //入队,size+1
+        memcpy(pub->iter->queue[pub->iter->back_idx],data_ptr,pub->data_len);
+        pub->iter->back_idx=(pub->iter->back_idx+1)%QUEUE_SIZE; //队列尾部前移
+        pub->iter->temp_size++; //入队,size+1
+
+        pub->iter=pub->iter->next_subs_queue;
     }
 }
