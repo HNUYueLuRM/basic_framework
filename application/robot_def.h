@@ -1,3 +1,14 @@
+/**
+ * @file robot_def.h
+ * @author NeoZeng neozng1@hnu.edu.cn
+ * @author Even
+ * @version 0.1
+ * @date 2022-12-02
+ * 
+ * @copyright Copyright (c) HNU YueLu EC 2022 all rights reserved
+ * 
+ */
+
 #ifndef ROBOT_DEF_H
 #define ROBOT_DEF_H
 

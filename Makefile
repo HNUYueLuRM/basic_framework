@@ -130,7 +130,7 @@ modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
 modules/can_comm/can_comm.c \
 modules/message_center/message_center.c \
-modules/monitor/monitor.hc \
+modules/monitor/monitor.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \

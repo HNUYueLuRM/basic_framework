@@ -56,7 +56,7 @@ typedef void (*can_callback)(can_instance*);
 - `can_instance_config`是用于初始化CAN实例的结构，在调用CAN实例的初始化函数时传入（下面介绍函数时详细介绍）。
 
 - `can_module_callback()`是模块提供给CAN接收中断回调函数使用的协议解析函数指针。对于每个需要CAN的模块，需要定义一个这样的函数用于解包数据。
-- 每个使用CAN外设的module，都需要在其内部定义一个`can_instance`。
+- 每个使用CAN外设的module，都需要在其内部定义一个`can_instance*`。
 
 
 ## 外部接口

@@ -4,12 +4,14 @@
 #include "memory.h"
 
 /* can instance ptrs storage, used for recv callback */
+// 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
 static can_instance *instance[MX_REGISTER_DEVICE_CNT] = {NULL};
 
 /* ----------------two static function called by CANRegister()-------------------- */
 
 /**
  * @brief add filter to receive mesg with specific ID,called by CANRegister()
+ *        给CAN添加过滤器后,BxCAN会根据接收到的报文的id进行消息过滤,符合规则的id会被填入FIFO触发中断
  *
  * @note there are total 28 filter and 2 FIFO in bxCAN of STM32F4 series product.
  *       here, we assign the former 14 to CAN1 and the rest for CAN2
@@ -40,6 +42,7 @@ static void CANAddFilter(can_instance *_instance)
 
 /**
  * @brief called by CANRegister before the first module being registered
+ *        在第一个CAN实例初始化的时候会自动调用此函数,启动CAN服务
  *
  * @note this func will handle all these thing automatically
  *       there is no need to worry about hardware initialization, we do these for you!
@@ -57,40 +60,42 @@ static void CANServiceInit()
 
 /* ----------------------- two extern callable function -----------------------*/
 
-can_instance* CANRegister(can_instance_config_s* config)
+can_instance *CANRegister(can_instance_config_s *config)
 {
-    static uint8_t idx;
+    static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
     if (!idx)
     {
-        CANServiceInit();
+        CANServiceInit(); // 第一次注册,先进行硬件初始化
     }
-    instance[idx] = (can_instance*)malloc(sizeof(can_instance));
-    memset(instance[idx],0,sizeof(can_instance));
-
+    instance[idx] = (can_instance *)malloc(sizeof(can_instance)); // 分配空间
+    memset(instance[idx], 0, sizeof(can_instance));
+    // 进行发送报文的配置
     instance[idx]->txconf.StdId = config->tx_id;
     instance[idx]->txconf.IDE = CAN_ID_STD;
     instance[idx]->txconf.RTR = CAN_RTR_DATA;
     instance[idx]->txconf.DLC = 0x08; // 默认发送长度为8
-
+    // 设置回调函数和接收发送id
     instance[idx]->can_handle = config->can_handle;
-    instance[idx]->tx_id = config->tx_id;
+    instance[idx]->tx_id = config->tx_id; // 好像没用,可以删掉
     instance[idx]->rx_id = config->rx_id;
     instance[idx]->can_module_callback = config->can_module_callback;
 
-    CANAddFilter(instance[idx]);
-    return instance[idx++];
+    CANAddFilter(instance[idx]); // 添加CAN过滤器规则
+    return instance[idx++];      // 返回指针
 }
 
+/* TODO:目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
 void CANTransmit(can_instance *_instance)
 {
     while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0)
         ;
+    // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
     HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
 }
 
 void CANSetDLC(can_instance *_instance, uint8_t length)
 {
-    if (length > 8)
+    if (length > 8) // 安全检查
         while (1)
             ;
     _instance->txconf.DLC = length;
@@ -112,13 +117,13 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff);
     for (size_t i = 0; i < DEVICE_CAN_CNT; i++)
     {
-        if (instance[i] != NULL)
-        {
+        if (instance[i] != NULL) // 碰到NULL说明已经遍历完所有实例
+        {                        // 两者相等说明这是要找的实例
             if (_hcan == instance[i]->can_handle && rxconf.StdId == instance[i]->rx_id)
             {
-                instance[i]->rx_len=rxconf.DLC;
-                memcpy(instance[i]->rx_buff, can_rx_buff, rxconf.DLC);
-                instance[i]->can_module_callback(instance[i]);
+                instance[i]->rx_len = rxconf.DLC;
+                memcpy(instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
+                instance[i]->can_module_callback(instance[i]);         // 触发回调进行数据解析和处理
                 break;
             }
         }

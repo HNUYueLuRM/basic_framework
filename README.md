@@ -1,10 +1,14 @@
 # 2023 EC-basic-framework（C语言版）说明
 
+
+
 当前版本更新日期：2022.11.03
 
 本说明仅针对电控组2023赛季框架，如有变动以日期靠后的版本为准。**==由于当前仍然处在测试开发阶段，请定期拉取（`git pull`）获取最新更新。==**
 
-- 开发方式：
+## 基本信息和开发规范
+
+- **开发方式**：
 
   本框架使用stm32cubemx生成，基于makefile，使用gcc-arm-none-eabi编译（make命令）。
 
@@ -12,11 +16,11 @@
   >
   > ***强烈推荐使用VSCode进行开发，Ozone进行调试。***
 
-  VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持，具体的使用方法和环境配置教程在[VSCode+Ozone使用方法](./VSCode+Ozone使用方法.md)中。
+  VSCode可通过Cortex-Debug利用OpenOCD进行调试，jlink/stlink/dap-link都支持，具体的使用方法和环境配置教程在[VSCode+Ozone使用方法](./VSCode+Ozone使用方法.md)中。**请使用UTF-8编码查看\&编辑此项目**。
 
   推荐使用 **SEGGER ozone** 进行调试。
 
-- 分层：
+- **分层**：
 
   本框架主要代码分为**BSP、Module、APP**三层。三层的代码分别存放在同名的三个文件夹中，这三个文件夹存放在根目录下。开发过程中主要编写APP层代码，Module层与BSP层不建议修改。如需添加module（如oled屏幕、其他传感器和外设等），请按照规范编写并联系组长提交commit到dev分支，完善后合并至主分支。在配置git的时候，将自己的`user.name`配置成英文缩写或易懂的nick name。
 
@@ -24,7 +28,7 @@
 
   **main.c的位置在**`HAL_N_Middlewares/Src/main.c`
 
-- 代码格式：
+- **代码格式**：
 
   在vscode-设置-扩展-C/C++-C_Cpp:style下修改。默认为`Visual Studio`。编写完新的代码后，使用右键-格式化文档(注：请勿对cube生成的文件使用此操作)。此操作不会改变文档的内容，但会改变缩进、空行、符号位置等，使代码更加统一、整洁。
 
@@ -32,11 +36,58 @@
 
   每个功能模块编写完之后，及时添加说明文档。内容参照已有的文档，要进行简短的**总体说明、代码结构、外部接口和类型定义、私有函数和变量，以及使用的说明和范例**。如果有特别需要注意的地方，也请说明。
 
-  ==**在编写代码的时候，注意添加安全检查，“treat your users as idiot！”**==
+  ==**在编写代码的时候，注意添加安全检查，“treat your users as idiots！”**==
 
-- 面向对象设计：
+- **面向对象设计**：
 
   C语言不存在“成员函数”的概念。为实现类似效果，所有按照这一思想构建的函数都会有一个传入参数，将结构体（对象）传入。
+
+- **代码风格：**
+
+  函数统一使用**动宾短语**，建议不超过4个单词。每个单词首字母大写：
+
+  ```c
+  void SetMotorControl()
+  ```
+
+  变量命名使用下划线命名法，统一小写。尽量不要使用缩写，并注意让变量名本身能够表达其含义：
+
+  ```c
+  uint8_t gimbal_recv_cmd;
+  ```
+
+  后续可能将指针类型的变量名都加上`ptr_`或`p`前缀。私有变量加上下划线`_`前缀。
+
+  在利用`typedef`定义新的类型时，使用单词首字母大写+下划线隔开+定义后缀的方式：
+
+  ```c
+  typedef struct
+  {
+      float Accel[3];
+      float Gyro[3];
+  } IMU_Data_t;
+  
+  typedef struct
+  {
+      can_instance_config_s can_config;
+      uint8_t send_data_len;
+      uint8_t recv_data_len;
+  } CANComm_Init_Config_s;
+  
+  typedef struct
+  {
+      float *other_angle_feedback_ptr;
+      float *other_speed_feedback_ptr;
+  
+      PID_t current_PID;
+      PID_t speed_PID;
+      PID_t angle_PID;
+  
+      float pid_ref; // 将会作为每个环的输入和输出顺次通过串级闭环
+  } Motor_Controller_s;
+  ```
+
+  数据类型单一、结构不复杂的类型以`_t`后缀结尾（表明这是一种数据，type）；复杂的结构体类型使用`_s`结尾，表明其功能和内涵多（structure）。
 
 ## BSP层(Board Sopport Package)
 
@@ -277,9 +328,13 @@ ROOT:.
     	   super_cap.md
 ```
 
+
+
 ## BSP/Module/Application介绍
 
-在对应应用、模块和板级支持包文件夹下。
+在对应应用、模块和板级支持包文件夹下。每个.c文件或完整的功能模块都有说明文档。在编写新代码时注意按照规范编写说明文档。
+
+
 
 ## 整体架构
 
