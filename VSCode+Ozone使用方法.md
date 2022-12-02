@@ -155,7 +155,7 @@ ITM是instrument trace macrocell指令追踪宏单元的缩写，它用于提供
 
 > 2022-12-01更新：
 >
-> ​	VSCode上线了一款新的插件：
+> ​	**VSCode上线了一款新的插件：**
 >
 > ![image-20221201134906999](assets/image-20221201134906999.png)
 >

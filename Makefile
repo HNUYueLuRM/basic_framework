@@ -130,6 +130,7 @@ modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
 modules/can_comm/can_comm.c \
 modules/message_center/message_center.c \
+modules/monitor/monitor.hc \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
@@ -226,7 +227,8 @@ C_INCLUDES =  \
 -Imodules/remote \
 -Imodules/super_cap \
 -Imodules/can_comm \
--Imodules/message_center 
+-Imodules/message_center \
+-Imodules/monitor
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

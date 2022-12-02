@@ -24,7 +24,12 @@
         "message_center.h": "c",
         "stddef.h": "c",
         "stm32_hal_legacy.h": "c",
-        "message_buffer.h": "c"
+        "message_buffer.h": "c",
+        "robot_def.h": "c",
+        "remote_control.h": "c",
+        "gimbal_cmd.h": "c",
+        "chassis_cmd.h": "c",
+        "referee.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 }
