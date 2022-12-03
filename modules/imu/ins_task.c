@@ -33,11 +33,6 @@ float RefTemp = 40; // 恒温设定温度
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
 
-/* 调用此函数获得姿态数据指针 */
-attitude_t *GetINSptr()
-{
-    return (attitude_t *)&INS.Roll;
-}
 
 /**
  * @brief 温度控制
@@ -49,7 +44,7 @@ static void IMU_Temperature_Ctrl(void)
     imu_pwm_set(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
-void INS_Init(void)
+attitude_t* INS_Init(void)
 {
     while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR);
     IMU_Param.scale[X] = 1;

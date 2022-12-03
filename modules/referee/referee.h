@@ -340,11 +340,17 @@ typedef struct
 	ext_CommunatianData_t CommuData; // 队友通信信息
 } referee_info_t;
 
-extern referee_info_t referee_info;
-
-void RefereeInit(UART_HandleTypeDef *referee_usart_handle);
-void JudgeReadData(uint8_t *ReadFromUsart);
-float JudgeGetChassisPower(void);
-
 #pragma pack()
+
+/**
+ * @brief 
+ * 
+ * @param referee_usart_handle 
+ * @return referee_info_t* 
+ */
+referee_info_t* RefereeInit(UART_HandleTypeDef *referee_usart_handle);
+
+
+
+
 #endif // !REFEREE_H

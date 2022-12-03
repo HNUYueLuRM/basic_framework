@@ -72,17 +72,10 @@ typedef struct
 } IMU_Param_t;
 
 /**
- * @brief 反馈位姿结构体指针,apps通过初始化时保存该指针以实现数据访问
- *
- * @return attitude_t*
- */
-attitude_t *GetINSptr();
-
-/**
  * @brief 初始化惯导解算系统
  *
  */
-void INS_Init(void);
+attitude_t *INS_Init(void);
 
 /**
  * @brief 此函数放入实时系统中,以1kHz频率运行

@@ -72,19 +72,21 @@ static Publisher_t message_center = {
     .first_subs = NULL,
     .next_event_node = NULL};
 
-static void CheckName(char* name)
+static void CheckName(char *name)
 {
-    if(strnlen(name,MAX_EVENT_NAME_LEN+1)>=MAX_EVENT_NAME_LEN)
+    if (strnlen(name, MAX_EVENT_NAME_LEN + 1) >= MAX_EVENT_NAME_LEN)
     {
-        while (1); // 进入这里说明事件名超出长度限制
+        while (1)
+            ; // 进入这里说明事件名超出长度限制
     }
 }
 
-static void CheckLen(uint8_t len1,uint8_t len2)
+static void CheckLen(uint8_t len1, uint8_t len2)
 {
-    if(len1!=len2)
+    if (len1 != len2)
     {
-        while(1); // 相同事件的消息长度不同
+        while (1)
+            ; // 相同事件的消息长度不同
     }
 }
 
@@ -97,14 +99,8 @@ Subscriber_t *SubRegister(char *name, uint8_t data_len)
         node = node->next_event_node;            // 指向下一个发布者(发布者发布的事件)
         if (strcmp(name, node->event_name) == 0) // 如果事件名相同就订阅这个事件
         {
-            CheckLen(data_len,node->data_len);
-            Subscriber_t *sub = node->first_subs; // 指向订阅了该事件的第一个订阅者
-            while (sub->next_subs_queue)          // 遍历订阅了该事件的链表
-            {
-                sub = sub->next_subs_queue; // 移动到下一个订阅者
-            }                               // 遇到空指针停下,说明到了链表尾部,创建新的订阅节点
-
-            // 申请内存,注意要memset因为新空间不一定是空的,可能有之前留存的垃圾值
+            CheckLen(data_len, node->data_len);
+            // 创建新的订阅者结点,申请内存,注意要memset因为新空间不一定是空的,可能有之前留存的垃圾值
             Subscriber_t *ret = (Subscriber_t *)malloc(sizeof(Subscriber_t));
             memset(ret, 0, sizeof(Subscriber_t));
             // 对新建的Subscriber进行初始化
@@ -113,11 +109,22 @@ Subscriber_t *SubRegister(char *name, uint8_t data_len)
             { // 给消息队列的每一个元素分配空间,queue里保存的实际上是数据执指针,这样可以兼容不同的数据长度
                 ret->queue[i] = malloc(sizeof(data_len));
             }
-
-            sub->next_subs_queue = ret; // 接到链表尾部,延长该订阅该事件的subs链表
+            //如果之前没有订阅者,特殊处理一下
+            if(node->first_subs==NULL) 
+            {
+                node->first_subs=ret;
+                return ret;
+            }
+            // 遍历订阅者链表,直到到达尾部
+            Subscriber_t *sub = node->first_subs; // iterator
+            while (sub->next_subs_queue) // 遍历订阅了该事件的订阅者链表
+            {
+                sub = sub->next_subs_queue; // 移动到下一个订阅者,遇到空指针停下,说明到了链表尾部
+            }                               
+            sub->next_subs_queue = ret; // 把刚刚创建的订阅者接上
             return ret;
         }
-        // 时间名不同,在下一轮循环访问下一个结点
+        // 事件名不同,在下一轮循环访问下一个结点
     }
     // 遍历完,发现尚未注册事件(还没有发布者);那么创建一个事件,此时node是publisher链表的最后一个结点
     node->next_event_node = (Publisher_t *)malloc(sizeof(Publisher_t));
@@ -146,7 +153,7 @@ Publisher_t *PubRegister(char *name, uint8_t data_len)
         node = node->next_event_node;            // 切换到下一个发布者(事件)结点
         if (strcmp(node->event_name, name) == 0) // 如果已经注册了相同的事件,直接返回结点指针
         {
-            CheckLen(data_len,node->data_len);
+            CheckLen(data_len, node->data_len);
             return node;
         }
     } // 遍历完发现尚未创建name对应的事件

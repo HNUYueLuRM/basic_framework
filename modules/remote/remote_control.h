@@ -15,6 +15,7 @@
 
 #include <stdint-gcc.h>
 #include "main.h"
+#include "usart.h"
 
 #define RC_CH_VALUE_MIN ((uint16_t)364)
 #define RC_CH_VALUE_OFFSET ((uint16_t)1024)

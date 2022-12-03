@@ -11,22 +11,23 @@
 static usart_instance* referee_usart_instance;
 
 /**************裁判系统数据******************/
-referee_info_t referee_info;
-uint8_t Judge_Self_ID;		  // 当前机器人的ID
-uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
+static referee_info_t referee_info;
+static uint8_t Judge_Self_ID;		  // 当前机器人的ID
+static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
 
 static void ReceiveCallback()
 {
 	JudgeReadData(referee_usart_instance->recv_buff);
 }
 
-void RefereeInit(UART_HandleTypeDef *referee_usart_handle)
+referee_info_t* RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 {
 	USART_Init_Config_s conf;
 	conf.module_callback = ReceiveCallback;
 	conf.usart_handle = referee_usart_handle;
 	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
 	referee_usart_instance=USARTRegister(&conf);
+	return &referee_info;
 }
 
 /**
@@ -120,15 +121,4 @@ void JudgeReadData(uint8_t *ReadFromUsart)
 			JudgeReadData(ReadFromUsart + sizeof(xFrameHeader) + LEN_CMDID + referee_info.FrameHeader.DataLength + LEN_TAIL);
 		}
 	}
-}
-
-/**
- * @brief  读取瞬时功率
- * @param  void
- * @retval 实时功率值
- * @attention
- */
-float JudgeGetChassisPower(void)
-{
-	return (referee_info.PowerHeatData.chassis_power);
 }
