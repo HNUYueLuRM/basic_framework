@@ -4,6 +4,7 @@
 #define ECD_ANGLE_COEF 0.043945f // 360/8192
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
+static uint8_t stop_flag=0;
 
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
 static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
@@ -256,7 +257,16 @@ void DJIMotorControl()
     {
         if (sender_enable_flag[i])
         {
+            if(stop_flag) // 如果紧急停止,将所有发送信息置零
+            {
+                memset(sender_assignment[i].tx_buff,0,8);
+            }
             CANTransmit(&sender_assignment[i]);
         }
     }
+}
+
+void DJIMotorStop()
+{
+    stop_flag=1;
 }

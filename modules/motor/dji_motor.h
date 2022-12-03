@@ -106,4 +106,10 @@ void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedba
 void DJIMotorControl();
 
 
+/**
+ * @brief 停止所有电机
+ * 
+ */
+void DJIMotorStop();
+
 #endif // !DJI_MOTOR_H

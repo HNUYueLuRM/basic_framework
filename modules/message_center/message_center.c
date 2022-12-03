@@ -178,7 +178,7 @@ uint8_t SubGetMessage(Subscriber_t *sub, void *data_ptr)
     return 1;
 }
 
-void PubPushMessage(Publisher_t *pub, void *data_ptr)
+uint8_t PubPushMessage(Publisher_t *pub, void *data_ptr)
 {
     Subscriber_t *iter = pub->first_subs; // iter作为订阅者指针,遍历订阅该事件的所有订阅者;如果为空说明遍历结束
     while (iter)                          // 遍历订阅了当前事件的所有订阅者,依次填入最新消息
@@ -195,4 +195,5 @@ void PubPushMessage(Publisher_t *pub, void *data_ptr)
 
         iter = iter->next_subs_queue; // 访问下一个订阅者
     }
+    return 1;
 }

@@ -34,5 +34,7 @@ void ChassisCMDInit()
 
 void ChassisCMDTask()
 {
-
+    SubGetMessage(chassis_feed_sub,&chassis_fetch_data);
+    SubGetMessage(gimbal2chassis_sub,&data_from_gimbal_cmd);
+    
 }

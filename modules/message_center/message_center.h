@@ -109,7 +109,8 @@ uint8_t SubGetMessage(Subscriber_t* sub,void* data_ptr);
  * 
  * @param pub 发布者实例指针
  * @param data_ptr 指向要发布的数据的指针
+ * @return uint8_t 新消息成功推送给几个订阅者
  */
-void PubPushMessage(Publisher_t* pub,void* data_ptr);
+uint8_t PubPushMessage(Publisher_t* pub,void* data_ptr);
 
 

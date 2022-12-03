@@ -22,7 +22,8 @@ TARGET = basic_framework
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O0 # O0避免没有使用到的变量被优化,如果没有特殊的调试需求请修改成-Og.
+          # 为了更高的性能,正式上车不需要调试时修改成-O3
 
 
 #######################################

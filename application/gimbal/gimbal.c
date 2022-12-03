@@ -5,6 +5,8 @@
 #include "message_center.h"
 
 
+#define YAW_ALIGN_ECD 0
+
 static attitude_t* Gimbal_IMU_data;                // 云台IMU数据
 static dji_motor_instance* yaw_motor;                    // yaw电机
 static dji_motor_instance *pitch_motor;                  // pitch电机
