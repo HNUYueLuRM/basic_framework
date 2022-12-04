@@ -27,6 +27,7 @@
 
 typedef struct
 {
+    // 还需要增加角速度数据
     float Roll;
     float Pitch;
     float Yaw;

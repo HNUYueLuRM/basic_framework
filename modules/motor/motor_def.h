@@ -60,10 +60,14 @@ typedef struct
 } Motor_Control_Setting_s;
 
 /* 电机控制器,包括其他来源的反馈数据指针,3环控制器和电机的参考输入*/
+// 后续增加前馈数据指针
 typedef struct
 {
     float *other_angle_feedback_ptr;
     float *other_speed_feedback_ptr;
+    // float *angle_foward_ptr;
+    // float *speed_foward_ptr;
+    // float *current_foward_ptr;
 
     PID_t current_PID;
     PID_t speed_PID;

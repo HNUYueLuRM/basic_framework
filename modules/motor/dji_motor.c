@@ -4,7 +4,7 @@
 #define ECD_ANGLE_COEF 0.043945f // 360/8192
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
-static uint8_t stop_flag=0;
+static uint8_t stop_flag = 0;
 
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
 static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
@@ -123,7 +123,7 @@ static void DecodeDJIMotor(can_instance *_instance)
 {
     // 由于需要多次变址访存,直接将buff和measure地址保存在寄存器里避免多次存取
     static uint8_t *rxbuff;
-    static dji_motor_measure *measure; 
+    static dji_motor_measure *measure;
 
     for (size_t i = 0; i < DJI_MOTOR_CNT; i++)
     {
@@ -169,7 +169,7 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
     MotorSenderGrouping(&config->can_init_config);
     // register motor to CAN bus
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
-    dji_motor_info[idx]->motor_can_instance=CANRegister(&config->can_init_config);
+    dji_motor_info[idx]->motor_can_instance = CANRegister(&config->can_init_config);
 
     return dji_motor_info[idx++];
 }
@@ -246,7 +246,7 @@ void DJIMotorControl()
             group = motor->sender_group;
             num = motor->message_num;
             sender_assignment[group].tx_buff[num] = 0xff & set >> 8;
-            sender_assignment[group].tx_buff[2*num + 1] = 0xff & set;
+            sender_assignment[group].tx_buff[2 * num + 1] = 0xff & set;
         }
         else // 遇到空指针说明所有遍历结束,退出循环
             break;
@@ -257,9 +257,9 @@ void DJIMotorControl()
     {
         if (sender_enable_flag[i])
         {
-            if(stop_flag) // 如果紧急停止,将所有发送信息置零
+            if (stop_flag) // 如果紧急停止,将所有发送信息置零
             {
-                memset(sender_assignment[i].tx_buff,0,8);
+                memset(sender_assignment[i].tx_buff, 0, 8);
             }
             CANTransmit(&sender_assignment[i]);
         }
@@ -268,5 +268,10 @@ void DJIMotorControl()
 
 void DJIMotorStop()
 {
-    stop_flag=1;
+    stop_flag = 1;
+}
+
+void DJIMotorEnable()
+{
+    stop_flag = 0;
 }

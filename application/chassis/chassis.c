@@ -207,19 +207,6 @@ void ChassisTask()
     // 获取新的控制信息
     SubGetMessage(chassis_sub, &chassis_cmd_recv);
 
-    // 如果出现重要模块离线或遥控器设置为急停,让电机停止
-    if (chassis_cmd_recv.chassis_mode == CHASSIS_ZERO_FORCE)
-    {
-        DJIMotorStop();
-    }
-
-    // 根据云台和底盘的角度offset将控制量映射到底盘坐标系上
-    // 底盘逆时针旋转为角度正方向;云台命令的方向以云台指向的方向为x,采用右手系(x指向正北时y在正东)
-    chassis_vx = chassis_cmd_recv.vx * arm_cos_f32(chassis_cmd_recv.offset_angle) -
-                 chassis_cmd_recv.vy * arm_sin_f32(chassis_cmd_recv.offset_angle);
-    chassis_vy = chassis_cmd_recv.vx * arm_sin_f32(chassis_cmd_recv.offset_angle) -
-                 chassis_cmd_recv.vy * arm_cos_f32(chassis_cmd_recv.offset_angle);
-
     // 根据控制模式设定旋转速度
     switch (chassis_cmd_recv.chassis_mode)
     {
@@ -232,9 +219,19 @@ void ChassisTask()
     case CHASSIS_ROTATE:
         // chassis_cmd_recv.wz // 当前维持定值,后续增加不规则的变速策略
         break;
+    case CHASSIS_ZERO_FORCE:
+        DJIMotorStop(); // 如果出现重要模块离线或遥控器设置为急停,让电机停止
+        break;
     default:
         break;
     }
+
+    // 根据云台和底盘的角度offset将控制量映射到底盘坐标系上
+    // 底盘逆时针旋转为角度正方向;云台命令的方向以云台指向的方向为x,采用右手系(x指向正北时y在正东)
+    chassis_vx = chassis_cmd_recv.vx * arm_cos_f32(chassis_cmd_recv.offset_angle) -
+                 chassis_cmd_recv.vy * arm_sin_f32(chassis_cmd_recv.offset_angle);
+    chassis_vy = chassis_cmd_recv.vx * arm_sin_f32(chassis_cmd_recv.offset_angle) -
+                 chassis_cmd_recv.vy * arm_cos_f32(chassis_cmd_recv.offset_angle);
 
     // 根据控制模式进行正运动学解算,计算底盘输出
     MecanumCalculate();

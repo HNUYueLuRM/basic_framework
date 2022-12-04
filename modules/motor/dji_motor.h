@@ -111,4 +111,11 @@ void DJIMotorControl();
  */
 void DJIMotorStop();
 
+/**
+ * @brief 启动所有电机,此时电机会响应设定值
+ *        初始化时不需要此函数,因为stop_flag的默认值为0
+ *
+ */
+void DJIMotorEnable();
+
 #endif // !DJI_MOTOR_H

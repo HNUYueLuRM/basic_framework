@@ -53,6 +53,10 @@ typedef enum
 } App_Status_e;
 
 // 底盘模式设置
+/**
+ * @brief 后续考虑修改为云台跟随底盘,而不是让底盘去追云台,云台的惯量比底盘小.
+ * 
+ */
 typedef enum
 {
     CHASSIS_ZERO_FORCE,        // 电流零输入
@@ -65,9 +69,8 @@ typedef enum
 typedef enum
 {
     GIMBAL_ZERO_FORCE,  // 电流零输入
-    GIMBAL_FREE_MODE,   // 云台自由运动模式，反馈值为电机total_angle
-    GIMBAL_GYRO_MODE,   // 云台陀螺仪反馈模式，反馈值为陀螺仪pitch,total_yaw_angle
-    GIMBAL_VISUAL_MODE, // 视觉模式，反馈值为陀螺仪，输入为视觉数据
+    GIMBAL_FREE_MODE,   // 云台自由运动模式,即与底盘分离(底盘此时应为NO_FOLLOW)反馈值为电机total_angle
+    GIMBAL_GYRO_MODE,   // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
 } gimbal_mode_e;
 
 // 发射模式设置
@@ -173,6 +176,7 @@ typedef struct
 typedef struct
 {
     attitude_t gimbal_imu_data;
+    uint16_t yaw_motor_ecd;
 } Gimbal_Upload_Data_s;
 
 typedef struct
