@@ -12,6 +12,10 @@
 #ifndef ROBOT_DEF_H
 #define ROBOT_DEF_H
 
+#define PI 3.14159f
+#define RAD_2_ANGLE (180.0f/PI)
+#define ANGLE_2_RAD (PI/180.0f)
+
 #include "ins_task.h"
 #include "master_process.h"
 #include "stdint-gcc.h"
@@ -24,6 +28,7 @@
 
 /* 重要参数定义,注意根据不同机器人进行修改 */
 #define YAW_MID_ECD
+
 
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
@@ -90,40 +95,9 @@ typedef enum
 // 功率限制,从裁判系统获取
 typedef struct
 { // 功率控制
-    uint8_t power_limit;
-    uint8_t buffer_power_rest;
+    
 } Chassis_Power_Data_s;
 
-
-
-
-/* ------------CMD模块之间的控制数据传递,应当由gimbal_cmd和chassis_cmd订阅------------ */
-/**
- * @brief 对于双板通信的情况,两个CMD模块各有一个can comm.
- *
- */
-
-// gimbal_cmd发布的底盘控制数据,由chassis_cmd订阅
-//  注意这里没有功率限制,为了兼容双板模式,先让chassis_cmd订阅,后者会添加功率信息再发布
-typedef struct
-{
-    // 速度控制
-    float vx;           // 前进方向速度
-    float vy;           // 横移方向速度
-    float wz;           // 旋转速度
-    float offset_angle; // 底盘和归中位置的夹角
-
-    chassis_mode_e chassis_mode;
-} Gimbal2Chassis_Data_s;
-
-// chassis_cmd发布的裁判系统和底盘信息相关的数据,由gimbal_cmd订阅
-typedef struct
-{
-    float chassis_real_rotate_wz;
-    uint8_t rest_heat;
-    Bullet_Speed_e bullet_speed;
-    Enemy_Color_e enemy_color; // 0 for blue, 1 for red
-} Chassis2Gimbal_Data_s;
 
 
 
@@ -133,14 +107,22 @@ typedef struct
  * @brief 对于双板情况,遥控器和pc在云台,裁判系统在底盘
  *
  */
-// chassis_cmd根据raw ctrl data添加功率限制后发布的底盘控制数据,由chassis订阅
+// cmd发布的底盘控制数据,由chassis订阅
 typedef struct
 {
-    Chassis_Power_Data_s chassis_power;
-    Gimbal2Chassis_Data_s chassis_cmd;
+    // 控制部分
+    float vx;           // 前进方向速度
+    float vy;           // 横移方向速度
+    float wz;           // 旋转速度
+    float offset_angle; // 底盘和归中位置的夹角
+    chassis_mode_e chassis_mode;
+
+    //UI部分
+    // ...
+
 } Chassis_Ctrl_Cmd_s;
 
-// gimbal_cmd发布的云台控制数据,由gimbal订阅
+// cmd发布的云台控制数据,由gimbal订阅
 typedef struct
 { // 云台角度控制
     float yaw;
@@ -150,7 +132,7 @@ typedef struct
     gimbal_mode_e gimbal_mode;
 } Gimbal_Ctrl_Cmd_s;
 
-// gimba_cmd发布的发射控制数据,由shoot订阅
+// cmd发布的发射控制数据,由shoot订阅
 typedef struct
 { // 发射弹速控制
     loader_mode_e load_mode;
@@ -174,6 +156,18 @@ typedef struct
 #ifdef CHASSIS_BOARD
     attitude_t chassis_imu_data;
 #endif // CHASSIS_BOARD
+
+    // 后续增加底盘的真实速度
+    // float real_vx;
+    // float real_vy;
+    // float real_wz;
+
+    uint8_t rest_heat; //剩余枪口热量
+    Bullet_Speed_e bullet_speed; //弹速限制
+    Enemy_Color_e enemy_color; // 0 for blue, 1 for red
+
+    //是否需要剩余电量?(电容)
+
 } Chassis_Upload_Data_s;
 
 typedef struct

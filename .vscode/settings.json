@@ -27,7 +27,7 @@
         "message_buffer.h": "c",
         "robot_def.h": "c",
         "remote_control.h": "c",
-        "gimbal_cmd.h": "c",
+        "robot_cmd.h": "c",
         "chassis_cmd.h": "c",
         "referee.h": "c",
         "arm_math.h": "c"

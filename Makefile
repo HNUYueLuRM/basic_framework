@@ -135,8 +135,7 @@ modules/monitor/monitor.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
-application/cmd/chassis_cmd.c \
-application/cmd/gimbal_cmd.c \
+application/cmd/robot_cmd.c \
 application/robot.c 
 
 

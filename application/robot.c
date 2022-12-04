@@ -3,40 +3,35 @@
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
 #include "chassis.h"
-#include "chassis_cmd.h"
-#endif 
+#endif
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
 #include "gimbal.h"
 #include "shoot.h"
-#include "gimbal_cmd.h"
-#endif 
-
+#include "robot_cmd.h"
+#endif
 
 void RobotInit()
 {
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisInit();
-    ChassisCMDInit();
-#endif 
+#endif
 
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
     GimbalCMDInit();
     GimbalInit();
     ShootInit();
-#endif 
+#endif
 }
 
 void RobotTask()
 {
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisTask();
-    ChassisCMDTask();
-#endif 
+#endif
 
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
     GimbalCMDTask();
     GimbalTask();
     ShootTask();
-#endif 
+#endif
 }
-
