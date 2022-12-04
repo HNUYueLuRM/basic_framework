@@ -3,10 +3,15 @@
 #include "dji_motor.h"
 #include "ins_task.h"
 #include "message_center.h"
+#include "general_def.h"
 
-// 需要将控制值统一修改为角度制而不是编码器ECD值
-#define YAW_ALIGN_ECD 0 // 云台和底盘对齐指向相同方向时的电机编码器值
-#define PITCH_HORIZON_ECD 0 // 云台处于水平位置时编码器值
+/* 根据每个机器人进行设定,若对云台有改动需要修改 */
+#define YAW_CHASSIS_ALIGN_ECD 0 // 云台和底盘对齐指向相同方向时的电机编码器值
+#define PITCH_HORIZON_ECD 0     // 云台处于水平位置时编码器值
+
+// 自动将编码器转换成角度值
+#define YAW_CHASSIS_ALIGN_ANGLE
+#define PTICH_HORIZON_ALIGN_ANGLE
 
 static attitude_t *Gimbal_IMU_data;     // 云台IMU数据
 static dji_motor_instance *yaw_motor;   // yaw电机
@@ -43,7 +48,7 @@ void GimbalInit()
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type=ANGLE_LOOP,
+            .outer_loop_type = ANGLE_LOOP,
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
@@ -70,7 +75,7 @@ void GimbalInit()
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type=ANGLE_LOOP,
+            .outer_loop_type = ANGLE_LOOP,
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
@@ -84,8 +89,8 @@ void GimbalInit()
 }
 
 // /**
-//  * @brief 
-//  * 
+//  * @brief
+//  *
 //  */
 // static void TransitionMode()
 // {
@@ -111,17 +116,17 @@ void GimbalTask()
         DJIMotorChangeFeed(yaw_motor, SPEED_LOOP, OTHER_FEED);
         DJIMotorChangeFeed(pitch_motor, ANGLE_LOOP, OTHER_FEED);
         DJIMotorChangeFeed(pitch_motor, SPEED_LOOP, OTHER_FEED);
-        DJIMotorSetRef(yaw_motor,gimbal_cmd_recv.yaw);
-        DJIMotorSetRef(pitch_motor,gimbal_cmd_recv.pitch);
+        DJIMotorSetRef(yaw_motor, gimbal_cmd_recv.yaw);
+        DJIMotorSetRef(pitch_motor, gimbal_cmd_recv.pitch);
         break;
-    //是否考虑直接让云台和底盘重合,其他模式都使用陀螺仪反馈?
+    // 是否考虑直接让云台和底盘重合,其他模式都使用陀螺仪反馈?
     case GIMBAL_FREE_MODE:
         DJIMotorChangeFeed(yaw_motor, ANGLE_LOOP, MOTOR_FEED);
         DJIMotorChangeFeed(yaw_motor, SPEED_LOOP, MOTOR_FEED);
         DJIMotorChangeFeed(pitch_motor, ANGLE_LOOP, MOTOR_FEED);
         DJIMotorChangeFeed(pitch_motor, SPEED_LOOP, MOTOR_FEED);
-        DJIMotorSetRef(yaw_motor,YAW_ALIGN_ECD);
-        DJIMotorSetRef(pitch_motor,PITCH_HORIZON_ECD);
+        DJIMotorSetRef(yaw_motor, YAW_ALIGN_ECD);
+        DJIMotorSetRef(pitch_motor, PITCH_HORIZON_ECD);
         break;
     default:
         break;
@@ -142,9 +147,9 @@ void GimbalTask()
     */
 
     // 获取反馈数据
-    gimbal_feedback_data.gimbal_imu_data=*Gimbal_IMU_data;
-    gimbal_feedback_data.yaw_motor_ecd=pitch_motor->motor_measure.ecd;
-    
+    gimbal_feedback_data.gimbal_imu_data = *Gimbal_IMU_data;
+    gimbal_feedback_data.yaw_motor_ecd = pitch_motor->motor_measure.ecd;
+
     // 推送消息
-    PubPushMessage(gimbal_pub,&gimbal_feedback_data);
+    PubPushMessage(gimbal_pub, &gimbal_feedback_data);
 }

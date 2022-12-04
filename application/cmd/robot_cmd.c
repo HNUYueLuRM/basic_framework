@@ -4,6 +4,7 @@
 #include "ins_task.h"
 #include "master_process.h"
 #include "message_center.h"
+#include "general_def.h"
 
 /* gimbal_cmd应用包含的模块实例指针和交互信息存储*/
 #ifndef ONE_BOARD

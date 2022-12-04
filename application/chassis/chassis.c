@@ -17,6 +17,7 @@
 #include "super_cap.h"
 #include "message_center.h"
 #include "referee.h"
+#include "general_def.h"
 
 #include "arm_math.h"
 

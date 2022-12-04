@@ -1,6 +1,6 @@
 #include "dji_motor.h"
+#include "general_def.h"
 
-#define PI2 (3.141592f * 2)  // 2pi
 #define ECD_ANGLE_COEF 0.043945f // 360/8192,将编码器值转化为角度制
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
@@ -129,20 +129,24 @@ static void DecodeDJIMotor(can_instance *_instance)
         if (dji_motor_info[i]->motor_can_instance == _instance)
         {
             rxbuff = _instance->rx_buff;
-            measure = &dji_motor_info[i]->motor_measure;
+            measure = &dji_motor_info[i]->motor_measure; // measure要多次使用,保存指针减小访存开销
+
             // resolve data and apply filter to current and speed
             measure->last_ecd = measure->ecd;
             measure->ecd = (uint16_t)(rxbuff[0] << 8 | rxbuff[1]);
-            // 增加滤波
-            measure->speed_rpm = (1 - SPEED_SMOOTH_COEF) * measure->speed_rpm + SPEED_SMOOTH_COEF * (int16_t)(rxbuff[2] << 8 | rxbuff[3]);
-            measure->given_current = (1 - CURRENT_SMOOTH_COEF) * measure->given_current + CURRENT_SMOOTH_COEF * (uint16_t)(rxbuff[4] << 8 | rxbuff[5]);
+            measure->angle_single_round = ECD_ANGLE_COEF* measure->ecd;
+            measure->speed_angle_per_sec = (1 - SPEED_SMOOTH_COEF) * measure->speed_angle_per_sec + 
+                                           RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (int16_t)(rxbuff[2] << 8 | rxbuff[3]);
+            measure->given_current = (1 - CURRENT_SMOOTH_COEF) * measure->given_current + 
+                                     RPM_2_ANGLE_PER_SEC * CURRENT_SMOOTH_COEF * (uint16_t)(rxbuff[4] << 8 | rxbuff[5]);
             measure->temperate = rxbuff[6];
-            // multi round calc
-            if (measure->ecd - measure->last_ecd > 4096)
+
+            // multi rounds calc,计算的前提是两次采样间电机转过的角度小于180°
+            if (measure->ecd - measure->last_ecd > 4096) 
                 measure->total_round--;
             else if (measure->ecd - measure->last_ecd < -4096)
                 measure->total_round++;
-            measure->total_angle = measure->total_round * 360 + measure->ecd * ECD_ANGLE_COEF; // @todo simplify the calculation
+            measure->total_angle = measure->total_round * 360 + measure->angle_single_round; 
             break;
         }
     }
@@ -164,8 +168,10 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
     PID_Init(&dji_motor_info[idx]->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
     dji_motor_info[idx]->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     dji_motor_info[idx]->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
+    
     // group motors, because 4 motors share the same CAN control message
     MotorSenderGrouping(&config->can_init_config);
+
     // register motor to CAN bus
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
     dji_motor_info[idx]->motor_can_instance = CANRegister(&config->can_init_config);
@@ -173,7 +179,6 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
     return dji_motor_info[idx++];
 }
 
-// 改变反馈来源
 void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedback_Source_e type)
 {
     if (loop == ANGLE_LOOP)
@@ -186,12 +191,28 @@ void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedba
     }
 }
 
+void DJIMotorStop(dji_motor_instance *motor)
+{
+    motor->stop_flag = MOTOR_STOP;
+}
+
+void DJIMotorEnable(dji_motor_instance *motor)
+{
+    motor->stop_flag = MOTOR_ENALBED;
+}
+
+void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop)
+{
+    motor->motor_settings.outer_loop_type = outer_loop;
+}
+
 // 设置参考值
 void DJIMotorSetRef(dji_motor_instance *motor, float ref)
 {
     motor->motor_controller.pid_ref = ref;
 }
-// 计算三环PID,发送控制报文
+
+// 为所有电机实例计算三环PID,发送控制报文
 void DJIMotorControl()
 {
     // 预先通过静态变量定义避免反复释放分配栈空间,直接保存一次指针引用从而减小访存的开销
@@ -231,7 +252,7 @@ void DJIMotorControl()
                 if (motor_setting->speed_feedback_source == OTHER_FEED)
                     pid_measure = *motor_controller->other_speed_feedback_ptr;
                 else
-                    pid_measure = motor_measure->speed_rpm;
+                    pid_measure = motor_measure->speed_angle_per_sec;
                 // 更新pid_ref进入下一个环
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, motor_controller->pid_ref);
             }
@@ -271,19 +292,4 @@ void DJIMotorControl()
             CANTransmit(&sender_assignment[i]);
         }
     }
-}
-
-void DJIMotorStop(dji_motor_instance *motor)
-{
-    motor->stop_flag = MOTOR_STOP;
-}
-
-void DJIMotorEnable(dji_motor_instance *motor)
-{
-    motor->stop_flag = MOTOR_ENALBED;
-}
-
-void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop)
-{
-    motor->motor_settings.outer_loop_type = outer_loop;
 }

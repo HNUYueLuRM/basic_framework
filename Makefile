@@ -121,7 +121,8 @@ modules/master_machine/seasky_protocol.c \
 modules/motor/dji_motor.c \
 modules/motor/HT04.c \
 modules/motor/LK9025.c \
-modules/mode/step_motor.c \
+modules/motor/step_motor.c \
+modules/motor/servo_motor.c \
 modules/motor/motor_task.c \
 modules/referee/crc.c \
 modules/referee/referee.c \
@@ -228,7 +229,8 @@ C_INCLUDES =  \
 -Imodules/super_cap \
 -Imodules/can_comm \
 -Imodules/message_center \
--Imodules/monitor
+-Imodules/monitor \
+-Imodules/
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

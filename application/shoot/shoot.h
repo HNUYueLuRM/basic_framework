@@ -5,4 +5,4 @@ void ShootInit();
 
 void ShootTask();
 
-#endif //SHOOT_H
+#endif // SHOOT_H

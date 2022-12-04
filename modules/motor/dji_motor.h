@@ -22,19 +22,20 @@
 #define DJI_MOTOR_CNT 12
 
 /* 滤波系数设置为1的时候即关闭滤波 */
-#define SPEED_SMOOTH_COEF 0.85f   // better to be greater than 0.8
-#define CURRENT_SMOOTH_COEF 0.98f // this coef must be greater than 0.95
+#define SPEED_SMOOTH_COEF 0.9f    // better to be greater than 0.85
+#define CURRENT_SMOOTH_COEF 0.98f // this coef *must* be greater than 0.95
 
 /* DJI电机CAN反馈信息*/
 typedef struct
 {
-    uint16_t ecd; // 0-8192
-    uint16_t last_ecd;
-    int16_t speed_rpm;     // rounds per minute
-    int16_t given_current; // 实际电流
-    uint8_t temperate;
-    int16_t total_round; // 总圈数,注意方向
-    int32_t total_angle; // 总角度,注意方向
+    uint16_t ecd;              // 0-8191,刻度总共有8192格
+    uint16_t last_ecd;         // 上一次读取的编码器值
+    float angle_single_round;  // 单圈角度
+    float speed_angle_per_sec; // 度/秒 rounds per minute
+    int16_t given_current;     // 实际电流
+    uint8_t temperate;         // 温度 Celsius
+    int16_t total_round;       // 总圈数,注意方向
+    int32_t total_angle;       // 总角度,注意方向
 } dji_motor_measure;
 
 /**
@@ -59,9 +60,8 @@ typedef struct
     uint8_t sender_group;
     uint8_t message_num;
 
-    Motor_Type_e motor_type;
-
-    Motor_Working_Type_e stop_flag;
+    Motor_Type_e motor_type;        // 电机类型
+    Motor_Working_Type_e stop_flag; // 启停标志
 
 } dji_motor_instance;
 
@@ -111,22 +111,21 @@ void DJIMotorControl();
  * @brief 停止电机,注意不是将设定值设为零,而是直接给电机发送的电流值置零
  *
  */
-void DJIMotorStop(dji_motor_instance* motor);
+void DJIMotorStop(dji_motor_instance *motor);
 
 /**
  * @brief 启动电机,此时电机会响应设定值
  *        初始化时不需要此函数,因为stop_flag的默认值为0
  *
  */
-void DJIMotorEnable(dji_motor_instance* motor);
+void DJIMotorEnable(dji_motor_instance *motor);
 
 /**
  * @brief 修改电机闭环目标(外层闭环)
- * 
+ *
  * @param motor  要修改的电机实例指针
  * @param outer_loop 外层闭环类型
  */
 void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop);
-
 
 #endif // !DJI_MOTOR_H

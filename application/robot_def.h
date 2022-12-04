@@ -12,10 +12,6 @@
 #ifndef ROBOT_DEF_H
 #define ROBOT_DEF_H
 
-#define PI 3.14159f
-#define RAD_2_ANGLE (180.0f / PI)
-#define ANGLE_2_RAD (PI / 180.0f)
-
 #include "ins_task.h"
 #include "master_process.h"
 #include "stdint-gcc.h"

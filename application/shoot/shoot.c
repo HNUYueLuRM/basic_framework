@@ -3,6 +3,7 @@
 #include "dji_motor.h"
 #include "message_center.h"
 #include "bsp_dwt.h"
+#include "general_def.h"
 
 #define ONE_BULLET_DELTA_ANGLE 0 // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
 #define REDUCTION_RATIO 49.0f    // 拨盘电机的减速比,英雄需要修改为3508的19.0f
@@ -19,9 +20,8 @@ static Shoot_Ctrl_Cmd_s shoot_cmd_recv; // 来自gimbal_cmd的发射控制信息
 static Subscriber_t *shoot_sub;
 static Shoot_Upload_Data_s shoot_feedback_data; // 来自gimbal_cmd的发射控制信息
 
-// 定时,计算冷却用
-static uint32_t INS_DWT_Count = 0;
-static float dt = 0, t = 0;
+// dwt定时,计算冷却用
+static float hibernate_time = 0, dead_time = 0;
 
 void ShootInit()
 {
@@ -125,30 +125,39 @@ void ShootTask()
     // 从cmd获取控制数据
     SubGetMessage(shoot_sub, &shoot_cmd_recv);
 
-    // 根据控制模式进行电机参考值设定和模式切换
-    switch (shoot_cmd_recv.load_mode)
+    // 对shoot mode等于SHOOT_STOP的情况特殊处理,直接停止所有电机
+    if (shoot_cmd_recv.load_mode == SHOOT_STOP)
     {
-    // 停止三个电机
-    case SHOOT_STOP:
         DJIMotorStop(friction_l);
         DJIMotorStop(friction_r);
         DJIMotorStop(loader);
-        break;
+    }
+
+    // 如果上一次触发单发或3发指令的时间加上不应期仍然大于当前时间(尚未休眠完毕),直接返回即可
+    if (hibernate_time + dead_time > DWT_GetTimeline_ms())
+        return;
+
+    // 若不在休眠状态,根据控制模式进行电机参考值设定和模式切换
+    switch (shoot_cmd_recv.load_mode)
+    {
     // 停止拨盘
     case LOAD_STOP:
         DJIMotorOuterLoop(loader, SPEED_LOOP);
         DJIMotorSetRef(loader, 0);
         break;
-    // 单发模式,根据鼠标按下的时间,触发一次之后需要进入不响应输入的状态(否则按下的时间内可能多次进入)
-    // 激活能量机关/干扰对方用,英雄用.
-    case LOAD_1_BULLET:
+    // 单发模式,根据鼠标按下的时间,触发一次之后需要进入不响应输入的状态(否则按下的时间内可能多次进入)F
+    case LOAD_1_BULLET: // 激活能量机关/干扰对方用,英雄用.
         DJIMotorOuterLoop(loader, ANGLE_LOOP);
-        DJIMotorSetRef(loader, loader->motor_measure.total_angle + ONE_BULLET_DELTA_ANGLE); // 增加一发弹丸
+        DJIMotorSetRef(loader, loader->motor_measure.total_angle + ONE_BULLET_DELTA_ANGLE); // 增加一发弹丸的角度
+        hibernate_time = DWT_GetTimeline_ms();                                              // 记录触发指令的时间
+        dead_time = 150;                                                                    // 完成1发弹丸发射的时间
         break;
     // 三连发,如果不需要后续可能删除
     case LOAD_3_BULLET:
         DJIMotorOuterLoop(loader, ANGLE_LOOP);
         DJIMotorSetRef(loader, loader->motor_measure.total_angle + 3 * ONE_BULLET_DELTA_ANGLE); // 增加3发
+        hibernate_time = DWT_GetTimeline_ms();                                                  // 记录触发指令的时间
+        dead_time = 300;                                                                        // 完成3发弹丸发射的时间
         break;
     // 连发模式,对速度闭环,射频后续修改为可变
     case LOAD_BURSTFIRE:
