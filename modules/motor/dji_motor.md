@@ -11,7 +11,15 @@
 
 > 如果你不需要理解该模块的工作原理，你只需要查看这一小节。
 
-dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详尽的封装。你不再需要关心PID的计算以及CAN报文的发送和接收解析，你只需要专注于根据应用层的需求，设定合理的期望值，并通过`DJIMotorSetRef()`设置对应电机的输入参考即可。如果你希望更改电机的反馈来源，比如进入小陀螺模式（这时候你想要云台保持静止，使用IMU的yaw角度值作为反馈来源），只需要调用`DJIMotorChangeFeed()`，电机便可立刻切换反馈数据来源至IMU。
+dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详尽的封装。你不再需要关心PID的计算以及CAN报文的发送和接收解析，你只需要专注于根据应用层的需求，设定合理的期望值，并通过`DJIMotorSetRef()`设置对应电机的输入参考即可。
+
+**==设定值的单位==**
+
+1. 位置环为角度，角度制。
+2. 速度环为角速度，单位为度/每秒
+3. 
+
+如果你希望更改电机的反馈来源，比如进入小陀螺模式/视觉模式（这时候你想要云台保持静止，使用IMU的yaw角度值作为反馈来源），只需要调用`DJIMotorChangeFeed()`，电机便可立刻切换反馈数据来源至IMU。
 
 要获得一个电机，请通过`DJIMotorInit()`并传入一些参数，他就会返回一个电机的指针。你也不再需要查看这些电机和电调的说明书，**只需要设置其电机id**（6020为拨码开关值，2006和3508为电调的闪动次数），该模块会自动为你计算CAN发送和接收ID并搞定所有硬件层的琐事。
 
@@ -41,9 +49,9 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
     CURRENT_LOOP 
     SPEED_LOOP 
     ANGLE_LOOP 
-    CURRENT_LOOP| SPEED_LOOP  			 // 同时对电流和速度闭环
-    SPEED_LOOP  | ANGLE_LOOP  			 // 同时对速度和位置闭环
-    CURRENT_LOOP| SPEED_LOOP |ANGLE_LOOP // 三环全开
+    CURRENT_LOOP | SPEED_LOOP  			  // 同时对电流和速度闭环
+    SPEED_LOOP   | ANGLE_LOOP  			  // 同时对速度和位置闭环
+    CURRENT_LOOP | SPEED_LOOP |ANGLE_LOOP // 三环全开
     ```
 
   - 是否反转
@@ -120,9 +128,11 @@ Motor_Init_Config_s config = {
 		.motor_type = M3508,  // 要注册的电机为3508电机
 		.can_init_config = {.can_handle = &hcan1, // 挂载在CAN1
 							.tx_id = 1},          // C620每隔一段时间闪动1次,设置为1
-		// 采用电机编码器角度与速度反馈,启用速度环和电流环,不反转
+		// 采用电机编码器角度与速度反馈,启用速度环和电流环,不反转,最外层闭环为速度环
         .controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, 
-										   .close_loop_type = SPEED_LOOP | CURRENT_LOOP, 
+										   
+            .outer_loop_type = SPEED_LOOP,
+            .close_loop_type = SPEED_LOOP | CURRENT_LOOP, 
 										   .speed_feedback_source = MOTOR_FEED, 
 										   .reverse_flag = MOTOR_DIRECTION_NORMAL},
     	// 电流环和速度环PID参数的设置,不采用计算优化则不需要传入Improve参数
@@ -218,7 +228,9 @@ typedef struct
     /* sender assigment*/
     uint8_t sender_group;
     uint8_t message_num;
-
+	
+  	uint8_t stop_flag;
+    
     Motor_Type_e motor_type;
 } dji_motor_instance;
 ```
@@ -233,6 +245,7 @@ typedef struct
   ```c
   typedef struct /* 电机控制配置 */
   {
+      Closeloop_Type_e outer_loop_type;
       Closeloop_Type_e close_loop_type;
       Reverse_Flag_e reverse_flag;
       Feedback_Source_e angle_feedback_source;
@@ -257,6 +270,9 @@ typedef struct
     ```
 
     以M3508为例，假设需要进行**速度闭环**和**电流闭环**，那么在初始化时就将这个变量的值设为`CURRENT_LOOP | SPEED_LOOP`。在`DJIMotorControl()`中，函数将会根据此标志位判断设定的参考值需要经过那些控制器的计算。
+    另外,你还需要设置当前电机的最外层闭环，即电机的闭环目标为什么类型的值。初始化时需要设置`outer_loop_type`。以M2006作为拨盘电机时为例，你希望它在单发/双发等固定发射数量的模式下对位置进行闭环（拨盘转过一定角度对应拨出一颗弹丸），但你也有可能希望在连发的时候让拨盘连续的转动，以一定的频率发射弹丸。我们提供了`DJIMotorOuterLoop()`用于修改电机的外层闭环，改变电机的闭环对象。
+
+    > 注意，务必分清串级控制（多环）和外层闭环的区别。前者是为了提高内环的性能，使得其能更好地跟随外环参考值；而后者描述的是系统真实的控制目标（闭环目标）。如3508，没有电流环仍然可以对速度完成闭环，对于高层的应用来说，它们本质上不关心电机内部是否还有电流环，它们只把外层闭环为速度的电机当作一个**速度伺服执行器**，**外层闭环**描述的就是真正的闭环目标。
 
   - 为了避开恼人的正负号，提高代码的可维护性，在初始化电机时设定`reverse_flag`使得所有电机都按照你想要的方向旋转，其定义如下：
 
@@ -321,6 +337,12 @@ void DJIMotorChangeFeed(dji_motor_instance *motor,
                         Feedback_Source_e type);
 
 void DJIMotorControl();
+
+void DJIMotorStop(dji_motor_instance *motor);
+
+void DJIMotorEnable(dji_motor_instance *motor);
+
+void DJIMotorOuterLoop(dji_motor_instance *motor);
 ```
 
 - `DJIMotorInit()`是用于初始化电机对象的接口，传入包括电机can配置、电机控制配置、电机控制器配置以及电机类型在内的初始化参数。**它将会返回一个电机实例指针**，你应当在应用层保存这个指针，这样才能操控这个电机。
@@ -337,6 +359,12 @@ void DJIMotorControl();
   2. 根据反转标志位，确定是否将输出反转
   3. 根据每个电机的发送分组，将最终输出值填入对应的分组buff
   4. 检查每一个分组，若该分组有电机，发送报文
+  
+- `DJIMotorStop()`和`DJIMotorEnable()`用于控制电机的启动和停止。当电机被设为stop的时候，不会响应任何的参考输入。
+
+- `DJIMotorOuterLoop()`用于修改电机的外部闭环类型，即电机的真实闭环目标。
+
+  
 
 ## 私有函数和变量
 
@@ -350,7 +378,7 @@ static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
 这是管理所有电机实例的入口。idx用于电机初始化。
 
 ```c
-#define PI2 3.141592f
+#define PI2 (3.141592f * 2)
 #define ECD_ANGLE_COEF 3.835e-4 // ecd/8192*pi
 ```
 
@@ -404,6 +432,7 @@ Motor_Init_Config_s config = {
         },
 		.controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED, 
+            .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | ANGLE_LOOP, 
             .speed_feedback_source = MOTOR_FEED, 
             .reverse_flag = MOTOR_DIRECTION_NORMAL
@@ -436,4 +465,4 @@ dji_motor_instance *djimotor = DJIMotorInit(&config);
 DJIMotorSetRef(djimotor, 10);
 ```
 
-前提是已经将`MotorTask()`放入实时系统任务当中。你也可以单独执行`MotorControl()`。
+前提是已经将`DJIMotorControl()`放入实时系统任务当中或以一定d。你也可以单独执行`DJIMotorControl()`。

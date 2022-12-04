@@ -2,17 +2,26 @@
 #include "robot_def.h"
 #include "dji_motor.h"
 #include "message_center.h"
+#include "bsp_dwt.h"
 
-/* 对于双发射机构的机器人,将下面的数据封装成结构体即可,生成两份shoot应用实例
- */
+#define ONE_BULLET_DELTA_ANGLE 0 // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
+#define REDUCTION_RATIO 49.0f    // 拨盘电机的减速比,英雄需要修改为3508的19.0f
+#define NUM_PER_CIRCLE 1         // 拨盘一圈的装载量
+
+/* 对于双发射机构的机器人,将下面的数据封装成结构体即可,生成两份shoot应用实例 */
 static dji_motor_instance *friction_l; // 左摩擦轮
 static dji_motor_instance *friction_r; // 右摩擦轮
 static dji_motor_instance *loader;     // 拨盘电机
+// static servo_instance *lid; 需要增加弹舱盖
 
 static Publisher_t *shoot_pub;
 static Shoot_Ctrl_Cmd_s shoot_cmd_recv; // 来自gimbal_cmd的发射控制信息
 static Subscriber_t *shoot_sub;
 static Shoot_Upload_Data_s shoot_feedback_data; // 来自gimbal_cmd的发射控制信息
+
+// 定时,计算冷却用
+static uint32_t INS_DWT_Count = 0;
+static float dt = 0, t = 0;
 
 void ShootInit()
 {
@@ -38,6 +47,8 @@ void ShootInit()
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
+
+            .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
@@ -64,11 +75,12 @@ void ShootInit()
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
+            .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
         .motor_type = M3508};
-    //  拨盘电机
+    // 拨盘电机
     Motor_Init_Config_s loader_config = {
         .can_init_config = {
             .can_handle = &hcan1,
@@ -76,9 +88,13 @@ void ShootInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
+                // 如果启用位置环来控制发弹,需要较大的I值保证输出力矩的线性度否则出现接近拨出的力矩大幅下降
                 .Kd = 10,
                 .Ki = 1,
                 .Kd = 2,
+            },
+            .angle_PID = {
+
             },
             .speed_PID = {
 
@@ -88,12 +104,13 @@ void ShootInit()
             },
         },
         .controller_setting_init_config = {
-            .angle_feedback_source = MOTOR_FEED,
-            .speed_feedback_source = MOTOR_FEED,
-            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
+            .angle_feedback_source = MOTOR_FEED, .speed_feedback_source = MOTOR_FEED,
+            .outer_loop_type = SPEED_LOOP, // 初始化成SPEED_LOOP,让拨盘停在原地,防止拨盘上电时乱转
+            .close_loop_type = ANGLE_LOOP | SPEED_LOOP | CURRENT_LOOP,
+            .reverse_flag = MOTOR_DIRECTION_REVERSE, // 注意方向设置为拨盘的拨出的击发方向
         },
-        .motor_type = M2006};
+        .motor_type = M2006 // 英雄使用m3508
+    };
 
     friction_l = DJIMotorInit(&left_friction_config);
     friction_r = DJIMotorInit(&right_friction_config);
@@ -105,4 +122,76 @@ void ShootInit()
 
 void ShootTask()
 {
+    // 从cmd获取控制数据
+    SubGetMessage(shoot_sub, &shoot_cmd_recv);
+
+    // 根据控制模式进行电机参考值设定和模式切换
+    switch (shoot_cmd_recv.load_mode)
+    {
+    // 停止三个电机
+    case SHOOT_STOP:
+        DJIMotorStop(friction_l);
+        DJIMotorStop(friction_r);
+        DJIMotorStop(loader);
+        break;
+    // 停止拨盘
+    case LOAD_STOP:
+        DJIMotorOuterLoop(loader, SPEED_LOOP);
+        DJIMotorSetRef(loader, 0);
+        break;
+    // 单发模式,根据鼠标按下的时间,触发一次之后需要进入不响应输入的状态(否则按下的时间内可能多次进入)
+    // 激活能量机关/干扰对方用,英雄用.
+    case LOAD_1_BULLET:
+        DJIMotorOuterLoop(loader, ANGLE_LOOP);
+        DJIMotorSetRef(loader, loader->motor_measure.total_angle + ONE_BULLET_DELTA_ANGLE); // 增加一发弹丸
+        break;
+    // 三连发,如果不需要后续可能删除
+    case LOAD_3_BULLET:
+        DJIMotorOuterLoop(loader, ANGLE_LOOP);
+        DJIMotorSetRef(loader, loader->motor_measure.total_angle + 3 * ONE_BULLET_DELTA_ANGLE); // 增加3发
+        break;
+    // 连发模式,对速度闭环,射频后续修改为可变
+    case LOAD_BURSTFIRE:
+        DJIMotorOuterLoop(loader, SPEED_LOOP);
+        DJIMotorSetRef(loader, shoot_cmd_recv.shoot_rate * 360 * REDUCTION_RATIO / NUM_PER_CIRCLE);
+        // x颗/秒换算成速度: 已知一圈的载弹量,由此计算出1s需要转的角度,注意换算角速度
+        break;
+    // 拨盘反转,对速度闭环,后续增加卡弹检测(通过裁判系统剩余热量反馈)
+    // 可能需要从switch-case中独立出来
+    case LOAD_REVERSE:
+        DJIMotorOuterLoop(loader, SPEED_LOOP);
+        // ...
+        break;
+    default:
+        break;
+    }
+
+    // 根据收到的弹速设置设定摩擦轮参考值,需实测后填入
+    switch (shoot_cmd_recv.bullet_speed)
+    {
+    case SMALL_AMU_15:
+        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_l, 0);
+        break;
+    case SMALL_AMU_18:
+        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_l, 0);
+        break;
+    case SMALL_AMU_30:
+        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_l, 0);
+        break;
+    default:
+        break;
+    }
+
+    // 开关弹舱盖
+    if (shoot_cmd_recv.lid_mode == LID_CLOSE)
+    {
+        //...
+    }
+    else if (shoot_cmd_recv.lid_mode == LID_OPEN)
+    {
+        //...
+    }
 }

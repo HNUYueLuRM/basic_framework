@@ -43,6 +43,7 @@ void GimbalInit()
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
+            .outer_loop_type=ANGLE_LOOP,
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
@@ -69,6 +70,7 @@ void GimbalInit()
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
+            .outer_loop_type=ANGLE_LOOP,
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
@@ -101,7 +103,8 @@ void GimbalTask()
     switch (gimbal_cmd_recv.gimbal_mode)
     {
     case GIMBAL_ZERO_FORCE:
-        DJIMotorStop();
+        DJIMotorStop(yaw_motor);
+        DJIMotorStop(pitch_motor);
         break;
     case GIMBAL_GYRO_MODE:
         DJIMotorChangeFeed(yaw_motor, ANGLE_LOOP, OTHER_FEED);

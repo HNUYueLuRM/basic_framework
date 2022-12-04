@@ -17,7 +17,6 @@
 
 #define LIMIT_MIN_MAX(x, min, max) (x) = (((x) <= (min)) ? (min) : (((x) >= (max)) ? (max) : (x)))
 
-
 /**
  * @brief 闭环类型,如果需要多个闭环,则使用或运算
  *        例如需要速度环和电流环: CURRENT_LOOP|SPEED_LOOP
@@ -49,13 +48,20 @@ typedef enum
     MOTOR_DIRECTION_REVERSE = 1
 } Reverse_Flag_e;
 
+typedef enum
+{
+    MOTOR_STOP = 0,
+    MOTOR_ENALBED = 1,
+} Motor_Working_Type_e;
+
 /* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
 typedef struct
 {
-    Closeloop_Type_e close_loop_type;
-    Reverse_Flag_e reverse_flag;
-    Feedback_Source_e angle_feedback_source;
-    Feedback_Source_e speed_feedback_source;
+    Closeloop_Type_e outer_loop_type;        // 最外层的闭环,未设置时默认为最高级的闭环
+    Closeloop_Type_e close_loop_type;        // 使用几个闭环(串级)
+    Reverse_Flag_e reverse_flag;             // 是否反转
+    Feedback_Source_e angle_feedback_source; // 角度反馈类型
+    Feedback_Source_e speed_feedback_source; // 速度反馈类型
 
 } Motor_Control_Setting_s;
 
@@ -63,9 +69,9 @@ typedef struct
 // 后续增加前馈数据指针
 typedef struct
 {
-    float *other_angle_feedback_ptr;
+    float *other_angle_feedback_ptr; // 其他反馈来源的反馈数据指针
     float *other_speed_feedback_ptr;
-    // float *angle_foward_ptr;
+    // float *angle_foward_ptr; //前馈数据指针
     // float *speed_foward_ptr;
     // float *current_foward_ptr;
 
@@ -83,7 +89,7 @@ typedef enum
     M3508 = 1,
     M2006 = 2,
     LK9025 = 3,
-    HT04 = 4
+    HT04 = 4,
 } Motor_Type_e;
 
 /**

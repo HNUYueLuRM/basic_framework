@@ -4,17 +4,17 @@
  * @author Even
  * @version 0.1
  * @date 2022-12-02
- * 
+ *
  * @copyright Copyright (c) HNU YueLu EC 2022 all rights reserved
- * 
+ *
  */
 
 #ifndef ROBOT_DEF_H
 #define ROBOT_DEF_H
 
 #define PI 3.14159f
-#define RAD_2_ANGLE (180.0f/PI)
-#define ANGLE_2_RAD (PI/180.0f)
+#define RAD_2_ANGLE (180.0f / PI)
+#define ANGLE_2_RAD (PI / 180.0f)
 
 #include "ins_task.h"
 #include "master_process.h"
@@ -28,7 +28,6 @@
 
 /* 重要参数定义,注意根据不同机器人进行修改 */
 #define YAW_MID_ECD
-
 
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
@@ -55,7 +54,7 @@ typedef enum
 // 底盘模式设置
 /**
  * @brief 后续考虑修改为云台跟随底盘,而不是让底盘去追云台,云台的惯量比底盘小.
- * 
+ *
  */
 typedef enum
 {
@@ -68,9 +67,9 @@ typedef enum
 // 云台模式设置
 typedef enum
 {
-    GIMBAL_ZERO_FORCE,  // 电流零输入
-    GIMBAL_FREE_MODE,   // 云台自由运动模式,即与底盘分离(底盘此时应为NO_FOLLOW)反馈值为电机total_angle
-    GIMBAL_GYRO_MODE,   // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
+    GIMBAL_ZERO_FORCE, // 电流零输入
+    GIMBAL_FREE_MODE,  // 云台自由运动模式,即与底盘分离(底盘此时应为NO_FOLLOW)反馈值为电机total_angle
+    GIMBAL_GYRO_MODE,  // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
 } gimbal_mode_e;
 
 // 发射模式设置
@@ -83,11 +82,12 @@ typedef enum
 typedef enum
 {
     LID_CLOSE, // 弹舱盖打开
-    LID_ON,    // 弹舱盖关闭
+    LID_OPEN,  // 弹舱盖关闭
 } lid_mode_e;
 
 typedef enum
 {
+    SHOOT_STOP,     // 停止整个发射模块,后续可能隔离出来
     LOAD_STOP,      // 停止发射
     LOAD_REVERSE,   // 反转
     LOAD_1_BULLET,  // 单发
@@ -98,12 +98,8 @@ typedef enum
 // 功率限制,从裁判系统获取
 typedef struct
 { // 功率控制
-    
+
 } Chassis_Power_Data_s;
-
-
-
-
 
 /* ----------------CMD应用发布的控制数据,应当由gimbal/chassis/shoot订阅---------------- */
 /**
@@ -120,8 +116,8 @@ typedef struct
     float offset_angle; // 底盘和归中位置的夹角
     chassis_mode_e chassis_mode;
 
-    //UI部分
-    // ...
+    // UI部分
+    //  ...
 
 } Chassis_Ctrl_Cmd_s;
 
@@ -137,16 +133,14 @@ typedef struct
 
 // cmd发布的发射控制数据,由shoot订阅
 typedef struct
-{ // 发射弹速控制
+{ 
     loader_mode_e load_mode;
     lid_mode_e lid_mode;
     shoot_mode_e shoot_mode;
-    Bullet_Speed_e bullet_speed;
+    Bullet_Speed_e bullet_speed; // 弹速枚举
     uint8_t rest_heat;
+    float shoot_rate; //连续发射的射频,unit per s,发/秒
 } Shoot_Ctrl_Cmd_s;
-
-
-
 
 /* ----------------gimbal/shoot/chassis发布的反馈数据----------------*/
 /**
@@ -165,11 +159,11 @@ typedef struct
     // float real_vy;
     // float real_wz;
 
-    uint8_t rest_heat; //剩余枪口热量
-    Bullet_Speed_e bullet_speed; //弹速限制
-    Enemy_Color_e enemy_color; // 0 for blue, 1 for red
+    uint8_t rest_heat;           // 剩余枪口热量
+    Bullet_Speed_e bullet_speed; // 弹速限制
+    Enemy_Color_e enemy_color;   // 0 for blue, 1 for red
 
-    //是否需要剩余电量?(电容)
+    // 是否需要剩余电量?(电容)
 
 } Chassis_Upload_Data_s;
 

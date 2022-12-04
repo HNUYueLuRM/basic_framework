@@ -19,17 +19,17 @@
 #include "user_lib.h"
 
 static INS_t INS;
-IMU_Param_t IMU_Param;
-PID_t TempCtrl = {0};
+static IMU_Param_t IMU_Param;
+static PID_t TempCtrl = {0};
 
 const float xb[3] = {1, 0, 0};
 const float yb[3] = {0, 1, 0};
 const float zb[3] = {0, 0, 1};
 
 // 用于获取两次采样之间的时间间隔
-uint32_t INS_DWT_Count = 0;
+static uint32_t INS_DWT_Count = 0;
 static float dt = 0, t = 0;
-float RefTemp = 40; // 恒温设定温度
+static float RefTemp = 40; // 恒温设定温度
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
 

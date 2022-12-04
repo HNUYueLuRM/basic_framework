@@ -61,6 +61,8 @@ typedef struct
 
     Motor_Type_e motor_type;
 
+    Motor_Working_Type_e stop_flag;
+
 } dji_motor_instance;
 
 /**
@@ -106,16 +108,25 @@ void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedba
 void DJIMotorControl();
 
 /**
- * @brief 停止所有电机,注意不是将设定值设为零,而是直接给电机发送的电流值置零
+ * @brief 停止电机,注意不是将设定值设为零,而是直接给电机发送的电流值置零
  *
  */
-void DJIMotorStop();
+void DJIMotorStop(dji_motor_instance* motor);
 
 /**
- * @brief 启动所有电机,此时电机会响应设定值
+ * @brief 启动电机,此时电机会响应设定值
  *        初始化时不需要此函数,因为stop_flag的默认值为0
  *
  */
-void DJIMotorEnable();
+void DJIMotorEnable(dji_motor_instance* motor);
+
+/**
+ * @brief 修改电机闭环目标(外层闭环)
+ * 
+ * @param motor  要修改的电机实例指针
+ * @param outer_loop 外层闭环类型
+ */
+void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop);
+
 
 #endif // !DJI_MOTOR_H

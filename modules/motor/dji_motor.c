@@ -1,10 +1,9 @@
 #include "dji_motor.h"
 
-#define PI2 3.141592f
-#define ECD_ANGLE_COEF 0.043945f // 360/8192
+#define PI2 (3.141592f * 2)  // 2pi
+#define ECD_ANGLE_COEF 0.043945f // 360/8192,将编码器值转化为角度制
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
-static uint8_t stop_flag = 0;
 
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
 static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
@@ -196,6 +195,7 @@ void DJIMotorSetRef(dji_motor_instance *motor, float ref)
 void DJIMotorControl()
 {
     // 预先通过静态变量定义避免反复释放分配栈空间,直接保存一次指针引用从而减小访存的开销
+    // 同样可以提高可读性
     static uint8_t group, num;
     static int16_t set;
     static dji_motor_instance *motor;
@@ -213,40 +213,51 @@ void DJIMotorControl()
             motor_controller = &motor->motor_controller;
             motor_measure = &motor->motor_measure;
 
-            // pid_ref会顺次通过被启用的环充当数据的载体
-            if (motor_setting->close_loop_type & ANGLE_LOOP) // 计算位置环
+            // pid_ref会顺次通过被启用的闭环充当数据的载体
+            // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
+            if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
             {
                 if (motor_setting->angle_feedback_source == OTHER_FEED)
                     pid_measure = *motor_controller->other_angle_feedback_ptr;
-                else // MOTOR_FEED
-                    pid_measure = motor_measure->total_angle;
+                else                                          // MOTOR_FEED
+                    pid_measure = motor_measure->total_angle; // 对total angle闭环,防止在边界处出现突跃
                 // 更新pid_ref进入下一个环
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->angle_PID, pid_measure, motor_controller->pid_ref);
             }
 
-            if (motor_setting->close_loop_type & SPEED_LOOP) // 计算速度环
+            // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
+            if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type | (ANGLE_LOOP | SPEED_LOOP)))
             {
                 if (motor_setting->speed_feedback_source == OTHER_FEED)
                     pid_measure = *motor_controller->other_speed_feedback_ptr;
                 else
                     pid_measure = motor_measure->speed_rpm;
+                // 更新pid_ref进入下一个环
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, motor_controller->pid_ref);
             }
 
-            if (motor_setting->close_loop_type & CURRENT_LOOP) // 计算电流环
+            // 计算电流环,只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身的反馈
+            if (motor_setting->close_loop_type & CURRENT_LOOP)
             {
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, motor_controller->pid_ref);
             }
 
-            set = (int16_t)motor_controller->pid_ref;                   // 获取最终输出
-            if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE) // 设置反转
-                set *= -1;
+            // 获取最终输出
+            set = (int16_t)motor_controller->pid_ref;
+            if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
+                set *= -1; // 设置反转
 
             // 分组填入发送数据
             group = motor->sender_group;
             num = motor->message_num;
-            sender_assignment[group].tx_buff[num] = 0xff & set >> 8;
+            sender_assignment[group].tx_buff[2 * num] = 0xff & set >> 8;
             sender_assignment[group].tx_buff[2 * num + 1] = 0xff & set;
+
+            // 电机是否停止运行
+            if (motor->stop_flag == MOTOR_STOP)
+            { // 若该电机处于停止状态,直接将buff置零
+                memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
+            }
         }
         else // 遇到空指针说明所有遍历结束,退出循环
             break;
@@ -257,21 +268,22 @@ void DJIMotorControl()
     {
         if (sender_enable_flag[i])
         {
-            if (stop_flag) // 如果紧急停止,将所有发送信息置零
-            {
-                memset(sender_assignment[i].tx_buff, 0, 8);
-            }
             CANTransmit(&sender_assignment[i]);
         }
     }
 }
 
-void DJIMotorStop()
+void DJIMotorStop(dji_motor_instance *motor)
 {
-    stop_flag = 1;
+    motor->stop_flag = MOTOR_STOP;
 }
 
-void DJIMotorEnable()
+void DJIMotorEnable(dji_motor_instance *motor)
 {
-    stop_flag = 0;
+    motor->stop_flag = MOTOR_ENALBED;
+}
+
+void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop)
+{
+    motor->motor_settings.outer_loop_type = outer_loop;
 }
