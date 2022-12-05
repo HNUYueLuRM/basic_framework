@@ -24,8 +24,9 @@
 
 /* 重要参数定义,注意根据不同机器人进行修改 */
 // 云台参数
-#define YAW_CHASSIS_ALIGN_ECD 0 // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
-#define PITCH_HORIZON_ECD 0     // 云台处于水平位置时编码器值,若对云台有机械改动需要修改
+#define YAW_CHASSIS_ALIGN_ECD 0     // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
+#define YAW_ECD_GREATER_THAN_4096 0 // yaw电机的初始编码器值是否大于4096,是为1,否为0
+#define PITCH_HORIZON_ECD 0         // 云台处于水平位置时编码器值,若对云台有机械改动需要修改
 // 发射参数
 #define ONE_BULLET_DELTA_ANGLE 0     // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
 #define REDUCTION_RATIO_LOADER 49.0f // 拨盘电机的减速比,英雄需要修改为3508的19.0f
@@ -37,7 +38,6 @@
 #define CENTER_GIMBAL_OFFSET_Y 0    // 云台旋转中心距底盘几何中心的距离,左右方向,云台位于正中心时默认设为0
 #define RADIUS_WHEEL 60             // 轮子半径
 #define REDUCTION_RATIO_WHEEL 19.0f // 电机减速比,因为编码器量测的是转子的速度而不是输出轴的速度故需进行转换
-
 
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \

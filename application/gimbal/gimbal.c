@@ -5,9 +5,6 @@
 #include "message_center.h"
 #include "general_def.h"
 
-// 自动将编码器转换成角度值
-#define YAW_CHASSIS_ALIGN_ANGLE (YAW_CHASSIS_ALIGN_ECD * ECD_ANGLE_COEF)
-#define PTICH_HORIZON_ALIGN_ANGLE (PITCH_HORIZON_ECD * ECD_ANGLE_COEF)
 
 static attitude_t *Gimbal_IMU_data;     // 云台IMU数据
 static dji_motor_instance *yaw_motor;   // yaw电机
