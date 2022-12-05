@@ -344,7 +344,7 @@ typedef struct
 #pragma pack()
 
 /**
- * @brief 
+ * @brief 初始化裁判系统,返回接收数据指针
  * 
  * @param referee_usart_handle 
  * @return referee_info_t* 
