@@ -18,7 +18,7 @@ static Vision_Recv_s recv_data;
 // @todo:由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务,或由IMU采集完成产生的中断唤醒的任务,
 // 使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
 // static Vision_Send_s send_data;
-static usart_instance *vision_usart_instance;
+static USARTInstance *vision_usart_instance;
 
 /**
  * @brief 接收解包回调函数,将在bsp_usart.c中被usart rx callback调用
@@ -28,7 +28,7 @@ static usart_instance *vision_usart_instance;
 static void DecodeVision()
 {
     static uint16_t flag_register;
-    get_protocol_info(vision_usart_instance->recv_buff, &flag_register, (uint8_t*)&recv_data.pitch);
+    get_protocol_info(vision_usart_instance->recv_buff, &flag_register, (uint8_t *)&recv_data.pitch);
     // TODO: code to resolve flag_register;
 }
 

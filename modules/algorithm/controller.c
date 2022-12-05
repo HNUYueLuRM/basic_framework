@@ -12,14 +12,14 @@
 #include <memory.h>
 
 // PID优化环节函数声明
-static void f_Trapezoid_Intergral(PID_t *pid);       // 梯形积分
-static void f_Integral_Limit(PID_t *pid);            // 积分限幅
-static void f_Derivative_On_Measurement(PID_t *pid); // 微分先行(仅使用反馈值而不计参考输入的微分)
-static void f_Changing_Integration_Rate(PID_t *pid); // 变速积分(误差小时积分作用更强)
-static void f_Output_Filter(PID_t *pid);             // 输出滤波(平滑输出)
-static void f_Derivative_Filter(PID_t *pid);         // 微分滤波(采集时,滤除高频噪声)
-static void f_Output_Limit(PID_t *pid);              // 输出限幅
-static void f_PID_ErrorHandle(PID_t *pid);           // 堵转保护
+static void f_Trapezoid_Intergral(PIDInstance *pid);       // 梯形积分
+static void f_Integral_Limit(PIDInstance *pid);            // 积分限幅
+static void f_Derivative_On_Measurement(PIDInstance *pid); // 微分先行(仅使用反馈值而不计参考输入的微分)
+static void f_Changing_Integration_Rate(PIDInstance *pid); // 变速积分(误差小时积分作用更强)
+static void f_Output_Filter(PIDInstance *pid);             // 输出滤波(平滑输出)
+static void f_Derivative_Filter(PIDInstance *pid);         // 微分滤波(采集时,滤除高频噪声)
+static void f_Output_Limit(PIDInstance *pid);              // 输出限幅
+static void f_PID_ErrorHandle(PIDInstance *pid);           // 堵转保护
 
 /**
  * @brief 初始化PID,设置参数和启用的优化环节,将其他数据置零
@@ -27,12 +27,12 @@ static void f_PID_ErrorHandle(PID_t *pid);           // 堵转保护
  * @param pid    PID实例
  * @param config PID初始化设置
  */
-void PID_Init(PID_t *pid, PID_Init_config_s *config)
+void PID_Init(PIDInstance *pid, PID_Init_config_s *config)
 {
     // utilize the quality of struct that its memeory is continuous
     memcpy(pid, config, sizeof(PID_Init_config_s));
     // set rest of memory to 0
-    memset(&pid->Measure, 0, sizeof(PID_t) - sizeof(PID_Init_config_s));
+    memset(&pid->Measure, 0, sizeof(PIDInstance) - sizeof(PID_Init_config_s));
 }
 
 /**
@@ -42,7 +42,7 @@ void PID_Init(PID_t *pid, PID_Init_config_s *config)
  * @param[in]      期望值
  * @retval         返回空
  */
-float PID_Calculate(PID_t *pid, float measure, float ref)
+float PID_Calculate(PIDInstance *pid, float measure, float ref)
 {
     if (pid->Improve & ErrorHandle)
         f_PID_ErrorHandle(pid);
@@ -93,13 +93,13 @@ float PID_Calculate(PID_t *pid, float measure, float ref)
     return pid->Output;
 }
 
-static void f_Trapezoid_Intergral(PID_t *pid)
+static void f_Trapezoid_Intergral(PIDInstance *pid)
 {
 
     pid->ITerm = pid->Ki * ((pid->Err + pid->Last_Err) / 2) * pid->dt;
 }
 
-static void f_Changing_Integration_Rate(PID_t *pid)
+static void f_Changing_Integration_Rate(PIDInstance *pid)
 {
     if (pid->Err * pid->Iout > 0)
     {
@@ -114,7 +114,7 @@ static void f_Changing_Integration_Rate(PID_t *pid)
     }
 }
 
-static void f_Integral_Limit(PID_t *pid)
+static void f_Integral_Limit(PIDInstance *pid)
 {
     static float temp_Output, temp_Iout;
     temp_Iout = pid->Iout + pid->ITerm;
@@ -141,24 +141,24 @@ static void f_Integral_Limit(PID_t *pid)
     }
 }
 
-static void f_Derivative_On_Measurement(PID_t *pid)
+static void f_Derivative_On_Measurement(PIDInstance *pid)
 {
     pid->Dout = pid->Kd * (pid->Last_Measure - pid->Measure) / pid->dt;
 }
 
-static void f_Derivative_Filter(PID_t *pid)
+static void f_Derivative_Filter(PIDInstance *pid)
 {
     pid->Dout = pid->Dout * pid->dt / (pid->Derivative_LPF_RC + pid->dt) +
                 pid->Last_Dout * pid->Derivative_LPF_RC / (pid->Derivative_LPF_RC + pid->dt);
 }
 
-static void f_Output_Filter(PID_t *pid)
+static void f_Output_Filter(PIDInstance *pid)
 {
     pid->Output = pid->Output * pid->dt / (pid->Output_LPF_RC + pid->dt) +
                   pid->Last_Output * pid->Output_LPF_RC / (pid->Output_LPF_RC + pid->dt);
 }
 
-static void f_Output_Limit(PID_t *pid)
+static void f_Output_Limit(PIDInstance *pid)
 {
     if (pid->Output > pid->MaxOut)
     {
@@ -171,7 +171,7 @@ static void f_Output_Limit(PID_t *pid)
 }
 
 // PID ERRORHandle Function
-static void f_PID_ErrorHandle(PID_t *pid)
+static void f_PID_ErrorHandle(PIDInstance *pid)
 {
     /*Motor Blocked Handle*/
     if (pid->Output < pid->MaxOut * 0.001f || fabsf(pid->Ref) < 0.0001f)

@@ -4,14 +4,14 @@
 extern TIM_HandleTypeDef htim5;
 static uint8_t tmp_output_level = 0;
 
-void LED_init()
+void LEDInit()
 {
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
 }
 
-void aRGB_led_show(uint32_t aRGB)
+void FlowRGBShow(uint32_t aRGB)
 {
     static uint8_t alpha;
     static uint16_t red, green, blue;

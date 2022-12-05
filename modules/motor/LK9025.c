@@ -2,7 +2,7 @@
 
 static driven_instance *driven_motor_info[LK_MOTOR_CNT];
 
-static void DecodeDriven(can_instance *_instance)
+static void DecodeDriven(CANInstance *_instance)
 {
     for (size_t i = 0; i < LK_MOTOR_CNT; i++)
     {
@@ -18,12 +18,12 @@ static void DecodeDriven(can_instance *_instance)
     }
 }
 
-driven_instance *LKMotroInit(can_instance_config_s config)
+driven_instance *LKMotroInit(CAN_Init_Config_s config)
 {
     static uint8_t idx;
     driven_motor_info[idx] = (driven_instance *)malloc(sizeof(driven_instance));
     config.can_module_callback = DecodeDriven;
-    driven_motor_info[idx]->motor_can_instance=CANRegister(&config);
+    driven_motor_info[idx]->motor_can_instance = CANRegister(&config);
     return driven_motor_info[idx++];
 }
 

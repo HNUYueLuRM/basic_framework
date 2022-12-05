@@ -20,7 +20,7 @@
 
 static INS_t INS;
 static IMU_Param_t IMU_Param;
-static PID_t TempCtrl = {0};
+static PIDInstance TempCtrl = {0};
 
 const float xb[3] = {1, 0, 0};
 const float yb[3] = {0, 1, 0};
@@ -33,7 +33,6 @@ static float RefTemp = 40; // 恒温设定温度
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
 
-
 /**
  * @brief 温度控制
  *
@@ -41,12 +40,13 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
 static void IMU_Temperature_Ctrl(void)
 {
     PID_Calculate(&TempCtrl, BMI088.Temperature, RefTemp);
-    imu_pwm_set(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
+    IMUPWMSet(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
-attitude_t* INS_Init(void)
+attitude_t *INS_Init(void)
 {
-    while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR);
+    while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR)
+        ;
     IMU_Param.scale[X] = 1;
     IMU_Param.scale[Y] = 1;
     IMU_Param.scale[Z] = 1;

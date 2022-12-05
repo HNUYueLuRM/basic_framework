@@ -1,9 +1,9 @@
 #ifndef _BSP_LOG_H
 #define _BSP_LOG_H
 
-void BSP_Log_Init();
+void BSPLogInit();
 
-int printf_log(const char *fmt, ...);
+int PrintLog(const char *fmt, ...);
 
 void Float2Str(char *str, float va);
 

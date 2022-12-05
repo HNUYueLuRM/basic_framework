@@ -5,11 +5,10 @@
 #include "bsp_dwt.h"
 #include "general_def.h"
 
-
 /* 对于双发射机构的机器人,将下面的数据封装成结构体即可,生成两份shoot应用实例 */
-static dji_motor_instance *friction_l; // 左摩擦轮
-static dji_motor_instance *friction_r; // 右摩擦轮
-static dji_motor_instance *loader;     // 拨盘电机
+static DJIMotorInstance *friction_l; // 左摩擦轮
+static DJIMotorInstance *friction_r; // 右摩擦轮
+static DJIMotorInstance *loader;     // 拨盘电机
 // static servo_instance *lid; 需要增加弹舱盖
 
 static Publisher_t *shoot_pub;

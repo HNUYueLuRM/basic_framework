@@ -5,7 +5,7 @@
 
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
-static can_instance *instance[MX_REGISTER_DEVICE_CNT] = {NULL};
+static CANInstance *instance[MX_REGISTER_DEVICE_CNT] = {NULL};
 
 /* ----------------two static function called by CANRegister()-------------------- */
 
@@ -24,7 +24,7 @@ static can_instance *instance[MX_REGISTER_DEVICE_CNT] = {NULL};
  *
  * @param _instance can instance owned by specific module
  */
-static void CANAddFilter(can_instance *_instance)
+static void CANAddFilter(CANInstance *_instance)
 {
     CAN_FilterTypeDef can_filter_conf;
     static uint8_t can1_filter_idx = 0, can2_filter_idx = 14;
@@ -60,15 +60,15 @@ static void CANServiceInit()
 
 /* ----------------------- two extern callable function -----------------------*/
 
-can_instance *CANRegister(can_instance_config_s *config)
+CANInstance *CANRegister(CAN_Init_Config_s *config)
 {
     static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
     if (!idx)
     {
         CANServiceInit(); // 第一次注册,先进行硬件初始化
     }
-    instance[idx] = (can_instance *)malloc(sizeof(can_instance)); // 分配空间
-    memset(instance[idx], 0, sizeof(can_instance));
+    instance[idx] = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
+    memset(instance[idx], 0, sizeof(CANInstance));
     // 进行发送报文的配置
     instance[idx]->txconf.StdId = config->tx_id;
     instance[idx]->txconf.IDE = CAN_ID_STD;
@@ -85,7 +85,7 @@ can_instance *CANRegister(can_instance_config_s *config)
 }
 
 /* TODO:目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
-void CANTransmit(can_instance *_instance)
+void CANTransmit(CANInstance *_instance)
 {
     while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0)
         ;
@@ -93,7 +93,7 @@ void CANTransmit(can_instance *_instance)
     HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
 }
 
-void CANSetDLC(can_instance *_instance, uint8_t length)
+void CANSetDLC(CANInstance *_instance, uint8_t length)
 {
     if (length > 8) // 安全检查
         while (1)

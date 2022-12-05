@@ -4,7 +4,7 @@
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
 
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
-static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
+static DJIMotorInstance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
 
 /**
  * @brief 由于DJI电机发送以四个一组的形式进行,故对其进行特殊处理,用6个(2can*3group)can_instance专门负责发送
@@ -13,7 +13,7 @@ static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
  * can1: [0]:0x1FF,[1]:0x200,[2]:0x2FF
  * can2: [0]:0x1FF,[1]:0x200,[2]:0x2FF
  */
-static can_instance sender_assignment[6] =
+static CANInstance sender_assignment[6] =
     {
         [0] = {.can_handle = &hcan1, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
         [1] = {.can_handle = &hcan1, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
@@ -46,7 +46,7 @@ static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
  *
  * @param config
  */
-static void MotorSenderGrouping(can_instance_config_s *config)
+static void MotorSenderGrouping(CAN_Init_Config_s *config)
 {
     uint8_t motor_id = config->tx_id - 1; // 下标从零开始,先减一方便赋值
     uint8_t motor_send_num;
@@ -116,11 +116,11 @@ static void MotorSenderGrouping(can_instance_config_s *config)
  *
  * @param _instance 收到数据的instance,通过遍历与所有电机进行对比以选择正确的实例
  */
-static void DecodeDJIMotor(can_instance *_instance)
+static void DecodeDJIMotor(CANInstance *_instance)
 {
     // 由于需要多次变址访存,直接将buff和measure地址保存在寄存器里避免多次存取
     static uint8_t *rxbuff;
-    static dji_motor_measure *measure;
+    static DJI_Motor_Measure_s *measure;
 
     for (size_t i = 0; i < DJI_MOTOR_CNT; i++)
     {
@@ -151,10 +151,10 @@ static void DecodeDJIMotor(can_instance *_instance)
 }
 
 // 电机初始化,返回一个电机实例
-dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
+DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
 {
-    dji_motor_info[idx] = (dji_motor_instance *)malloc(sizeof(dji_motor_instance));
-    memset(dji_motor_info[idx], 0, sizeof(dji_motor_instance));
+    dji_motor_info[idx] = (DJIMotorInstance *)malloc(sizeof(DJIMotorInstance));
+    memset(dji_motor_info[idx], 0, sizeof(DJIMotorInstance));
 
     // motor basic setting
     dji_motor_info[idx]->motor_type = config->motor_type;
@@ -177,7 +177,7 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
     return dji_motor_info[idx++];
 }
 
-void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedback_Source_e type)
+void DJIMotorChangeFeed(DJIMotorInstance *motor, Closeloop_Type_e loop, Feedback_Source_e type)
 {
     if (loop == ANGLE_LOOP)
     {
@@ -189,23 +189,23 @@ void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedba
     }
 }
 
-void DJIMotorStop(dji_motor_instance *motor)
+void DJIMotorStop(DJIMotorInstance *motor)
 {
     motor->stop_flag = MOTOR_STOP;
 }
 
-void DJIMotorEnable(dji_motor_instance *motor)
+void DJIMotorEnable(DJIMotorInstance *motor)
 {
     motor->stop_flag = MOTOR_ENALBED;
 }
 
-void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop)
+void DJIMotorOuterLoop(DJIMotorInstance *motor, Closeloop_Type_e outer_loop)
 {
     motor->motor_settings.outer_loop_type = outer_loop;
 }
 
 // 设置参考值
-void DJIMotorSetRef(dji_motor_instance *motor, float ref)
+void DJIMotorSetRef(DJIMotorInstance *motor, float ref)
 {
     motor->motor_controller.pid_ref = ref;
 }
@@ -217,10 +217,10 @@ void DJIMotorControl()
     // 同样可以提高可读性
     static uint8_t group, num;
     static int16_t set;
-    static dji_motor_instance *motor;
+    static DJIMotorInstance *motor;
     static Motor_Control_Setting_s *motor_setting;
     static Motor_Controller_s *motor_controller;
-    static dji_motor_measure *motor_measure;
+    static DJI_Motor_Measure_s *motor_measure;
     static float pid_measure;
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
     for (size_t i = 0; i < DJI_MOTOR_CNT; i++)

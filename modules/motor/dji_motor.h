@@ -24,8 +24,7 @@
 /* 滤波系数设置为1的时候即关闭滤波 */
 #define SPEED_SMOOTH_COEF 0.9f    // better to be greater than 0.85
 #define CURRENT_SMOOTH_COEF 0.98f // this coef *must* be greater than 0.95
-#define ECD_ANGLE_COEF 0.043945f // 360/8192,将编码器值转化为角度制
-
+#define ECD_ANGLE_COEF 0.043945f  // 360/8192,将编码器值转化为角度制
 
 /* DJI电机CAN反馈信息*/
 typedef struct
@@ -38,7 +37,7 @@ typedef struct
     uint8_t temperate;         // 温度 Celsius
     int16_t total_round;       // 总圈数,注意方向
     int32_t total_angle;       // 总角度,注意方向
-} dji_motor_measure;
+} DJI_Motor_Measure_s;
 
 /**
  * @brief DJI intelligent motor typedef
@@ -47,7 +46,7 @@ typedef struct
 typedef struct
 {
     /* motor measurement recv from CAN feedback */
-    dji_motor_measure motor_measure;
+    DJI_Motor_Measure_s motor_measure;
 
     /* basic config of a motor*/
     Motor_Control_Setting_s motor_settings;
@@ -56,7 +55,7 @@ typedef struct
     Motor_Controller_s motor_controller;
 
     /* the CAN instance own by motor instance*/
-    can_instance *motor_can_instance;
+    CANInstance *motor_can_instance;
 
     /* sender assigment*/
     uint8_t sender_group;
@@ -65,7 +64,7 @@ typedef struct
     Motor_Type_e motor_type;        // 电机类型
     Motor_Working_Type_e stop_flag; // 启停标志
 
-} dji_motor_instance;
+} DJIMotorInstance;
 
 /**
  * @brief 调用此函数注册一个DJI智能电机,需要传递较多的初始化参数,请在application初始化的时候调用此函数
@@ -81,9 +80,9 @@ typedef struct
  *
  * @param config 电机初始化结构体,包含了电机控制设置,电机PID参数设置,电机类型以及电机挂载的CAN设置
  *
- * @return dji_motor_instance*
+ * @return DJIMotorInstance*
  */
-dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config);
+DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config);
 
 /**
  * @brief 被application层的应用调用,给电机设定参考值.
@@ -92,7 +91,7 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config);
  * @param motor 要设置的电机
  * @param ref 设定参考值
  */
-void DJIMotorSetRef(dji_motor_instance *motor, float ref);
+void DJIMotorSetRef(DJIMotorInstance *motor, float ref);
 
 /**
  * @brief 切换反馈的目标来源,如将角速度和角度的来源换为IMU(小陀螺模式常用)
@@ -101,7 +100,7 @@ void DJIMotorSetRef(dji_motor_instance *motor, float ref);
  * @param loop  要切换反馈数据来源的控制闭环
  * @param type  目标反馈模式
  */
-void DJIMotorChangeFeed(dji_motor_instance *motor, Closeloop_Type_e loop, Feedback_Source_e type);
+void DJIMotorChangeFeed(DJIMotorInstance *motor, Closeloop_Type_e loop, Feedback_Source_e type);
 
 /**
  * @brief 该函数被motor_task调用运行在rtos上,motor_stask内通过osDelay()确定控制频率
@@ -113,14 +112,14 @@ void DJIMotorControl();
  * @brief 停止电机,注意不是将设定值设为零,而是直接给电机发送的电流值置零
  *
  */
-void DJIMotorStop(dji_motor_instance *motor);
+void DJIMotorStop(DJIMotorInstance *motor);
 
 /**
  * @brief 启动电机,此时电机会响应设定值
  *        初始化时不需要此函数,因为stop_flag的默认值为0
  *
  */
-void DJIMotorEnable(dji_motor_instance *motor);
+void DJIMotorEnable(DJIMotorInstance *motor);
 
 /**
  * @brief 修改电机闭环目标(外层闭环)
@@ -128,6 +127,6 @@ void DJIMotorEnable(dji_motor_instance *motor);
  * @param motor  要修改的电机实例指针
  * @param outer_loop 外层闭环类型
  */
-void DJIMotorOuterLoop(dji_motor_instance *motor, Closeloop_Type_e outer_loop);
+void DJIMotorOuterLoop(DJIMotorInstance *motor, Closeloop_Type_e outer_loop);
 
 #endif // !DJI_MOTOR_H

@@ -338,6 +338,7 @@ typedef struct
 
 	ext_SendClientData_t ShowData;	 // 客户端信息
 	ext_CommunatianData_t CommuData; // 队友通信信息
+
 } referee_info_t;
 
 #pragma pack()

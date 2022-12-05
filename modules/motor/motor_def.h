@@ -75,9 +75,9 @@ typedef struct
     // float *speed_foward_ptr;
     // float *current_foward_ptr;
 
-    PID_t current_PID;
-    PID_t speed_PID;
-    PID_t angle_PID;
+    PIDInstance current_PID;
+    PIDInstance speed_PID;
+    PIDInstance angle_PID;
 
     float pid_ref; // 将会作为每个环的输入和输出顺次通过串级闭环
 } Motor_Controller_s;
@@ -114,7 +114,7 @@ typedef struct
     Motor_Controller_Init_s controller_param_init_config;
     Motor_Control_Setting_s controller_setting_init_config;
     Motor_Type_e motor_type;
-    can_instance_config_s can_init_config;
+    CAN_Init_Config_s can_init_config;
 } Motor_Init_Config_s;
 
 #endif // !MOTOR_DEF_H

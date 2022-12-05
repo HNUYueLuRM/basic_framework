@@ -23,7 +23,7 @@ typedef struct _
     uint8_t rx_len;                // 接收长度,可能为0-8
     // 接收的回调函数,用于解析接收到的数据
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
-} can_instance;
+} CANInstance;
 #pragma pack()
 
 /* this structure is used for initialization */
@@ -32,8 +32,8 @@ typedef struct
     CAN_HandleTypeDef *can_handle;
     uint32_t tx_id;
     uint32_t rx_id;
-    void (*can_module_callback)(can_instance *);
-} can_instance_config_s;
+    void (*can_module_callback)(CANInstance *);
+} CAN_Init_Config_s;
 
 /**
  * @brief 修改CAN发送报文的数据帧长度;注意最大长度为8,在没有进行修改的时候,默认长度为8
@@ -41,7 +41,7 @@ typedef struct
  * @param _instance 要修改长度的can实例
  * @param length    设定长度
  */
-void CANSetDLC(can_instance *_instance, uint8_t length);
+void CANSetDLC(CANInstance *_instance, uint8_t length);
 
 /**
  * @brief transmit mesg through CAN device,通过can实例发送消息
@@ -49,14 +49,14 @@ void CANSetDLC(can_instance *_instance, uint8_t length);
  *
  * @param _instance* can instance owned by module
  */
-void CANTransmit(can_instance *_instance);
+void CANTransmit(CANInstance *_instance);
 
 /**
  * @brief Register a module to CAN service,remember to call this before using a CAN device
  *        注册(初始化)一个can实例,需要传入初始化配置的指针.
  * @param config init config
- * @return can_instance* can instance owned by module
+ * @return CANInstance* can instance owned by module
  */
-can_instance *CANRegister(can_instance_config_s *config);
+CANInstance *CANRegister(CAN_Init_Config_s *config);
 
 #endif

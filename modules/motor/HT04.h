@@ -22,8 +22,8 @@ typedef struct // HT04
     float speed_rpm;
     float given_current;
 
-    PID_t pid;
-    can_instance *motor_can_instace;
+    PIDInstance pid;
+    CANInstance *motor_can_instace;
 } joint_instance;
 
 typedef enum
@@ -33,7 +33,7 @@ typedef enum
     CMD_ZERO_POSITION = 0xfe
 } joint_mode;
 
-joint_instance *HTMotorInit(can_instance_config_s config);
+joint_instance *HTMotorInit(CAN_Init_Config_s config);
 
 void JointControl(joint_instance *_instance, float current);
 

@@ -15,11 +15,11 @@
 #ifndef ONE_BOARD
 #include "can_comm.h"
 static CANCommInstance *chasiss_can_comm; // 双板通信
-#endif // !ONE_BOARD
+#endif                                    // !ONE_BOARD
 
-static RC_ctrl_t *remote_control_data;    // 遥控器数据,初始化时返回
-static Vision_Recv_s *vision_recv_data;   // 视觉接收数据指针,初始化时返回
-static Vision_Send_s vision_send_data;    // 视觉发送数据
+static RC_ctrl_t *remote_control_data;  // 遥控器数据,初始化时返回
+static Vision_Recv_s *vision_recv_data; // 视觉接收数据指针,初始化时返回
+static Vision_Send_s vision_send_data;  // 视觉发送数据
 
 static Publisher_t *gimbal_cmd_pub;
 static Gimbal_Ctrl_Cmd_s gimbal_cmd_send; // 传递给云台的控制信息
@@ -38,8 +38,8 @@ static Chassis_Upload_Data_s chassis_fetch_data; // 从底盘应用接收的反�
 
 void GimbalCMDInit()
 {
-    remote_control_data = RC_init(&huart3); // 修改为对应串口,注意dbus协议串口需加反相器
-    vision_recv_data = VisionInit(&huart1); // 视觉通信串口
+    remote_control_data = RemoteControlInit(&huart3); // 修改为对应串口,注意dbus协议串口需加反相器
+    vision_recv_data = VisionInit(&huart1);           // 视觉通信串口
 
     gimbal_cmd_pub = PubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));
     gimbal_feed_sub = SubRegister("gimbal_feed", sizeof(Gimbal_Upload_Data_s));
@@ -107,11 +107,11 @@ void GimbalCMDTask()
         MouseKeySetMode();
 
     // 设置视觉发送数据,work_mode在前一部分设置
-    vision_send_data.bullet_speed=chassis_fetch_data.bullet_speed;
-    vision_send_data.enemy_color=chassis_fetch_data.enemy_color;
-    vision_send_data.pitch=gimbal_fetch_data.gimbal_imu_data.Pitch;
-    vision_send_data.yaw=gimbal_fetch_data.gimbal_imu_data.Yaw;
-    vision_send_data.roll=gimbal_fetch_data.gimbal_imu_data.Roll;
+    vision_send_data.bullet_speed = chassis_fetch_data.bullet_speed;
+    vision_send_data.enemy_color = chassis_fetch_data.enemy_color;
+    vision_send_data.pitch = gimbal_fetch_data.gimbal_imu_data.Pitch;
+    vision_send_data.yaw = gimbal_fetch_data.gimbal_imu_data.Yaw;
+    vision_send_data.roll = gimbal_fetch_data.gimbal_imu_data.Roll;
 
     // 推送消息,双板通信,视觉通信等
     // 应用所需的控制数据在remotecontrolsetmode和mousekeysetmode中完成设置

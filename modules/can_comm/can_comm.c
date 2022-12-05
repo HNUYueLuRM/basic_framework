@@ -24,7 +24,7 @@ static void CANCommResetRx(CANCommInstance *ins)
  *
  * @param _instance
  */
-static void CANCommRxCallback(can_instance *_instance)
+static void CANCommRxCallback(CANInstance *_instance)
 {
     for (size_t i = 0; i < idx; i++)
     {
@@ -65,7 +65,7 @@ static void CANCommRxCallback(can_instance *_instance)
                         if (can_comm_instance[i]->raw_recvbuf[can_comm_instance[i]->recv_buf_len - 2] ==
                             crc_8(can_comm_instance[i]->raw_recvbuf + 2, can_comm_instance[i]->recv_data_len))
                         { // 通过校验,复制数据到unpack_data中
-                            memcpy(can_comm_instance[i]->unpacked_recv_data,can_comm_instance[i]->raw_recvbuf + 2,  can_comm_instance[i]->recv_data_len);
+                            memcpy(can_comm_instance[i]->unpacked_recv_data, can_comm_instance[i]->raw_recvbuf + 2, can_comm_instance[i]->recv_data_len);
                             can_comm_instance[i]->update_flag = 1; // 数据更新flag置为1
                         }
                         CANCommResetRx(can_comm_instance[i]);
@@ -91,7 +91,7 @@ CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
     can_comm_instance[idx]->raw_sendbuf[comm_config->send_data_len + CAN_COMM_OFFSET_BYTES - 1] = CAN_COMM_TAIL;
 
     comm_config->can_config.can_module_callback = CANCommRxCallback;
-    can_comm_instance[idx]->can_ins=CANRegister(&comm_config->can_config);
+    can_comm_instance[idx]->can_ins = CANRegister(&comm_config->can_config);
     return can_comm_instance[idx++];
 }
 
@@ -104,10 +104,10 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data)
     instance->raw_sendbuf[2 + instance->send_data_len] = crc8;
 
     for (size_t i = 0; i < instance->send_buf_len; i += 8)
-    {   // 如果是最后一包,send len将会小于8,要修改CAN的txconf中的DLC位,调用bsp_can提供的接口即可
+    { // 如果是最后一包,send len将会小于8,要修改CAN的txconf中的DLC位,调用bsp_can提供的接口即可
         send_len = instance->send_buf_len - i >= 8 ? 8 : instance->send_buf_len - i;
         CANSetDLC(instance->can_ins, send_len);
-        memcpy(instance->can_ins->tx_buff, instance->raw_sendbuf+i, send_len);
+        memcpy(instance->can_ins->tx_buff, instance->raw_sendbuf + i, send_len);
         CANTransmit(instance->can_ins);
     }
 }

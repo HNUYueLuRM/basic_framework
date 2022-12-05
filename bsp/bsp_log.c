@@ -6,12 +6,12 @@
 
 #define BUFFER_INDEX 0
 
-void BSP_Log_Init()
+void BSPLogInit()
 {
     SEGGER_RTT_Init();
 }
 
-int printf_log(const char *fmt, ...)
+int PrintLog(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);

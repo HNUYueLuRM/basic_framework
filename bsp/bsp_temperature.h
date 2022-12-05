@@ -5,6 +5,6 @@
 #include "tim.h"
 
 void IMUTempInit();
-extern void imu_pwm_set(uint16_t pwm);
+extern void IMUPWMSet(uint16_t pwm);
 
 #endif

@@ -53,7 +53,7 @@ void led_RGB_flow_task()
 			blue += delta_blue;
 
 			aRGB = ((uint32_t)(alpha)) << 24 | ((uint32_t)(red)) << 16 | ((uint32_t)(green)) << 8 | ((uint32_t)(blue)) << 0;
-			aRGB_led_show(aRGB);
+			FlowRGBShow(aRGB);
 		}
 	}
 }

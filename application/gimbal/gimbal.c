@@ -5,10 +5,9 @@
 #include "message_center.h"
 #include "general_def.h"
 
-
-static attitude_t *Gimbal_IMU_data;     // 云台IMU数据
-static dji_motor_instance *yaw_motor;   // yaw电机
-static dji_motor_instance *pitch_motor; // pitch电机
+static attitude_t *Gimbal_IMU_data;   // 云台IMU数据
+static DJIMotorInstance *yaw_motor;   // yaw电机
+static DJIMotorInstance *pitch_motor; // pitch电机
 
 static Publisher_t *gimbal_pub;
 static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给gimbal_cmd的云台状态信息

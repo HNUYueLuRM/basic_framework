@@ -14,7 +14,7 @@
 
 /* usart service instance, modules' info would be recoreded here using USARTRegister() */
 /* usart服务实例,所有注册了usart的模块信息会被保存在这里 */
-static usart_instance *instance[DEVICE_USART_CNT] = {NULL};
+static USARTInstance *instance[DEVICE_USART_CNT] = {NULL};
 
 /**
  * @brief usart service will start automatically, after each module registered
@@ -22,7 +22,7 @@ static usart_instance *instance[DEVICE_USART_CNT] = {NULL};
  *
  * @param _instance instance owned by module,模块拥有的串口实例
  */
-static void USARTServiceInit(usart_instance *_instance)
+static void USARTServiceInit(USARTInstance *_instance)
 {
     HAL_UARTEx_ReceiveToIdle_DMA(_instance->usart_handle, _instance->recv_buff, _instance->recv_buff_size);
     // 关闭dma half transfer中断防止两次进入HAL_UARTEx_RxEventCallback()
@@ -31,23 +31,23 @@ static void USARTServiceInit(usart_instance *_instance)
     __HAL_DMA_DISABLE_IT(_instance->usart_handle->hdmarx, DMA_IT_HT);
 }
 
-usart_instance* USARTRegister(USART_Init_Config_s *init_config)
+USARTInstance *USARTRegister(USART_Init_Config_s *init_config)
 {
     static uint8_t idx;
 
-    instance[idx]=(usart_instance*)malloc(sizeof(usart_instance));
-    memset(instance[idx],0,sizeof(usart_instance));
+    instance[idx] = (USARTInstance *)malloc(sizeof(USARTInstance));
+    memset(instance[idx], 0, sizeof(USARTInstance));
 
-    instance[idx]->module_callback=init_config->module_callback;
-    instance[idx]->recv_buff_size=init_config->recv_buff_size;
-    instance[idx]->usart_handle=init_config->usart_handle;
+    instance[idx]->module_callback = init_config->module_callback;
+    instance[idx]->recv_buff_size = init_config->recv_buff_size;
+    instance[idx]->usart_handle = init_config->usart_handle;
     USARTServiceInit(instance[idx]);
 
     return instance[idx++];
 }
 
 /* @todo 当前仅进行了形式上的封装,后续要进一步考虑是否将module的行为与bsp完全分离 */
-void USARTSend(usart_instance *_instance, uint8_t *send_buf, uint16_t send_size)
+void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size)
 {
     HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
 }
@@ -75,7 +75,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         if (huart == instance[i]->usart_handle)
         {
             instance[i]->module_callback();
-            memset(instance[i]->recv_buff,0,Size); // 接收结束后清空buffer,对于变长数据是必要的
+            memset(instance[i]->recv_buff, 0, Size); // 接收结束后清空buffer,对于变长数据是必要的
             HAL_UARTEx_ReceiveToIdle_DMA(instance[i]->usart_handle, instance[i]->recv_buff, instance[i]->recv_buff_size);
             __HAL_DMA_DISABLE_IT(instance[i]->usart_handle->hdmarx, DMA_IT_HT);
             break;

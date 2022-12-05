@@ -9,8 +9,8 @@
 void BSPInit()
 {
     DWT_Init(168);
-    BSP_Log_Init();
-    LED_init();
+    BSPLogInit();
+    LEDInit();
     IMUTempInit();
-    buzzer_init();
+    BuzzerInit();
 }

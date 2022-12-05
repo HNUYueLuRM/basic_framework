@@ -22,7 +22,6 @@
 
 #include "arm_math.h"
 
-
 /* 根据robot_def.h中的macro自动计算的参数 */
 #define HALF_WHEEL_BASE (WHEEL_BASE / 2.0f)
 #define HALF_TRACK_WIDTH (TRACK_WIDTH / 2.0f)
@@ -37,10 +36,10 @@ IMU_Data_t *Chassis_IMU_data;
 #endif                               // CHASSIS_BOARD
 static referee_info_t *referee_data; // 裁判系统的数据
 // static SuperCAP* cap; 尚未增加超级电容
-static dji_motor_instance *motor_lf; // left right forward back
-static dji_motor_instance *motor_rf;
-static dji_motor_instance *motor_lb;
-static dji_motor_instance *motor_rb;
+static DJIMotorInstance *motor_lf; // left right forward back
+static DJIMotorInstance *motor_rf;
+static DJIMotorInstance *motor_lb;
+static DJIMotorInstance *motor_rb;
 
 /* chassis 包含的信息交互模块和数据*/
 static Publisher_t *chassis_pub;
@@ -170,8 +169,8 @@ static void MecanumCalculate()
 {
     vt_lf = -chassis_vx - chassis_vy - chassis_cmd_recv.wz * LF_CENTER;
     vt_rf = -chassis_vx + chassis_vy - chassis_cmd_recv.wz * RF_CENTER;
-    vt_lb =  chassis_vx + chassis_vy - chassis_cmd_recv.wz * LB_CENTER;
-    vt_rb =  chassis_vx - chassis_vy - chassis_cmd_recv.wz * RB_CENTER;
+    vt_lb = chassis_vx + chassis_vy - chassis_cmd_recv.wz * LB_CENTER;
+    vt_rb = chassis_vx - chassis_vy - chassis_cmd_recv.wz * RB_CENTER;
 }
 
 /**
@@ -249,7 +248,7 @@ void ChassisTask()
 
     // 获取裁判系统数据
     // 我方颜色id小于7是红色,大于7是蓝色,注意这里发送的是对方的颜色, 0:blue , 1:red
-    chassis_feedback_data.enemy_color = referee_data->GameRobotStat.robot_id > 7 ? 1 : 0; 
+    chassis_feedback_data.enemy_color = referee_data->GameRobotStat.robot_id > 7 ? 1 : 0;
     // 当前只做了17mm的数据获取,后续根据robot_def中的宏切换双枪管和英雄42mm的情况
     chassis_feedback_data.bullet_speed = referee_data->GameRobotStat.shooter_id1_17mm_speed_limit;
     chassis_feedback_data.rest_heat = referee_data->PowerHeatData.shooter_heat0;

@@ -17,7 +17,7 @@ static float uint_to_float(int x_int, float x_min, float x_max, int bits)
     return ((float)x_int) * span / ((float)((1 << bits) - 1)) + offset;
 }
 
-static void DecodeJoint(can_instance *motor_instance)
+static void DecodeJoint(CANInstance *motor_instance)
 {
     uint16_t tmp;
     for (size_t i = 0; i < HT_MOTOR_CNT; i++)
@@ -36,11 +36,11 @@ static void DecodeJoint(can_instance *motor_instance)
     }
 }
 
-joint_instance *HTMotorInit(can_instance_config_s config)
+joint_instance *HTMotorInit(CAN_Init_Config_s config)
 {
     static uint8_t idx;
     joint_motor_info[idx] = (joint_instance *)malloc(sizeof(joint_instance));
-    joint_motor_info[idx]->motor_can_instace =CANRegister(&config);
+    joint_motor_info[idx]->motor_can_instace = CANRegister(&config);
     return joint_motor_info[idx++];
 }
 
