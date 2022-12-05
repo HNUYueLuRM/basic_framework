@@ -37,8 +37,8 @@ typedef enum
 /* 反馈来源设定,若设为OTHER_FEED则需要指定数据来源指针,详见Motor_Controller_s*/
 typedef enum
 {
-    MOTOR_FEED = 0,
-    OTHER_FEED = 1
+    MOTOR_FEED,
+    OTHER_FEED,
 } Feedback_Source_e;
 
 /* 电机正反转标志 */

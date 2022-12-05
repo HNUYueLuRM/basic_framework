@@ -23,7 +23,21 @@
 // #define GIMBAL_BOARD  //云台板
 
 /* 重要参数定义,注意根据不同机器人进行修改 */
-#define YAW_MID_ECD
+// 云台参数
+#define YAW_CHASSIS_ALIGN_ECD 0 // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
+#define PITCH_HORIZON_ECD 0     // 云台处于水平位置时编码器值,若对云台有机械改动需要修改
+// 发射参数
+#define ONE_BULLET_DELTA_ANGLE 0     // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
+#define REDUCTION_RATIO_LOADER 49.0f // 拨盘电机的减速比,英雄需要修改为3508的19.0f
+#define NUM_PER_CIRCLE 1             // 拨盘一圈的装载量
+// 机器人底盘修改的参数,单位为mm(毫米)
+#define WHEEL_BASE 300              // 纵向轴距(前进后退方向)
+#define TRACK_WIDTH 300             // 横向轮距(左右平移方向)
+#define CENTER_GIMBAL_OFFSET_X 0    // 云台旋转中心距底盘几何中心的距离,前后方向,云台位于正中心时默认设为0
+#define CENTER_GIMBAL_OFFSET_Y 0    // 云台旋转中心距底盘几何中心的距离,左右方向,云台位于正中心时默认设为0
+#define RADIUS_WHEEL 60             // 轮子半径
+#define REDUCTION_RATIO_WHEEL 19.0f // 电机减速比,因为编码器量测的是转子的速度而不是输出轴的速度故需进行转换
+
 
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
@@ -129,13 +143,13 @@ typedef struct
 
 // cmd发布的发射控制数据,由shoot订阅
 typedef struct
-{ 
+{
     loader_mode_e load_mode;
     lid_mode_e lid_mode;
     shoot_mode_e shoot_mode;
     Bullet_Speed_e bullet_speed; // 弹速枚举
     uint8_t rest_heat;
-    float shoot_rate; //连续发射的射频,unit per s,发/秒
+    float shoot_rate; // 连续发射的射频,unit per s,发/秒
 } Shoot_Ctrl_Cmd_s;
 
 /* ----------------gimbal/shoot/chassis发布的反馈数据----------------*/
@@ -166,7 +180,7 @@ typedef struct
 typedef struct
 {
     attitude_t gimbal_imu_data;
-    uint16_t yaw_motor_ecd;
+    uint16_t yaw_motor_single_round_angle;
 } Gimbal_Upload_Data_s;
 
 typedef struct

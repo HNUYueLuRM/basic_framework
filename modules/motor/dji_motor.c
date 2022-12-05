@@ -1,8 +1,6 @@
 #include "dji_motor.h"
 #include "general_def.h"
 
-#define ECD_ANGLE_COEF 0.043945f // 360/8192,将编码器值转化为角度制
-
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
 
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
@@ -134,19 +132,19 @@ static void DecodeDJIMotor(can_instance *_instance)
             // resolve data and apply filter to current and speed
             measure->last_ecd = measure->ecd;
             measure->ecd = (uint16_t)(rxbuff[0] << 8 | rxbuff[1]);
-            measure->angle_single_round = ECD_ANGLE_COEF* measure->ecd;
-            measure->speed_angle_per_sec = (1 - SPEED_SMOOTH_COEF) * measure->speed_angle_per_sec + 
+            measure->angle_single_round = ECD_ANGLE_COEF * measure->ecd;
+            measure->speed_angle_per_sec = (1 - SPEED_SMOOTH_COEF) * measure->speed_angle_per_sec +
                                            RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (int16_t)(rxbuff[2] << 8 | rxbuff[3]);
-            measure->given_current = (1 - CURRENT_SMOOTH_COEF) * measure->given_current + 
+            measure->given_current = (1 - CURRENT_SMOOTH_COEF) * measure->given_current +
                                      RPM_2_ANGLE_PER_SEC * CURRENT_SMOOTH_COEF * (uint16_t)(rxbuff[4] << 8 | rxbuff[5]);
             measure->temperate = rxbuff[6];
 
             // multi rounds calc,计算的前提是两次采样间电机转过的角度小于180°
-            if (measure->ecd - measure->last_ecd > 4096) 
+            if (measure->ecd - measure->last_ecd > 4096)
                 measure->total_round--;
             else if (measure->ecd - measure->last_ecd < -4096)
                 measure->total_round++;
-            measure->total_angle = measure->total_round * 360 + measure->angle_single_round; 
+            measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
             break;
         }
     }
@@ -168,7 +166,7 @@ dji_motor_instance *DJIMotorInit(Motor_Init_Config_s *config)
     PID_Init(&dji_motor_info[idx]->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
     dji_motor_info[idx]->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     dji_motor_info[idx]->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
-    
+
     // group motors, because 4 motors share the same CAN control message
     MotorSenderGrouping(&config->can_init_config);
 
@@ -251,13 +249,13 @@ void DJIMotorControl()
             {
                 if (motor_setting->speed_feedback_source == OTHER_FEED)
                     pid_measure = *motor_controller->other_speed_feedback_ptr;
-                else
+                else // MOTOR_FEED
                     pid_measure = motor_measure->speed_angle_per_sec;
                 // 更新pid_ref进入下一个环
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, motor_controller->pid_ref);
             }
 
-            // 计算电流环,只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身的反馈
+            // 计算电流环,只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
             if (motor_setting->close_loop_type & CURRENT_LOOP)
             {
                 motor_controller->pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, motor_controller->pid_ref);

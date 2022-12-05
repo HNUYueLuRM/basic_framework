@@ -5,9 +5,6 @@
 #include "bsp_dwt.h"
 #include "general_def.h"
 
-#define ONE_BULLET_DELTA_ANGLE 0 // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
-#define REDUCTION_RATIO 49.0f    // 拨盘电机的减速比,英雄需要修改为3508的19.0f
-#define NUM_PER_CIRCLE 1         // 拨盘一圈的装载量
 
 /* 对于双发射机构的机器人,将下面的数据封装成结构体即可,生成两份shoot应用实例 */
 static dji_motor_instance *friction_l; // 左摩擦轮
@@ -137,7 +134,7 @@ void ShootTask()
     if (hibernate_time + dead_time > DWT_GetTimeline_ms())
         return;
 
-    // 若不在休眠状态,根据控制模式进行电机参考值设定和模式切换
+    // 若不在休眠状态,根据控制模式进行拨盘电机参考值设定和模式切换
     switch (shoot_cmd_recv.load_mode)
     {
     // 停止拨盘
@@ -162,7 +159,7 @@ void ShootTask()
     // 连发模式,对速度闭环,射频后续修改为可变
     case LOAD_BURSTFIRE:
         DJIMotorOuterLoop(loader, SPEED_LOOP);
-        DJIMotorSetRef(loader, shoot_cmd_recv.shoot_rate * 360 * REDUCTION_RATIO / NUM_PER_CIRCLE);
+        DJIMotorSetRef(loader, shoot_cmd_recv.shoot_rate * 360 * REDUCTION_RATIO_WHEEL / NUM_PER_CIRCLE);
         // x颗/秒换算成速度: 已知一圈的载弹量,由此计算出1s需要转的角度,注意换算角速度
         break;
     // 拨盘反转,对速度闭环,后续增加卡弹检测(通过裁判系统剩余热量反馈)
@@ -175,7 +172,7 @@ void ShootTask()
         break;
     }
 
-    // 根据收到的弹速设置设定摩擦轮参考值,需实测后填入
+    // 根据收到的弹速设置设定摩擦轮电机参考值,需实测后填入
     switch (shoot_cmd_recv.bullet_speed)
     {
     case SMALL_AMU_15:
