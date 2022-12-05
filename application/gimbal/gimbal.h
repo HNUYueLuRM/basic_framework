@@ -5,4 +5,4 @@ void GimbalInit();
 
 void GimbalTask();
 
-#endif //GIMBAL_H
+#endif // GIMBAL_H

@@ -33,10 +33,11 @@
 #include "ins_task.h"
 static CANCommInstance *chasiss_can_comm; // 双板通信CAN comm
 IMU_Data_t *Chassis_IMU_data;
-#endif                               // CHASSIS_BOARD
+#endif // CHASSIS_BOARD
+
 static referee_info_t *referee_data; // 裁判系统的数据
-// static SuperCAP* cap; 尚未增加超级电容
-static DJIMotorInstance *motor_lf; // left right forward back
+static SuperCapInstance *cap;        // 超级电容
+static DJIMotorInstance *motor_lf;   // left right forward back
 static DJIMotorInstance *motor_rf;
 static DJIMotorInstance *motor_lb;
 static DJIMotorInstance *motor_rb;
@@ -151,7 +152,14 @@ void ChassisInit()
     motor_rb = DJIMotorInit(&right_back_config);
 
     referee_data = RefereeInit(&huart6);
-    // SupercapInit();
+    
+    SuperCap_Init_Config_s cap_conf = {
+        .can_config = {
+            .can_handle = &hcan2,
+            .tx_id = 0x302,
+            .rx_id = 0x301,
+        }};
+    cap = SuperCapInit(&cap_conf);
 
     chassis_sub = SubRegister("chassis_cmd", sizeof(Chassis_Ctrl_Cmd_s));
     chassis_pub = PubRegister("chassis_feed", sizeof(Chassis_Upload_Data_s));

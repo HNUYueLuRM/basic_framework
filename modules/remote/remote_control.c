@@ -67,7 +67,7 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
  *        对sbus_to_rc的简单封装
  *
  */
-static void RCRxCallback()
+static void RefereeRxCallback()
 {
     sbus_to_rc(rc_usart_instance->recv_buff);
 }
@@ -75,7 +75,7 @@ static void RCRxCallback()
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
 {
     USART_Init_Config_s conf;
-    conf.module_callback = RCRxCallback;
+    conf.module_callback = RefereeRxCallback;
     conf.usart_handle = rc_usart_handle;
     conf.recv_buff_size = REMOTE_CONTROL_FRAME_SIZE;
     rc_usart_instance = USARTRegister(&conf);

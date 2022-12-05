@@ -32,7 +32,7 @@ typedef struct
     uint16_t ecd;              // 0-8191,刻度总共有8192格
     uint16_t last_ecd;         // 上一次读取的编码器值
     float angle_single_round;  // 单圈角度
-    float speed_angle_per_sec; // 度/秒 rounds per minute
+    float speed_angle_per_sec; // 角速度,单位为:度/秒 rounds per minute
     int16_t given_current;     // 实际电流
     uint8_t temperate;         // 温度 Celsius
     int16_t total_round;       // 总圈数,注意方向

@@ -15,7 +15,7 @@ static referee_info_t referee_info;
 static uint8_t Judge_Self_ID;		 // 当前机器人的ID
 static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
 
-static void RCRxCallback()
+static void RefereeRxCallback()
 {
 	JudgeReadData(referee_usart_instance->recv_buff);
 }
@@ -23,7 +23,7 @@ static void RCRxCallback()
 referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 {
 	USART_Init_Config_s conf;
-	conf.module_callback = RCRxCallback;
+	conf.module_callback = RefereeRxCallback;
 	conf.usart_handle = referee_usart_handle;
 	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
 	referee_usart_instance = USARTRegister(&conf);
