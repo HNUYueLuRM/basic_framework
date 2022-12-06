@@ -52,6 +52,13 @@
  * @brief 这些枚举类型和结构体会作为CMD控制数据和各应用的反馈数据的一部分
  *
  */
+//机器人状态
+typedef enum
+{
+    ROBOT_STOP,
+    ROBOT_WORKING,
+} Robot_Status_e;
+
 
 // 应用状态
 typedef enum

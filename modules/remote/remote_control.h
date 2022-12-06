@@ -55,27 +55,6 @@
 #define Key_B 15
 
 /* ----------------------- Data Struct ------------------------------------- */
-typedef struct
-{
-    struct
-    {
-        int16_t ch[5]; // 右|0 ,右-1 ,左-2 ,左|3 ,拨轮4
-        uint8_t s[2];  //[0]:left [1]:right
-    } joy_stick;
-    struct
-    {
-        int16_t x;
-        int16_t y;
-        int16_t z;
-        uint8_t press_l;
-        uint8_t press_r;
-    } mouse;
-
-    uint16_t key_temp;
-    uint8_t key[4][16];
-
-} RC_ctrl_t;
-
 // 待测试的位域结构体,可以极大提升解析速度
 typedef struct
 {
@@ -96,6 +75,30 @@ typedef struct
     uint16_t v : 1;
     uint16_t b : 1;
 } Key_t;
+
+typedef struct
+{
+    struct
+    {
+        int16_t ch[5]; // 右|0 ,右-1 ,左-2 ,左|3 ,拨轮4
+        uint8_t s[2];  //[0]:left [1]:right
+    } joy_stick;
+    struct
+    {
+        int16_t x;
+        int16_t y;
+        int16_t z;
+        uint8_t press_l;
+        uint8_t press_r;
+    } mouse;
+
+    uint16_t key_temp;
+    uint8_t key[4][16]; // 当前使用的键盘索引
+    Key_t key_test[4];  // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
+
+} RC_ctrl_t;
+
+
 
 /* ------------------------- Internal Data ----------------------------------- */
 

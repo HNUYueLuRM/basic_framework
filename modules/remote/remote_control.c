@@ -36,9 +36,10 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
     rc_ctrl[0].mouse.press_r = sbus_buf[13];                 //!< Mouse Right Is Press ?
 
     // 按键值,每个键1bit,key_temp共16位;按键顺序在remote_control.h的宏定义中可见
+    // 使用位域后不再需要这一中间操作
     rc_ctrl[0].key_temp = sbus_buf[14] | (sbus_buf[15] << 8); //!< KeyBoard value
 
-    // @todo 似乎可以直接用位域操作进行,把key_temp通过强制类型转换变成key类型? 方案见remote_control.md
+    // @todo 似乎可以直接用位域操作进行,把key_temp通过强制类型转换变成key类型? 位域方案在下面,尚未测试
     // 按键值解算,利用宏+循环减少代码长度
     for (uint16_t i = 0x0001, j = 0; i < 0x8001; i *= 2, j++) // 依次查看每一个键
     {
@@ -52,6 +53,15 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
         if (rc_ctrl[0].key_temp & 0x0001u << Key_Ctrl) //  按下shift
             rc_ctrl[0].key[KEY_PRESS_WITH_CTRL][j] = rc_ctrl[0].key_temp & i;
     }
+
+    // 位域的按键值解算,直接memcpy即可,注意小端低字节在前,即lsb在第一位
+    *(uint16_t*)&rc_ctrl[0].key_test[KEY_PRESS]= (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
+    *(uint16_t*)&rc_ctrl[0].key_test[KEY_STATE]=*(uint16_t*)&rc_ctrl[0].key_test[KEY_PRESS] & ~(*(uint16_t*)&(rc_ctrl[1].key_test[KEY_PRESS]));
+    if(rc_ctrl[0].key_test[KEY_PRESS].ctrl)
+        rc_ctrl[0].key_test[KEY_PRESS_WITH_CTRL]=rc_ctrl[0].key_test[KEY_PRESS];
+    if(rc_ctrl[0].key_test[KEY_PRESS].shift)
+        rc_ctrl[0].key_test[Key_Shift]=rc_ctrl[0].key_test[KEY_PRESS];
+
 
     // 减去偏置值
     rc_ctrl[0].joy_stick.ch[0] -= RC_CH_VALUE_OFFSET;
@@ -67,7 +77,7 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
  *        对sbus_to_rc的简单封装
  *
  */
-static void RefereeRxCallback()
+static void RemoteControlRxCallback()
 {
     sbus_to_rc(rc_usart_instance->recv_buff);
 }
@@ -75,7 +85,7 @@ static void RefereeRxCallback()
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
 {
     USART_Init_Config_s conf;
-    conf.module_callback = RefereeRxCallback;
+    conf.module_callback = RemoteControlRxCallback;
     conf.usart_handle = rc_usart_handle;
     conf.recv_buff_size = REMOTE_CONTROL_FRAME_SIZE;
     rc_usart_instance = USARTRegister(&conf);

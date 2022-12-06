@@ -36,6 +36,8 @@ static Chassis_Ctrl_Cmd_s chassis_cmd_send; // 发送给底盘应用的信息,�
 static Subscriber_t *chassis_feed_sub;
 static Chassis_Upload_Data_s chassis_fetch_data; // 从底盘应用接收的反馈信息信息,底盘功率枪口热量与底盘运动状态等
 
+static Robot_Status_e robot_state;
+
 void GimbalCMDInit()
 {
     remote_control_data = RemoteControlInit(&huart3); // 修改为对应串口,注意dbus协议串口需加反相器
@@ -81,6 +83,8 @@ static void CalcOffsetAngle()
  */
 static void RemoteControlSetMode()
 {
+    
+
 }
 
 /**
@@ -89,6 +93,28 @@ static void RemoteControlSetMode()
  */
 static void MouseKeySetMode()
 {
+}
+
+/**
+ * @brief  紧急停止,包括遥控器左上侧拨轮打满/重要模块离线/双板通信失效等
+ *         '300'待修改成合适的值,或改为开关控制
+ * 
+ */
+static void EmergencyHandler()
+{
+    if(remote_control_data[0].joy_stick.ch[4]<-300)//还需添加重要应用和模块离线的判断
+    {
+        robot_state=ROBOT_STOP;    // 遥控器左上侧拨轮打满,进入紧急停止模式
+        gimbal_cmd_send.gimbal_mode==GIMBAL_ZERO_FORCE;
+        chassis_cmd_send.chassis_mode==CHASSIS_ZERO_FORCE;
+        shoot_cmd_send.shoot_mode==SHOOT_STOP;
+        return;
+    }
+    // if(remote_control_data[0].joy_stick.ch[4]>300 && 各个模块正常)
+    // {
+    //     //恢复运行
+    //     //...
+    // }
 }
 
 void GimbalCMDTask()
@@ -105,6 +131,8 @@ void GimbalCMDTask()
         RemoteControlSetMode();
     else if (0) // 键盘控制
         MouseKeySetMode();
+    
+    EmergencyHandler(); // 处理模块离线和遥控器急停等紧急情况
 
     // 设置视觉发送数据,work_mode在前一部分设置
     vision_send_data.bullet_speed = chassis_fetch_data.bullet_speed;
