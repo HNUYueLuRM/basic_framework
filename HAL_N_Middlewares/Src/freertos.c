@@ -28,6 +28,9 @@
 #include "ins_task.h"
 #include "motor_task.h"
 #include "led_task.h"
+#include "monitor.h"
+#include "robot.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,6 +59,8 @@ osThreadId defaultTaskHandle;
 void StartINSTASK(void const * argument);
 
 void StartMOTORTASK(void const * argument);
+
+void StartROBOTTASK(void const* argument);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -117,6 +122,9 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(motortask), NULL);
 
+  osThreadDef(robottask, StartROBOTTASK, osPriorityNormal, 0, 2048);
+  defaultTaskHandle = osThreadCreate(osThread(robottask), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -138,6 +146,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    //1kHz
     led_RGB_flow_task();
     osDelay(1);
   }
@@ -150,6 +159,7 @@ void StartINSTASK(void const * argument)
 {
   while (1)
   {
+    //1kHz
     INS_Task();
     osDelay(1);
   }
@@ -160,9 +170,21 @@ void StartMOTORTASK(void const * argument)
 {
   while (1)
   {
+    //500Hz
     MotorControlTask();
-    osDelay(1);
+    osDelay(2);
   }
+}
+
+void StartROBOTTASK(void const * argument)
+{
+  while (1)
+  {
+    // 200Hz
+    RobotTask();
+    osDelay(5);
+  }
+  
 }
 
 

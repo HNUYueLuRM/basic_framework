@@ -41,7 +41,7 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
 
     // @todo 似乎可以直接用位域操作进行,把key_temp通过强制类型转换变成key类型? 位域方案在下面,尚未测试
     // 按键值解算,利用宏+循环减少代码长度
-    for (uint16_t i = 0x0001, j = 0; i < 0x8001; i *= 2, j++) // 依次查看每一个键
+    for (uint16_t i = 0x0001, j = 0; i != 0x8000; i *= 2, j++) // 依次查看每一个键
     {
         // 如果键按下,对应键的key press状态置1,否则为0
         rc_ctrl[0].key[KEY_PRESS][j] = rc_ctrl[0].key_temp & i;
