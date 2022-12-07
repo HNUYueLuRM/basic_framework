@@ -38,7 +38,7 @@
         "typeinfo": "c",
         "general_def.h": "c",
         "super_cap.h": "c",
-        "motor_def.h": "c"
+        "motor_def.h": "c",
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 }

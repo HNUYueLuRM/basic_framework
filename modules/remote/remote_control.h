@@ -80,9 +80,9 @@ typedef struct
 {
     struct
     {
-        int16_t ch[5]; // 右|0 ,右-1 ,左-2 ,左|3 ,拨轮4
+        int16_t joystick[5]; // 右|0 ,右-1 ,左-2 ,左|3 ,拨轮4
         uint8_t s[2];  //[0]:left [1]:right
-    } joy_stick;
+    } rc;
     struct
     {
         int16_t x;

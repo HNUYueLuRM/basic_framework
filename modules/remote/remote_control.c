@@ -19,14 +19,14 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
 {
     memcpy(&rc_ctrl[1], &rc_ctrl[0], sizeof(RC_ctrl_t)); // 保存上一次的数据
     // 摇杆
-    rc_ctrl[0].joy_stick.ch[0] = (sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff;                              //!< Channel 0
-    rc_ctrl[0].joy_stick.ch[1] = ((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff;                       //!< Channel 1
-    rc_ctrl[0].joy_stick.ch[2] = ((sbus_buf[2] >> 6) | (sbus_buf[3] << 2) | (sbus_buf[4] << 10)) & 0x07ff; //!< Channel 2
-    rc_ctrl[0].joy_stick.ch[3] = ((sbus_buf[4] >> 1) | (sbus_buf[5] << 7)) & 0x07ff;                       //!< Channel 3
-    rc_ctrl[0].joy_stick.ch[4] = sbus_buf[16] | (sbus_buf[17] << 8);                                       // 拨轮
+    rc_ctrl[0].rc.joystick[0] = (sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff;                              //!< Channel 0
+    rc_ctrl[0].rc.joystick[1] = ((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff;                       //!< Channel 1
+    rc_ctrl[0].rc.joystick[2] = ((sbus_buf[2] >> 6) | (sbus_buf[3] << 2) | (sbus_buf[4] << 10)) & 0x07ff; //!< Channel 2
+    rc_ctrl[0].rc.joystick[3] = ((sbus_buf[4] >> 1) | (sbus_buf[5] << 7)) & 0x07ff;                       //!< Channel 3
+    rc_ctrl[0].rc.joystick[4] = sbus_buf[16] | (sbus_buf[17] << 8);                                       // 拨轮
     // 开关,0左1右
-    rc_ctrl[0].joy_stick.s[0] = ((sbus_buf[5] >> 4) & 0x0003);      //!< Switch left
-    rc_ctrl[0].joy_stick.s[1] = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch right
+    rc_ctrl[0].rc.s[0] = ((sbus_buf[5] >> 4) & 0x0003);      //!< Switch left
+    rc_ctrl[0].rc.s[1] = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch right
 
     // 鼠标解析
     rc_ctrl[0].mouse.x = sbus_buf[6] | (sbus_buf[7] << 8);   //!< Mouse X axis
@@ -55,20 +55,19 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
     }
 
     // 位域的按键值解算,直接memcpy即可,注意小端低字节在前,即lsb在第一位
-    *(uint16_t*)&rc_ctrl[0].key_test[KEY_PRESS]= (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
-    *(uint16_t*)&rc_ctrl[0].key_test[KEY_STATE]=*(uint16_t*)&rc_ctrl[0].key_test[KEY_PRESS] & ~(*(uint16_t*)&(rc_ctrl[1].key_test[KEY_PRESS]));
-    if(rc_ctrl[0].key_test[KEY_PRESS].ctrl)
-        rc_ctrl[0].key_test[KEY_PRESS_WITH_CTRL]=rc_ctrl[0].key_test[KEY_PRESS];
-    if(rc_ctrl[0].key_test[KEY_PRESS].shift)
-        rc_ctrl[0].key_test[Key_Shift]=rc_ctrl[0].key_test[KEY_PRESS];
-
+    *(uint16_t *)&rc_ctrl[0].key_test[KEY_PRESS] = (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
+    *(uint16_t *)&rc_ctrl[0].key_test[KEY_STATE] = *(uint16_t *)&rc_ctrl[0].key_test[KEY_PRESS] & ~(*(uint16_t *)&(rc_ctrl[1].key_test[KEY_PRESS]));
+    if (rc_ctrl[0].key_test[KEY_PRESS].ctrl)
+        rc_ctrl[0].key_test[KEY_PRESS_WITH_CTRL] = rc_ctrl[0].key_test[KEY_PRESS];
+    if (rc_ctrl[0].key_test[KEY_PRESS].shift)
+        rc_ctrl[0].key_test[Key_Shift] = rc_ctrl[0].key_test[KEY_PRESS];
 
     // 减去偏置值
-    rc_ctrl[0].joy_stick.ch[0] -= RC_CH_VALUE_OFFSET;
-    rc_ctrl[0].joy_stick.ch[1] -= RC_CH_VALUE_OFFSET;
-    rc_ctrl[0].joy_stick.ch[2] -= RC_CH_VALUE_OFFSET;
-    rc_ctrl[0].joy_stick.ch[3] -= RC_CH_VALUE_OFFSET;
-    rc_ctrl[0].joy_stick.ch[4] -= RC_CH_VALUE_OFFSET;
+    rc_ctrl[0].rc.joystick[0] -= RC_CH_VALUE_OFFSET;
+    rc_ctrl[0].rc.joystick[1] -= RC_CH_VALUE_OFFSET;
+    rc_ctrl[0].rc.joystick[2] -= RC_CH_VALUE_OFFSET;
+    rc_ctrl[0].rc.joystick[3] -= RC_CH_VALUE_OFFSET;
+    rc_ctrl[0].rc.joystick[4] -= RC_CH_VALUE_OFFSET;
 }
 
 /**
