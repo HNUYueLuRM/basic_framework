@@ -62,10 +62,14 @@ void ChassisInit()
         .can_init_config.can_handle=&hcan2,
         .controller_param_init_config = {
             .speed_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
             .current_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
         },
         .controller_setting_init_config = {

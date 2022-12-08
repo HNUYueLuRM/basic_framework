@@ -75,69 +75,66 @@ void INS_Task(void)
 {
     static uint32_t count = 0;
     const float gravity[3] = {0, 0, 9.81f};
-    while (1)
+    
+    dt = DWT_GetDeltaT(&INS_DWT_Count);
+    t += dt;
+
+    // ins update
+    if ((count % 1) == 0)
     {
-        dt = DWT_GetDeltaT(&INS_DWT_Count);
-        t += dt;
+        BMI088_Read(&BMI088);
 
-        // ins update
-        if ((count % 1) == 0)
+        INS.Accel[X] = BMI088.Accel[X];
+        INS.Accel[Y] = BMI088.Accel[Y];
+        INS.Accel[Z] = BMI088.Accel[Z];
+        INS.Gyro[X] = BMI088.Gyro[X];
+        INS.Gyro[Y] = BMI088.Gyro[Y];
+        INS.Gyro[Z] = BMI088.Gyro[Z];
+
+        // demo function,用于修正安装误差,可以不管,本demo暂时没用
+        IMU_Param_Correction(&IMU_Param, INS.Gyro, INS.Accel);
+
+        // 计算重力加速度矢量和b系的XY两轴的夹角,可用作功能扩展,本demo暂时没用
+        INS.atanxz = -atan2f(INS.Accel[X], INS.Accel[Z]) * 180 / PI;
+        INS.atanyz = atan2f(INS.Accel[Y], INS.Accel[Z]) * 180 / PI;
+
+        // 核心函数,EKF更新四元数
+        IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);
+
+        memcpy(INS.q, QEKF_INS.q, sizeof(QEKF_INS.q));
+
+        // 机体系基向量转换到导航坐标系，本例选取惯性系为导航系
+        BodyFrameToEarthFrame(xb, INS.xn, INS.q);
+        BodyFrameToEarthFrame(yb, INS.yn, INS.q);
+        BodyFrameToEarthFrame(zb, INS.zn, INS.q);
+
+        // 将重力从导航坐标系n转换到机体系b,随后根据加速度计数据计算运动加速度
+        float gravity_b[3];
+        EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
+        for (uint8_t i = 0; i < 3; i++) // 同样过一个低通滤波
         {
-            BMI088_Read(&BMI088);
-
-            INS.Accel[X] = BMI088.Accel[X];
-            INS.Accel[Y] = BMI088.Accel[Y];
-            INS.Accel[Z] = BMI088.Accel[Z];
-            INS.Gyro[X] = BMI088.Gyro[X];
-            INS.Gyro[Y] = BMI088.Gyro[Y];
-            INS.Gyro[Z] = BMI088.Gyro[Z];
-
-            // demo function,用于修正安装误差,可以不管,本demo暂时没用
-            IMU_Param_Correction(&IMU_Param, INS.Gyro, INS.Accel);
-
-            // 计算重力加速度矢量和b系的XY两轴的夹角,可用作功能扩展,本demo暂时没用
-            INS.atanxz = -atan2f(INS.Accel[X], INS.Accel[Z]) * 180 / PI;
-            INS.atanyz = atan2f(INS.Accel[Y], INS.Accel[Z]) * 180 / PI;
-
-            // 核心函数,EKF更新四元数
-            IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);
-
-            memcpy(INS.q, QEKF_INS.q, sizeof(QEKF_INS.q));
-
-            // 机体系基向量转换到导航坐标系，本例选取惯性系为导航系
-            BodyFrameToEarthFrame(xb, INS.xn, INS.q);
-            BodyFrameToEarthFrame(yb, INS.yn, INS.q);
-            BodyFrameToEarthFrame(zb, INS.zn, INS.q);
-
-            // 将重力从导航坐标系n转换到机体系b,随后根据加速度计数据计算运动加速度
-            float gravity_b[3];
-            EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
-            for (uint8_t i = 0; i < 3; i++) // 同样过一个低通滤波
-            {
-                INS.MotionAccel_b[i] = (INS.Accel[i] - gravity_b[i]) * dt / (INS.AccelLPF + dt) + INS.MotionAccel_b[i] * INS.AccelLPF / (INS.AccelLPF + dt);
-            }
-            BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
-
-            // 获取最终数据
-            INS.Yaw = QEKF_INS.Yaw;
-            INS.Pitch = QEKF_INS.Pitch;
-            INS.Roll = QEKF_INS.Roll;
-            INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
+            INS.MotionAccel_b[i] = (INS.Accel[i] - gravity_b[i]) * dt / (INS.AccelLPF + dt) + INS.MotionAccel_b[i] * INS.AccelLPF / (INS.AccelLPF + dt);
         }
+        BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
 
-        // temperature control
-        if ((count % 2) == 0)
-        {
-            // 500hz
-            IMU_Temperature_Ctrl();
-        }
-
-        if ((count++ % 1000) == 0)
-        {
-            // 1Hz 可以加入monitor函数,检查IMU是否正常运行/离线
-        }
+        // 获取最终数据
+        INS.Yaw = QEKF_INS.Yaw;
+        INS.Pitch = QEKF_INS.Pitch;
+        INS.Roll = QEKF_INS.Roll;
+        INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
     }
-    osDelay(1);
+
+    // temperature control
+    if ((count % 2) == 0)
+    {
+        // 500hz
+        IMU_Temperature_Ctrl();
+    }
+
+    if ((count++ % 1000) == 0)
+    {
+        // 1Hz 可以加入monitor函数,检查IMU是否正常运行/离线
+    }
 }
 
 /**

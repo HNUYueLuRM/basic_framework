@@ -26,12 +26,14 @@ void GimbalInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kd = 10,
-                .Ki = 1,
-                .Kd = 2,
+                .Kd = 1,
+                .Ki = 0,
+                .Kd = 0,
             },
             .speed_PID = {
-
+                .Kd = 1,
+                .Ki = 0,
+                .Kd = 0,
             },
             .other_angle_feedback_ptr = &Gimbal_IMU_data->YawTotalAngle,
             // 还需要增加角速度额外反馈指针
@@ -58,7 +60,9 @@ void GimbalInit()
                 .Kd = 2,
             },
             .speed_PID = {
-
+                .Kd = 1,
+                .Ki = 0,
+                .Kd = 0,
             },
             .other_angle_feedback_ptr = &Gimbal_IMU_data->Pitch,
             // 还需要增加角速度额外反馈指针
@@ -71,8 +75,8 @@ void GimbalInit()
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
             .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
-        .motor_type = GM6020};
-
+        .motor_type = GM6020,
+    };
     // 电机对total_angle闭环,上电时为零,会保持静止,收到遥控器数据再动
     yaw_motor = DJIMotorInit(&yaw_config);
     pitch_motor = DJIMotorInit(&pitch_config);

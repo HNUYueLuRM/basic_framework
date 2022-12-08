@@ -124,7 +124,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
     static uint8_t *rxbuff;
     static DJI_Motor_Measure_s *measure;
 
-    for (size_t i = 0; i < DJI_MOTOR_CNT; i++)
+    for (size_t i = 0; i < idx; i++)
     {
         if (dji_motor_info[i]->motor_can_instance == _instance)
         {
@@ -225,7 +225,7 @@ void DJIMotorControl()
     static DJI_Motor_Measure_s *motor_measure;
     static float pid_measure;
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
-    for (size_t i = 0; i < DJI_MOTOR_CNT; i++)
+    for (size_t i = 0; i < idx; i++)
     {
         if (dji_motor_info[i])
         {
@@ -275,13 +275,11 @@ void DJIMotorControl()
             sender_assignment[group].tx_buff[2 * num + 1] = 0xff & set;
 
             // 电机是否停止运行
-            if (motor->stop_flag == MOTOR_STOP)
-            { // 若该电机处于停止状态,直接将buff置零
-                memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
-            }
+            // if (motor->stop_flag == MOTOR_STOP)
+            // { // 若该电机处于停止状态,直接将buff置零
+            //     memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
+            // }
         }
-        else // 遇到空指针说明所有遍历结束,退出循环
-            break;
     }
 
     // 遍历flag,检查是否要发送这一帧报文

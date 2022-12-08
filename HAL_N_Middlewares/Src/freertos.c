@@ -128,7 +128,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(daemontask, StartDAEMONTASK, osPriorityNormal, 0, 512);
   defaultTaskHandle = osThreadCreate(osThread(daemontask), NULL);
 
-  osThreadDef(robottask, StartROBOTTASK, osPriorityNormal, 0, 2048);
+  osThreadDef(robottask, StartROBOTTASK, osPriorityNormal, 0, 1024);
   defaultTaskHandle = osThreadCreate(osThread(robottask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */

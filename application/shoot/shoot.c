@@ -28,16 +28,15 @@ void ShootInit()
             .tx_id = 1,
         },
         .controller_param_init_config = {
-            .angle_PID = {
-                .Kd = 10,
-                .Ki = 1,
-                .Kd = 2,
-            },
             .speed_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
             .current_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
         },
         .controller_setting_init_config = {
@@ -56,16 +55,15 @@ void ShootInit()
             .tx_id = 2,
         },
         .controller_param_init_config = {
-            .angle_PID = {
-                .Kd = 10,
-                .Ki = 1,
-                .Kd = 2,
-            },
             .speed_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
             .current_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
         },
         .controller_setting_init_config = {
@@ -90,13 +88,19 @@ void ShootInit()
                 .Kd = 2,
             },
             .angle_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
             .speed_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
             .current_PID = {
-
+                .Kp=1,
+                .Ki=0,
+                .Kd=0,
             },
         },
         .controller_setting_init_config = {
