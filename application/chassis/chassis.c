@@ -57,12 +57,9 @@ static float vt_lf, vt_rf, vt_lb, vt_rb; // 底盘速度解算后的临时输出
 
 void ChassisInit()
 {
-    // 左前轮
-    Motor_Init_Config_s left_foward_config = {
-        .can_init_config = {
-            .can_handle = &hcan2,
-            .tx_id = 1,
-        },
+    // 四个轮子的参数一样,改tx_id和反转标志位即可
+    Motor_Init_Config_s chassis_motor_config = {
+        .can_init_config.can_handle=&hcan2,
         .controller_param_init_config = {
             .speed_PID = {
 
@@ -76,80 +73,24 @@ void ChassisInit()
             .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
         },
         .motor_type = M3508};
-    // 右前轮
-    Motor_Init_Config_s right_foward_config = {
-        .can_init_config = {
-            .can_handle = &hcan2,
-            .tx_id = 2,
-        },
-        .controller_param_init_config = {
-            .speed_PID = {
+    
+    chassis_motor_config.can_init_config.tx_id=1;
+    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+    motor_lf = DJIMotorInit(&chassis_motor_config);
 
-            },
-            .current_PID = {
+    chassis_motor_config.can_init_config.tx_id=2,
+    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+    motor_rf = DJIMotorInit(&chassis_motor_config);
+    
+    chassis_motor_config.can_init_config.tx_id=3,
+    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+    motor_lb = DJIMotorInit(&chassis_motor_config);
 
-            },
-        },
-        .controller_setting_init_config = {
-            .angle_feedback_source = MOTOR_FEED,
-            .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type = SPEED_LOOP,
-            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
-        },
-        .motor_type = M3508};
-    // 左后轮
-    Motor_Init_Config_s left_back_config = {
-        .can_init_config = {
-            .can_handle = &hcan2,
-            .tx_id = 3,
-        },
-        .controller_param_init_config = {
-            .speed_PID = {
-
-            },
-            .current_PID = {
-
-            },
-        },
-        .controller_setting_init_config = {
-            .angle_feedback_source = MOTOR_FEED,
-            .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type = SPEED_LOOP,
-            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
-        },
-        .motor_type = M3508};
-    // 右后轮
-    Motor_Init_Config_s right_back_config = {
-        .can_init_config = {
-            .can_handle = &hcan2,
-            .tx_id = 4,
-        },
-        .controller_param_init_config = {
-            .speed_PID = {
-
-            },
-            .current_PID = {
-
-            },
-        },
-        .controller_setting_init_config = {
-            .angle_feedback_source = MOTOR_FEED,
-            .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type = SPEED_LOOP,
-            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
-        },
-        .motor_type = M3508};
-
-    motor_lf = DJIMotorInit(&left_foward_config);
-    motor_rf = DJIMotorInit(&right_foward_config);
-    motor_lb = DJIMotorInit(&left_back_config);
-    motor_rb = DJIMotorInit(&right_back_config);
+    chassis_motor_config.can_init_config.tx_id=4,
+    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+    motor_rb = DJIMotorInit(&chassis_motor_config);
 
     referee_data = RefereeInit(&huart6);
     

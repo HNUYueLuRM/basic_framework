@@ -10,8 +10,10 @@ static DJIMotorInstance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
  * @brief 由于DJI电机发送以四个一组的形式进行,故对其进行特殊处理,用6个(2can*3group)can_instance专门负责发送
  *        该变量将在 DJIMotorControl() 中使用,分组在 MotorSenderGrouping()中进行
  *
+ * C610(m2006)/C620(m3508):0x1ff,0x200; GM6020:0x1ff,0x2ff
+ * 反馈: GM6020: 0x204+id ; C610/C620: 0x200+id
  * can1: [0]:0x1FF,[1]:0x200,[2]:0x2FF
- * can2: [0]:0x1FF,[1]:0x200,[2]:0x2FF
+ * can2: [3]:0x1FF,[4]:0x200,[5]:0x2FF
  */
 static CANInstance sender_assignment[6] =
     {

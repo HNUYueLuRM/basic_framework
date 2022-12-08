@@ -132,7 +132,7 @@ modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
 modules/can_comm/can_comm.c \
 modules/message_center/message_center.c \
-modules/monitor/monitor.c \
+modules/daemon/daemon.c \
 modules/vofa/vofa.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
@@ -230,7 +230,7 @@ C_INCLUDES =  \
 -Imodules/super_cap \
 -Imodules/can_comm \
 -Imodules/message_center \
--Imodules/monitor \
+-Imodules/daemon \
 -Imodules/vofa \
 -Imodules/
 

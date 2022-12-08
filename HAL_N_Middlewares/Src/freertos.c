@@ -28,7 +28,7 @@
 #include "ins_task.h"
 #include "motor_task.h"
 #include "led_task.h"
-#include "monitor.h"
+#include "daemon.h"
 #include "robot.h"
 
 /* USER CODE END Includes */
@@ -60,7 +60,10 @@ void StartINSTASK(void const * argument);
 
 void StartMOTORTASK(void const * argument);
 
+void StartDAEMONTASK(void const* argument);
+
 void StartROBOTTASK(void const* argument);
+
 
 /* USER CODE END FunctionPrototypes */
 
@@ -122,6 +125,9 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 256);
   defaultTaskHandle = osThreadCreate(osThread(motortask), NULL);
 
+  osThreadDef(daemontask, StartDAEMONTASK, osPriorityNormal, 0, 512);
+  defaultTaskHandle = osThreadCreate(osThread(daemontask), NULL);
+
   osThreadDef(robottask, StartROBOTTASK, osPriorityNormal, 0, 2048);
   defaultTaskHandle = osThreadCreate(osThread(robottask), NULL);
 
@@ -173,6 +179,16 @@ void StartMOTORTASK(void const * argument)
     //500Hz
     MotorControlTask();
     osDelay(2);
+  }
+}
+
+void StartDAEMONTASK(void const * argument)
+{
+  while (1)
+  {
+    //500Hz
+    DaemonTask();
+    osDelay(10);
   }
 }
 
