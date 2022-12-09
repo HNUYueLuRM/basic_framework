@@ -186,7 +186,7 @@ void StartDAEMONTASK(void const * argument)
 {
   while (1)
   {
-    //500Hz
+    //100Hz
     DaemonTask();
     osDelay(10);
   }

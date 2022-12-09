@@ -29,10 +29,11 @@ static void f_PID_ErrorHandle(PIDInstance *pid);           // 堵转保护
  */
 void PID_Init(PIDInstance *pid, PID_Init_config_s *config)
 {
+    memset(pid, 0, sizeof(PIDInstance));
     // utilize the quality of struct that its memeory is continuous
     memcpy(pid, config, sizeof(PID_Init_config_s));
     // set rest of memory to 0
-    memset(&pid->Measure, 0, sizeof(PIDInstance) - sizeof(PID_Init_config_s));
+    
 }
 
 /**

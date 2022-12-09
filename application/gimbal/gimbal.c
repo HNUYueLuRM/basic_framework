@@ -16,24 +16,27 @@ static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv; // 来自gimbal_cmd的控制信息
 
 void GimbalInit()
 {
-    Gimbal_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+    // Gimbal_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
 
     // YAW
     Motor_Init_Config_s yaw_config = {
         .can_init_config = {
             .can_handle = &hcan1,
-            .tx_id = 2,
+            .tx_id = 1,
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kd = 1,
+                .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
+                .MaxOut = 2000,
+                .DeadBand=0.3,
             },
             .speed_PID = {
-                .Kd = 1,
+                .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
+                .MaxOut = 2000,
             },
             .other_angle_feedback_ptr = &Gimbal_IMU_data->YawTotalAngle,
             // 还需要增加角速度额外反馈指针
@@ -44,25 +47,28 @@ void GimbalInit()
             .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = ANGLE_LOOP,
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
+            .reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = GM6020};
     // PITCH
     Motor_Init_Config_s pitch_config = {
         .can_init_config = {
             .can_handle = &hcan1,
-            .tx_id = 1,
+            .tx_id = 3,
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kd = 10,
-                .Ki = 1,
-                .Kd = 2,
-            },
-            .speed_PID = {
-                .Kd = 1,
+                .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
+                .MaxOut = 2000,
+                .DeadBand=0.3,
+            },
+            .speed_PID = {
+                .Kp = 10,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 2000,
             },
             .other_angle_feedback_ptr = &Gimbal_IMU_data->Pitch,
             // 还需要增加角速度额外反馈指针
@@ -73,7 +79,7 @@ void GimbalInit()
             .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = ANGLE_LOOP,
             .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
+            .reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = GM6020,
     };

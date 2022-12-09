@@ -68,6 +68,7 @@ attitude_t *INS_Init(void)
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
+    return (attitude_t*)&INS.Roll;
 }
 
 /* 注意以1kHz的频率运行此任务 */

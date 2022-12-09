@@ -223,7 +223,7 @@ void DJIMotorControl()
     static Motor_Control_Setting_s *motor_setting;
     static Motor_Controller_s *motor_controller;
     static DJI_Motor_Measure_s *motor_measure;
-    static float pid_measure;
+    static float pid_measure,pid_ref;
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
     for (size_t i = 0; i < idx; i++)
     {
@@ -233,6 +233,7 @@ void DJIMotorControl()
             motor_setting = &motor->motor_settings;
             motor_controller = &motor->motor_controller;
             motor_measure = &motor->motor_measure;
+            pid_ref=motor_controller->pid_ref; //保存设定值,防止motor_controller->pid_ref在计算过程中被修改
 
             // pid_ref会顺次通过被启用的闭环充当数据的载体
             // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
@@ -243,7 +244,7 @@ void DJIMotorControl()
                 else                                          // MOTOR_FEED
                     pid_measure = motor_measure->total_angle; // 对total angle闭环,防止在边界处出现突跃
                 // 更新pid_ref进入下一个环
-                motor_controller->pid_ref = PID_Calculate(&motor_controller->angle_PID, pid_measure, motor_controller->pid_ref);
+                pid_ref = PID_Calculate(&motor_controller->angle_PID, pid_measure, pid_ref);
             }
 
             // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
@@ -254,17 +255,17 @@ void DJIMotorControl()
                 else // MOTOR_FEED
                     pid_measure = motor_measure->speed_angle_per_sec;
                 // 更新pid_ref进入下一个环
-                motor_controller->pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, motor_controller->pid_ref);
+                pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, pid_ref);
             }
 
             // 计算电流环,只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
             if (motor_setting->close_loop_type & CURRENT_LOOP)
             {
-                motor_controller->pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, motor_controller->pid_ref);
+                pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, pid_ref);
             }
 
             // 获取最终输出
-            set = (int16_t)motor_controller->pid_ref;
+            set = (int16_t)pid_ref;
             if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
                 set *= -1; // 设置反转
 

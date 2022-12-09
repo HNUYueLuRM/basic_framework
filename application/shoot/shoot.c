@@ -29,14 +29,16 @@ void ShootInit()
         },
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp=10,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 10,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
             .current_PID = {
-                .Kp=10,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 10,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
         },
         .controller_setting_init_config = {
@@ -56,14 +58,16 @@ void ShootInit()
         },
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp=1,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 1,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
             .current_PID = {
-                .Kp=1,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 1,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
         },
         .controller_setting_init_config = {
@@ -83,19 +87,22 @@ void ShootInit()
         .controller_param_init_config = {
             .angle_PID = {
                 // 如果启用位置环来控制发弹,需要较大的I值保证输出力矩的线性度否则出现接近拨出的力矩大幅下降
-                .Kd = 10,
+                .Kp = 10,
                 .Ki = 1,
                 .Kd = 2,
+                .MaxOut = 200,
             },
             .speed_PID = {
-                .Kp=1,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 1,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
             .current_PID = {
-                .Kp=1,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 1,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
         },
         .controller_setting_init_config = {
@@ -121,7 +128,7 @@ void ShootTask()
     SubGetMessage(shoot_sub, &shoot_cmd_recv);
 
     // 对shoot mode等于SHOOT_STOP的情况特殊处理,直接停止所有电机
-    if (shoot_cmd_recv.load_mode == SHOOT_STOP)
+    if (shoot_cmd_recv.shoot_mode == SHOOT_OFF)
     {
         DJIMotorStop(friction_l);
         DJIMotorStop(friction_r);
@@ -175,15 +182,15 @@ void ShootTask()
     {
     case SMALL_AMU_15:
         DJIMotorSetRef(friction_l, 0);
-        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_r, 0);
         break;
     case SMALL_AMU_18:
         DJIMotorSetRef(friction_l, 0);
-        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_r, 0);
         break;
     case SMALL_AMU_30:
         DJIMotorSetRef(friction_l, 0);
-        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_r, 0);
         break;
     default:
         break;

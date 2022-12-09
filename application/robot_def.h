@@ -88,7 +88,13 @@ typedef enum
     GIMBAL_GYRO_MODE,  // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
 } gimbal_mode_e;
 
+
 // 发射模式设置
+typedef enum
+{
+    SHOOT_ON,
+    SHOOT_OFF,
+}shoot_mode_e;
 typedef enum
 {
     FRICTION_OFF, // 摩擦轮关闭
@@ -103,7 +109,6 @@ typedef enum
 
 typedef enum
 {
-    SHOOT_STOP,     // 停止整个发射模块,后续可能隔离出来
     LOAD_STOP,      // 停止发射
     LOAD_REVERSE,   // 反转
     LOAD_1_BULLET,  // 单发
@@ -150,6 +155,7 @@ typedef struct
 // cmd发布的发射控制数据,由shoot订阅
 typedef struct
 {
+    shoot_mode_e shoot_mode;
     loader_mode_e load_mode;
     lid_mode_e lid_mode;
     friction_mode_e friction_mode;

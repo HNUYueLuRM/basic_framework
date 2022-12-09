@@ -59,17 +59,19 @@ void ChassisInit()
 {
     // 四个轮子的参数一样,改tx_id和反转标志位即可
     Motor_Init_Config_s chassis_motor_config = {
-        .can_init_config.can_handle=&hcan1,
+        .can_init_config.can_handle = &hcan1,
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp=10,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 10,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
             .current_PID = {
-                .Kp=10,
-                .Ki=0,
-                .Kd=0,
+                .Kp = 10,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 200,
             },
         },
         .controller_setting_init_config = {
@@ -78,26 +80,27 @@ void ChassisInit()
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
         },
-        .motor_type = M3508};
-    
-    chassis_motor_config.can_init_config.tx_id=1;
-    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+        .motor_type = M3508,
+    };
+
+    chassis_motor_config.can_init_config.tx_id = 1;
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_lf = DJIMotorInit(&chassis_motor_config);
 
-    chassis_motor_config.can_init_config.tx_id=2,
-    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+    chassis_motor_config.can_init_config.tx_id = 2,
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_rf = DJIMotorInit(&chassis_motor_config);
-    
-    chassis_motor_config.can_init_config.tx_id=3,
-    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+
+    chassis_motor_config.can_init_config.tx_id = 3,
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_lb = DJIMotorInit(&chassis_motor_config);
 
-    chassis_motor_config.can_init_config.tx_id=4,
-    chassis_motor_config.controller_setting_init_config.reverse_flag=MOTOR_DIRECTION_REVERSE;
+    chassis_motor_config.can_init_config.tx_id = 4,
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_rb = DJIMotorInit(&chassis_motor_config);
 
     referee_data = RefereeInit(&huart6);
-    
+
     SuperCap_Init_Config_s cap_conf = {
         .can_config = {
             .can_handle = &hcan2,

@@ -1,3 +1,4 @@
+#include "bsp_init.h"
 #include "robot.h"
 #include "robot_def.h"
 
@@ -12,6 +13,7 @@
 
 void RobotInit()
 {
+    BSPInit();
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisInit();
 #endif

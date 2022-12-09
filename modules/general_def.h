@@ -1,7 +1,9 @@
 #ifndef GENERAL_DEF_H
 #define GENERAL_DEF_H
 
+#ifndef PI
 #define PI 3.1415926535f
+#endif // !PI
 #define PI2 (PI * 2.0f) // 2 pi
 
 #define RAD_2_ANGLE (180.0f / PI)

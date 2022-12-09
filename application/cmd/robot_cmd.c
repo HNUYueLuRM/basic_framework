@@ -99,8 +99,8 @@ static void RemoteControlSet()
     if (switch_is_down(rc_data[TEMP].rc.s[1]) || vision_recv_data->target_state == NO_TARGET)
     { // 按照摇杆的输出大小进行角度增量,增益系数需调整
         gimbal_cmd_send.yaw += 0.0015f * (float)rc_data[TEMP].rc.joystick[2];
-        gimbal_cmd_send.pitch += 0.0025f * (float)rc_data[TEMP].rc.joystick[3];
-        gimbal_cmd_send.gimbal_mode = GIMBAL_GYRO_MODE;
+        gimbal_cmd_send.pitch += 0.002f * (float)rc_data[TEMP].rc.joystick[3];
+        gimbal_cmd_send.gimbal_mode = GIMBAL_FREE_MODE;
     }
 
     // 底盘参数,目前没有加入小陀螺(调试似乎没有必要),系数需要调整
@@ -145,7 +145,7 @@ static void EmergencyHandler()
         robot_state = ROBOT_STOP; // 遥控器左上侧拨轮打满,进入紧急停止模式
         gimbal_cmd_send.gimbal_mode = GIMBAL_ZERO_FORCE;
         chassis_cmd_send.chassis_mode = CHASSIS_ZERO_FORCE;
-        shoot_cmd_send.load_mode = SHOOT_STOP;
+        shoot_cmd_send.shoot_mode = SHOOT_OFF;
         return;
     }
     // if(rc_data[TEMP].rc.joystick[4]<-300 && 各个模块正常)

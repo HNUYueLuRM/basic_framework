@@ -1,5 +1,6 @@
 #include "daemon.h"
 #include "bsp_dwt.h" // 后续通过定时器来计时?
+#include "stdlib.h"
 
 static DaemonInstance *daemon_instances[DAEMON_MX_CNT] = {NULL};
 static uint8_t idx;
