@@ -98,8 +98,8 @@ static void RemoteControlSet()
     // 左侧开关状态为[下],或视觉未识别到目标,纯遥控器拨杆控制
     if (switch_is_down(rc_data[TEMP].rc.s[1]) || vision_recv_data->target_state == NO_TARGET)
     { // 按照摇杆的输出大小进行角度增量,增益系数需调整
-        gimbal_cmd_send.yaw += 0.04f * (float)rc_data[TEMP].rc.joystick[2];
-        gimbal_cmd_send.pitch += 0.5f * (float)rc_data[TEMP].rc.joystick[3];
+        gimbal_cmd_send.yaw += 0.0015f * (float)rc_data[TEMP].rc.joystick[2];
+        gimbal_cmd_send.pitch += 0.0025f * (float)rc_data[TEMP].rc.joystick[3];
         gimbal_cmd_send.gimbal_mode = GIMBAL_GYRO_MODE;
     }
 
@@ -114,9 +114,9 @@ static void RemoteControlSet()
         ; // 弹舱舵机控制,待添加servo_motor模块,关闭
     // 摩擦轮控制,后续可以根据左侧拨轮的值大小切换射频
     if (rc_data[TEMP].rc.joystick[4] > 100)
-        shoot_cmd_send.shoot_mode = FRICTION_ON;
+        shoot_cmd_send.friction_mode = FRICTION_ON;
     else
-        shoot_cmd_send.shoot_mode = FRICTION_OFF;
+        shoot_cmd_send.friction_mode = FRICTION_OFF;
     // 拨弹控制,目前固定为连发
     if (rc_data[TEMP].rc.joystick[4] > 500)
         shoot_cmd_send.load_mode = LOAD_BURSTFIRE;
@@ -143,9 +143,9 @@ static void EmergencyHandler()
     if (rc_data[TEMP].rc.joystick[4] > 300) // 还需添加重要应用和模块离线的判断
     {
         robot_state = ROBOT_STOP; // 遥控器左上侧拨轮打满,进入紧急停止模式
-        gimbal_cmd_send.gimbal_mode == GIMBAL_ZERO_FORCE;
-        chassis_cmd_send.chassis_mode == CHASSIS_ZERO_FORCE;
-        shoot_cmd_send.shoot_mode == SHOOT_STOP;
+        gimbal_cmd_send.gimbal_mode = GIMBAL_ZERO_FORCE;
+        chassis_cmd_send.chassis_mode = CHASSIS_ZERO_FORCE;
+        shoot_cmd_send.load_mode = SHOOT_STOP;
         return;
     }
     // if(rc_data[TEMP].rc.joystick[4]<-300 && 各个模块正常)

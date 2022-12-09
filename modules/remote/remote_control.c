@@ -19,11 +19,11 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
 {
     memcpy(&rc_ctrl[1], &rc_ctrl[TEMP], sizeof(RC_ctrl_t)); // 保存上一次的数据
     // 摇杆,直接解算时减去偏置
-    rc_ctrl[TEMP].rc.joystick[0] = (sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff - RC_CH_VALUE_OFFSET;                              //!< Channel 0
-    rc_ctrl[TEMP].rc.joystick[1] = ((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff - RC_CH_VALUE_OFFSET;                       //!< Channel 1
-    rc_ctrl[TEMP].rc.joystick[2] = ((sbus_buf[2] >> 6) | (sbus_buf[3] << 2) | (sbus_buf[4] << 10)) & 0x07ff - RC_CH_VALUE_OFFSET; //!< Channel 2
-    rc_ctrl[TEMP].rc.joystick[3] = ((sbus_buf[4] >> 1) | (sbus_buf[5] << 7)) & 0x07ff - RC_CH_VALUE_OFFSET;                       //!< Channel 3
-    rc_ctrl[TEMP].rc.joystick[4] = sbus_buf[16] | (sbus_buf[17] << 8) - RC_CH_VALUE_OFFSET;                                       // 左侧拨轮
+    rc_ctrl[TEMP].rc.joystick[0] = ((sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff) - RC_CH_VALUE_OFFSET;                              //!< Channel 0
+    rc_ctrl[TEMP].rc.joystick[1] = (((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff) - RC_CH_VALUE_OFFSET;                       //!< Channel 1
+    rc_ctrl[TEMP].rc.joystick[2] = (((sbus_buf[2] >> 6) | (sbus_buf[3] << 2) | (sbus_buf[4] << 10)) & 0x07ff) - RC_CH_VALUE_OFFSET; //!< Channel 2
+    rc_ctrl[TEMP].rc.joystick[3] = (((sbus_buf[4] >> 1) | (sbus_buf[5] << 7)) & 0x07ff) - RC_CH_VALUE_OFFSET;                       //!< Channel 3
+    rc_ctrl[TEMP].rc.joystick[4] = (sbus_buf[16] | (sbus_buf[17] << 8)) - RC_CH_VALUE_OFFSET;                                       // 左侧拨轮
     // 开关,0左1右
     rc_ctrl[TEMP].rc.s[0] = ((sbus_buf[5] >> 4) & 0x0003);      //!< Switch left
     rc_ctrl[TEMP].rc.s[1] = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch right

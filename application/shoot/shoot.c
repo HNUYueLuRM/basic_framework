@@ -24,17 +24,17 @@ void ShootInit()
     // 左摩擦轮
     Motor_Init_Config_s left_friction_config = {
         .can_init_config = {
-            .can_handle = &hcan1,
-            .tx_id = 1,
+            .can_handle = &hcan2,
+            .tx_id = 6,
         },
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp=1,
+                .Kp=10,
                 .Ki=0,
                 .Kd=0,
             },
             .current_PID = {
-                .Kp=1,
+                .Kp=10,
                 .Ki=0,
                 .Kd=0,
             },
@@ -51,8 +51,8 @@ void ShootInit()
     // 右摩擦轮
     Motor_Init_Config_s right_friction_config = {
         .can_init_config = {
-            .can_handle = &hcan1,
-            .tx_id = 2,
+            .can_handle = &hcan2,
+            .tx_id = 5,
         },
         .controller_param_init_config = {
             .speed_PID = {
@@ -77,8 +77,8 @@ void ShootInit()
     // 拨盘电机
     Motor_Init_Config_s loader_config = {
         .can_init_config = {
-            .can_handle = &hcan1,
-            .tx_id = 3,
+            .can_handle = &hcan2,
+            .tx_id = 7,
         },
         .controller_param_init_config = {
             .angle_PID = {
@@ -86,11 +86,6 @@ void ShootInit()
                 .Kd = 10,
                 .Ki = 1,
                 .Kd = 2,
-            },
-            .angle_PID = {
-                .Kp=1,
-                .Ki=0,
-                .Kd=0,
             },
             .speed_PID = {
                 .Kp=1,

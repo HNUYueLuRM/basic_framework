@@ -52,13 +52,12 @@
  * @brief 这些枚举类型和结构体会作为CMD控制数据和各应用的反馈数据的一部分
  *
  */
-//机器人状态
+// 机器人状态
 typedef enum
 {
     ROBOT_STOP,
     ROBOT_WORKING,
 } Robot_Status_e;
-
 
 // 应用状态
 typedef enum
@@ -94,7 +93,7 @@ typedef enum
 {
     FRICTION_OFF, // 摩擦轮关闭
     FRICTION_ON,  // 摩擦轮开启
-} shoot_mode_e;
+} friction_mode_e;
 
 typedef enum
 {
@@ -153,7 +152,7 @@ typedef struct
 {
     loader_mode_e load_mode;
     lid_mode_e lid_mode;
-    shoot_mode_e shoot_mode;
+    friction_mode_e friction_mode;
     Bullet_Speed_e bullet_speed; // 弹速枚举
     uint8_t rest_heat;
     float shoot_rate; // 连续发射的射频,unit per s,发/秒
