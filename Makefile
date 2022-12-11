@@ -312,8 +312,7 @@ download_dap:
 	openocd -f openocd_dap.cfg -c init -c halt -c "flash write_image erase $(BUILD_DIR)/$(TARGET).hex $(OPENOCD_FLASH_START)" -c reset -c shutdown
 
 download_jlink:
-	openocd -f openocd_jlink.cfg -c init -c halt -c "flash write_image erase $(BUILD_DIR)/$(TARGET).hex $(OPENOCD_FLASH_START)" -c reset -c shutdown
-
+	JFlash -openprj'stm32.jflash' -open'$(BUILD_DIR)/$(TARGET).hex',0x8000000 -auto -startapp -exit
 #######################################
 # dependencies
 #######################################

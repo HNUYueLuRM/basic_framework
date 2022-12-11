@@ -11,7 +11,7 @@ static void DecodeDriven(CANInstance *_instance)
             driven_motor_info[i]->last_ecd = driven_motor_info[i]->ecd;
             driven_motor_info[i]->ecd = (uint16_t)((_instance->rx_buff[7] << 8) | _instance->rx_buff[6]);
             driven_motor_info[i]->speed_rpm = (uint16_t)(_instance->rx_buff[5] << 8 | _instance->rx_buff[4]);
-            driven_motor_info[i]->given_current = (uint16_t)(_instance->rx_buff[3] << 8 | _instance->rx_buff[2]);
+            driven_motor_info[i]->real_current = (uint16_t)(_instance->rx_buff[3] << 8 | _instance->rx_buff[2]);
             driven_motor_info[i]->temperate = _instance->rx_buff[1];
             break;
         }

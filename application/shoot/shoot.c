@@ -38,7 +38,7 @@ void ShootInit()
                 .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
         },
         .controller_setting_init_config = {
@@ -47,7 +47,7 @@ void ShootInit()
 
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
+            .reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = M3508};
     // 右摩擦轮
@@ -58,16 +58,16 @@ void ShootInit()
         },
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp = 1,
+                .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 200,
             },
             .current_PID = {
-                .Kp = 1,
+                .Kp = 5,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
         },
         .controller_setting_init_config = {
@@ -75,7 +75,7 @@ void ShootInit()
             .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE,
+            .reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = M3508};
     // 拨盘电机
@@ -88,28 +88,28 @@ void ShootInit()
             .angle_PID = {
                 // 如果启用位置环来控制发弹,需要较大的I值保证输出力矩的线性度否则出现接近拨出的力矩大幅下降
                 .Kp = 10,
-                .Ki = 1,
-                .Kd = 2,
+                .Ki = 0,
+                .Kd = 0,
                 .MaxOut = 200,
             },
             .speed_PID = {
                 .Kp = 1,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
             .current_PID = {
-                .Kp = 1,
+                .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 3000,
             },
         },
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED, .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = SPEED_LOOP, // 初始化成SPEED_LOOP,让拨盘停在原地,防止拨盘上电时乱转
-            .close_loop_type = ANGLE_LOOP | SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_REVERSE, // 注意方向设置为拨盘的拨出的击发方向
+            .close_loop_type = ANGLE_LOOP | SPEED_LOOP ,
+            .reverse_flag = MOTOR_DIRECTION_NORMAL, // 注意方向设置为拨盘的拨出的击发方向
         },
         .motor_type = M2006 // 英雄使用m3508
     };
@@ -134,6 +134,13 @@ void ShootTask()
         DJIMotorStop(friction_r);
         DJIMotorStop(loader);
     }
+    else // 恢复运行
+    {
+        DJIMotorEnable(friction_l);
+        DJIMotorEnable(friction_r);
+        DJIMotorEnable(loader);
+        
+    }
 
     // 如果上一次触发单发或3发指令的时间加上不应期仍然大于当前时间(尚未休眠完毕),直接返回即可
     if (hibernate_time + dead_time > DWT_GetTimeline_ms())
@@ -147,7 +154,7 @@ void ShootTask()
         DJIMotorOuterLoop(loader, SPEED_LOOP);
         DJIMotorSetRef(loader, 0);
         break;
-    // 单发模式,根据鼠标按下的时间,触发一次之后需要进入不响应输入的状态(否则按下的时间内可能多次进入)F
+    // 单发模式,根据鼠标按下的时间,触发一次之后需要进入不响应输入的状态(否则按下的时间内可能多次进入)
     case LOAD_1_BULLET: // 激活能量机关/干扰对方用,英雄用.
         DJIMotorOuterLoop(loader, ANGLE_LOOP);
         DJIMotorSetRef(loader, loader->motor_measure.total_angle + ONE_BULLET_DELTA_ANGLE); // 增加一发弹丸的角度
@@ -164,7 +171,7 @@ void ShootTask()
     // 连发模式,对速度闭环,射频后续修改为可变
     case LOAD_BURSTFIRE:
         DJIMotorOuterLoop(loader, SPEED_LOOP);
-        DJIMotorSetRef(loader, shoot_cmd_recv.shoot_rate * 360 * REDUCTION_RATIO_WHEEL / NUM_PER_CIRCLE);
+        DJIMotorSetRef(loader, shoot_cmd_recv.shoot_rate * 360 * REDUCTION_RATIO_LOADER / 8);
         // x颗/秒换算成速度: 已知一圈的载弹量,由此计算出1s需要转的角度,注意换算角速度
         break;
     // 拨盘反转,对速度闭环,后续增加卡弹检测(通过裁判系统剩余热量反馈)
@@ -193,8 +200,17 @@ void ShootTask()
         DJIMotorSetRef(friction_r, 0);
         break;
     default:
+        DJIMotorSetRef(friction_l, 200);
+        DJIMotorSetRef(friction_r, 200);
         break;
+    } // 关闭摩擦轮
+    if (shoot_cmd_recv.friction_mode==FRICTION_OFF)
+    {
+        DJIMotorSetRef(friction_l, 0);
+        DJIMotorSetRef(friction_r, 0);
     }
+    
+    
 
     // 开关弹舱盖
     if (shoot_cmd_recv.lid_mode == LID_CLOSE)

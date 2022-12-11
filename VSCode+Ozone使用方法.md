@@ -526,7 +526,7 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 ```shell
 Project.SetOSPlugin(“plugin_name”)
 # plugin_name是启用的实时系统支持插件名
-# 我们要使用的命令是Project.SetOSPlugin(“FreeRTOSPlugin_CM4”)
+# 我们要使用的命令是Project.SetOSPlugin ("FreeRTOSPlugin_CM4")
 ```
 
 支持的插件在Ozone的安装目录下的`Plugins/OS`目录：

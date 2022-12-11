@@ -32,8 +32,14 @@
 #include "can_comm.h"
 #include "ins_task.h"
 static CANCommInstance *chasiss_can_comm; // 双板通信CAN comm
-IMU_Data_t *Chassis_IMU_data;
+attitude_t *Chassis_IMU_data;
 #endif // CHASSIS_BOARD
+#ifdef ONE_BOARD
+static Publisher_t *chassis_pub;
+static Subscriber_t *chassis_sub;
+#endif // ONE_BOARD
+static Chassis_Ctrl_Cmd_s chassis_cmd_recv;
+static Chassis_Upload_Data_s chassis_feedback_data;
 
 static referee_info_t *referee_data; // 裁判系统的数据
 static SuperCapInstance *cap;        // 超级电容
@@ -41,12 +47,6 @@ static DJIMotorInstance *motor_lf;   // left right forward back
 static DJIMotorInstance *motor_rf;
 static DJIMotorInstance *motor_lb;
 static DJIMotorInstance *motor_rb;
-
-/* chassis 包含的信息交互模块和数据*/
-static Publisher_t *chassis_pub;
-static Chassis_Ctrl_Cmd_s chassis_cmd_recv;
-static Subscriber_t *chassis_sub;
-static Chassis_Upload_Data_s chassis_feedback_data;
 
 /* 用于自旋变速策略的时间变量,后续考虑查表加速 */
 static float t;
@@ -65,13 +65,13 @@ void ChassisInit()
                 .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
             .current_PID = {
-                .Kp = 10,
+                .Kp = 1.2,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
         },
         .controller_setting_init_config = {
@@ -84,22 +84,22 @@ void ChassisInit()
     };
 
     chassis_motor_config.can_init_config.tx_id = 1;
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
     motor_lf = DJIMotorInit(&chassis_motor_config);
 
     chassis_motor_config.can_init_config.tx_id = 2,
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
     motor_rf = DJIMotorInit(&chassis_motor_config);
 
     chassis_motor_config.can_init_config.tx_id = 3,
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
     motor_lb = DJIMotorInit(&chassis_motor_config);
 
     chassis_motor_config.can_init_config.tx_id = 4,
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_REVERSE;
+    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
     motor_rb = DJIMotorInit(&chassis_motor_config);
 
-    referee_data = RefereeInit(&huart6);
+    referee_data = RefereeInit(&huart6); //裁判系统初始化
 
     SuperCap_Init_Config_s cap_conf = {
         .can_config = {
@@ -107,10 +107,28 @@ void ChassisInit()
             .tx_id = 0x302,
             .rx_id = 0x301,
         }};
-    cap = SuperCapInit(&cap_conf);
+    cap = SuperCapInit(&cap_conf); //超级电容初始化
 
+    // 发布订阅初始化,如果为双板,则需要can comm来传递消息
+#ifdef CHASSIS_BOARD
+    Chassis_IMU_data=INS_Init(); // 底盘IMU初始化
+
+    CANComm_Init_Config_s comm_conf = {
+        .can_config={
+            .can_handle=&hcan2,
+            .tx_id=0x311,
+            .rx_id=0x312,
+        },
+        .recv_data_len=sizeof(Chassis_Ctrl_Cmd_s),
+        .send_data_len=sizeof(Chassis_Upload_Data_s),
+    };
+    chasiss_can_comm = CANCommInit(&comm_conf); // can comm初始化
+#endif // CHASSIS_BOARD
+
+#ifdef ONE_BOARD
     chassis_sub = SubRegister("chassis_cmd", sizeof(Chassis_Ctrl_Cmd_s));
     chassis_pub = PubRegister("chassis_feed", sizeof(Chassis_Upload_Data_s));
+#endif // ONE_BOARD
 }
 
 #define LF_CENTER ((HALF_TRACK_WIDTH + CENTER_GIMBAL_OFFSET_X + HALF_WHEEL_BASE - CENTER_GIMBAL_OFFSET_Y) * ANGLE_2_RAD)
@@ -125,8 +143,8 @@ static void MecanumCalculate()
 {
     vt_lf = -chassis_vx - chassis_vy - chassis_cmd_recv.wz * LF_CENTER;
     vt_rf = -chassis_vx + chassis_vy - chassis_cmd_recv.wz * RF_CENTER;
-    vt_lb = chassis_vx + chassis_vy - chassis_cmd_recv.wz * LB_CENTER;
-    vt_rb = chassis_vx - chassis_vy - chassis_cmd_recv.wz * RB_CENTER;
+    vt_lb =  chassis_vx + chassis_vy - chassis_cmd_recv.wz * LB_CENTER;
+    vt_rb =  chassis_vx - chassis_vy - chassis_cmd_recv.wz * RB_CENTER;
 }
 
 /**
@@ -161,18 +179,32 @@ void ChassisTask()
 {
     // 后续增加没收到消息的处理
     // 获取新的控制信息
+#ifdef ONE_BOARD
     SubGetMessage(chassis_sub, &chassis_cmd_recv);
+#endif
+#ifdef CHASSIS_BOARD
+    chassis_cmd_recv=*(Chassis_Ctrl_Cmd_s*)CANCommGet(chasiss_can_comm);
+#endif // CHASSIS_BOARD
+
+    if (chassis_cmd_recv.chassis_mode==CHASSIS_ZERO_FORCE)
+    {
+        DJIMotorStop(motor_lf); // 如果出现重要模块离线或遥控器设置为急停,让电机停止
+        DJIMotorStop(motor_rf);
+        DJIMotorStop(motor_lb);
+        DJIMotorStop(motor_rb);
+    }
+    else
+    {
+        DJIMotorEnable(motor_lf);
+        DJIMotorEnable(motor_rf);
+        DJIMotorEnable(motor_lb);
+        DJIMotorEnable(motor_rb);
+    }
 
     // 根据控制模式设定旋转速度
     // 后续增加不同状态的过渡模式?
     switch (chassis_cmd_recv.chassis_mode)
     {
-    case CHASSIS_ZERO_FORCE:
-        DJIMotorStop(motor_lf); // 如果出现重要模块离线或遥控器设置为急停,让电机停止
-        DJIMotorStop(motor_rf);
-        DJIMotorStop(motor_lb);
-        DJIMotorStop(motor_rb);
-        break;
     case CHASSIS_NO_FOLLOW:
         chassis_cmd_recv.wz = 0; // 底盘不旋转,但维持全向机动,一般用于调整云台姿态
         break;
@@ -196,10 +228,10 @@ void ChassisTask()
     // 根据控制模式进行正运动学解算,计算底盘输出
     MecanumCalculate();
 
-    // 根据裁判系统的反馈数据和电容数据对输出限幅
+    // 根据裁判系统的反馈数据和电容数据对输出限幅并设定闭环参考值
     LimitChassisOutput();
 
-    // 根据电机的反馈速度计算
+    // 根据电机的反馈速度和IMU(如果有)计算真实速度
     EstimateSpeed();
 
     // 获取裁判系统数据
@@ -210,5 +242,10 @@ void ChassisTask()
     chassis_feedback_data.rest_heat = referee_data->PowerHeatData.shooter_heat0;
 
     // 推送反馈消息
+#ifdef ONE_BOARD
     PubPushMessage(chassis_pub, &chassis_feedback_data);
+#endif
+#ifdef CHASSIS_BOARD
+    CANCommSend(chasiss_can_comm,(void*)&chassis_feedback_data);
+#endif // CHASSIS_BOARD
 }

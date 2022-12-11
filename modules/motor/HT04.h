@@ -20,7 +20,7 @@ typedef struct // HT04
     float last_ecd;
     float ecd;
     float speed_rpm;
-    float given_current;
+    float real_current;
 
     PIDInstance pid;
     CANInstance *motor_can_instace;

@@ -30,7 +30,7 @@ static void DecodeJoint(CANInstance *motor_instance)
             tmp = (motor_instance->rx_buff[3] << 4) | (motor_instance->rx_buff[4] >> 4);
             joint_motor_info[i]->speed_rpm = uint_to_float(tmp, V_MAX, V_MIN, 12);
             tmp = ((motor_instance->rx_buff[4] & 0xf) << 8) | motor_instance->rx_buff[5];
-            joint_motor_info[i]->given_current = uint_to_float(tmp, T_MAX, T_MIN, 12);
+            joint_motor_info[i]->real_current = uint_to_float(tmp, T_MAX, T_MIN, 12);
             break;
         }
     }

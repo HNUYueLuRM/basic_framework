@@ -16,13 +16,12 @@
 #include "master_process.h"
 #include "stdint-gcc.h"
 
-/* 开发板类型定义,烧录时注意不要弄错对应功能;修改定义后需要重新编译 */
-/* 只能存在一个宏定义! */
-#define ONE_BOARD // 单板控制整车
+/* 开发板类型定义,烧录时注意不要弄错对应功能;修改定义后需要重新编译,只能存在一个定义! */
+// #define ONE_BOARD // 单板控制整车
 // #define CHASSIS_BOARD //底盘板
-// #define GIMBAL_BOARD  //云台板
+#define GIMBAL_BOARD  //云台板
 
-/* 重要参数定义,注意根据不同机器人进行修改 */
+/* 机器人重要参数定义,注意根据不同机器人进行修改,浮点数需要以.0或f结尾,无符号以u结尾 */
 // 云台参数
 #define YAW_CHASSIS_ALIGN_ECD 0     // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
 #define YAW_ECD_GREATER_THAN_4096 0 // yaw电机的初始编码器值是否大于4096,是为1,否为0
@@ -39,11 +38,12 @@
 #define RADIUS_WHEEL 60             // 轮子半径
 #define REDUCTION_RATIO_WHEEL 19.0f // 电机减速比,因为编码器量测的是转子的速度而不是输出轴的速度故需进行转换
 
+// 检查是否出现定义冲突
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
     (defined(CHASSIS_BOARD) && defined(GIMBAL_BOARD))
 #error Conflict board definition! You can only define one type.
-#endif // 检查是否出现定义冲突
+#endif 
 
 #pragma pack(1) // 压缩结构体,取消字节对齐
 
@@ -92,7 +92,7 @@ typedef enum
 // 发射模式设置
 typedef enum
 {
-    SHOOT_ON,
+    SHOOT_ON=0,
     SHOOT_OFF,
 }shoot_mode_e;
 typedef enum

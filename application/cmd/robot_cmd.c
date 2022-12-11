@@ -12,10 +12,16 @@
 #define PTICH_HORIZON_ANGLE (PITCH_HORIZON_ECD * ECD_ANGLE_COEF)
 
 /* gimbal_cmd应用包含的模块实例指针和交互信息存储*/
-#ifndef ONE_BOARD
+#ifdef GIMBAL_BOARD
 #include "can_comm.h"
-static CANCommInstance *chasiss_can_comm; // 双板通信
-#endif                                    // !ONE_BOARD
+static CANCommInstance *cmd_can_comm; // 双板通信
+#endif
+#ifdef ONE_BOARD
+static Publisher_t *chassis_cmd_pub
+static Subscriber_t *chassis_feed_sub;
+#endif // ONE_BOARD
+static Chassis_Ctrl_Cmd_s chassis_cmd_send; // 发送给底盘应用的信息,包括控制信息和UI绘制相关
+static Chassis_Upload_Data_s chassis_fetch_data; // 从底盘应用接收的反馈信息信息,底盘功率枪口热量与底盘运动状态等
 
 static RC_ctrl_t *rc_data;              // 遥控器数据,初始化时返回
 static Vision_Recv_s *vision_recv_data; // 视觉接收数据指针,初始化时返回
@@ -31,10 +37,7 @@ static Shoot_Ctrl_Cmd_s shoot_cmd_send; // 传递给发射的控制信息
 static Subscriber_t *shoot_feed_sub;
 static Shoot_Upload_Data_s shoot_fetch_data; // 从发射获取的反馈信息
 
-static Publisher_t *chassis_cmd_pub;
-static Chassis_Ctrl_Cmd_s chassis_cmd_send; // 发送给底盘应用的信息,包括控制信息和UI绘制相关
-static Subscriber_t *chassis_feed_sub;
-static Chassis_Upload_Data_s chassis_fetch_data; // 从底盘应用接收的反馈信息信息,底盘功率枪口热量与底盘运动状态等
+
 
 static Robot_Status_e robot_state;
 
@@ -47,8 +50,25 @@ void GimbalCMDInit()
     gimbal_feed_sub = SubRegister("gimbal_feed", sizeof(Gimbal_Upload_Data_s));
     shoot_cmd_pub = PubRegister("shoot_cmd", sizeof(Shoot_Ctrl_Cmd_s));
     shoot_feed_sub = SubRegister("shoot_feed", sizeof(Shoot_Upload_Data_s));
+
+#ifdef ONE_BOARD
     chassis_cmd_pub = PubRegister("chassis_cmd", sizeof(Chassis_Ctrl_Cmd_s));
     chassis_feed_sub = SubRegister("chassis_feed", sizeof(Chassis_Upload_Data_s));
+#endif // ONE_BOARD
+#ifdef GIMBAL_BOARD
+    CANComm_Init_Config_s comm_conf={
+        .can_config={
+            .can_handle=&hcan1,
+            .tx_id=0x312,
+            .rx_id=0x311,
+        },
+        .recv_data_len=sizeof(Chassis_Upload_Data_s),
+        .send_data_len=sizeof(Chassis_Ctrl_Cmd_s),
+    };
+    cmd_can_comm=CANCommInit(&comm_conf);
+#endif // GIMBAL_BOARD
+
+    robot_state=ROBOT_WORKING; // 启动时机器人进入工作模式,后续加入所有应用初始化完成之后再进入
 }
 
 /**
@@ -86,7 +106,7 @@ static void RemoteControlSet()
     // 控制底盘和云台运行模式,云台待添加,云台是否始终使用IMU数据?
     if (switch_is_down(rc_data[TEMP].rc.s[0])) // 右侧开关状态[下],底盘跟随云台
         chassis_cmd_send.chassis_mode = CHASSIS_FOLLOW_GIMBAL_YAW;
-    if (switch_is_mid(rc_data[TEMP].rc.s[0])) // 右侧开关状态[中],底盘和云台分离,底盘保持不转动
+    else if (switch_is_mid(rc_data[TEMP].rc.s[0])) // 右侧开关状态[中],底盘和云台分离,底盘保持不转动
         chassis_cmd_send.chassis_mode = CHASSIS_NO_FOLLOW;
 
     // 云台参数,确定云台控制数据
@@ -104,24 +124,27 @@ static void RemoteControlSet()
     }
 
     // 底盘参数,目前没有加入小陀螺(调试似乎没有必要),系数需要调整
-    chassis_cmd_send.vx = 1.0f * (float)rc_data[TEMP].rc.joystick[0];
-    chassis_cmd_send.vy = 1.0f * (float)rc_data[TEMP].rc.joystick[1];
+    chassis_cmd_send.vx = 10.0f * (float)rc_data[TEMP].rc.joystick[0];
+    chassis_cmd_send.vy = 10.0f * (float)rc_data[TEMP].rc.joystick[1];
 
     // 发射参数
     if (switch_is_up(rc_data[TEMP].rc.s[0])) // 右侧开关状态[上],弹舱打开
-        ;                                    // 弹舱舵机控制,待添加servo_motor模块,开启
+    {// 弹舱舵机控制,待添加servo_motor模块,开启
+
+    }                                    
     else
         ; // 弹舱舵机控制,待添加servo_motor模块,关闭
     // 摩擦轮控制,后续可以根据左侧拨轮的值大小切换射频
-    if (rc_data[TEMP].rc.joystick[4] > 100)
+    if (rc_data[TEMP].rc.joystick[4] < -100)
         shoot_cmd_send.friction_mode = FRICTION_ON;
     else
         shoot_cmd_send.friction_mode = FRICTION_OFF;
     // 拨弹控制,目前固定为连发
-    if (rc_data[TEMP].rc.joystick[4] > 500)
+    if (rc_data[TEMP].rc.joystick[4] <-500)
         shoot_cmd_send.load_mode = LOAD_BURSTFIRE;
     else
         shoot_cmd_send.load_mode = LOAD_STOP;
+    shoot_cmd_send.shoot_rate=1;
 }
 
 /**
@@ -140,25 +163,29 @@ static void MouseKeySet()
 static void EmergencyHandler()
 {
     // 拨轮的向下拨超过一半,注意向下拨轮是正
-    if (rc_data[TEMP].rc.joystick[4] > 300) // 还需添加重要应用和模块离线的判断
+    if (rc_data[TEMP].rc.joystick[4] > 300 || robot_state==ROBOT_STOP) // 还需添加重要应用和模块离线的判断
     {
         robot_state = ROBOT_STOP; // 遥控器左上侧拨轮打满,进入紧急停止模式
         gimbal_cmd_send.gimbal_mode = GIMBAL_ZERO_FORCE;
         chassis_cmd_send.chassis_mode = CHASSIS_ZERO_FORCE;
         shoot_cmd_send.shoot_mode = SHOOT_OFF;
-        return;
     }
-    // if(rc_data[TEMP].rc.joystick[4]<-300 && 各个模块正常)
-    // {
-    //     //恢复运行
-    //     //...
-    // }
+    if(switch_is_up(rc_data[TEMP].rc.s[0]))
+    {
+        robot_state = ROBOT_WORKING; // 遥控器右侧开关为[上],恢复正常运行
+        shoot_cmd_send.shoot_mode = SHOOT_ON;
+    }
 }
 
 void GimbalCMDTask()
 {
     // 从其他应用获取回传数据
+#ifdef ONE_BOARD
     SubGetMessage(chassis_feed_sub, &chassis_fetch_data);
+#endif // ONE_BOARD
+#ifdef GIMBAL_BOARD
+    chassis_fetch_data=*(Chassis_Upload_Data_s*)CANCommGet(cmd_can_comm);
+#endif // GIMBAL_BOARD
     SubGetMessage(shoot_feed_sub, &shoot_fetch_data);
     SubGetMessage(gimbal_feed_sub, &gimbal_fetch_data);
 
@@ -181,7 +208,12 @@ void GimbalCMDTask()
 
     // 推送消息,双板通信,视觉通信等
     // 应用所需的控制数据在remotecontrolsetmode和mousekeysetmode中完成设置
-    PubPushMessage(chassis_cmd_pub, &chassis_cmd_send);
+#ifdef ONE_BOARD
+    SubGetMessage(chassis_feed_sub, &chassis_fetch_data);
+#endif // ONE_BOARD
+#ifdef GIMBAL_BOARD
+    CANCommSend(cmd_can_comm,(void*)&chassis_cmd_send);
+#endif // GIMBAL_BOARD
     PubPushMessage(shoot_cmd_pub, &shoot_cmd_send);
     PubPushMessage(gimbal_cmd_pub, &gimbal_cmd_send);
     VisionSend(&vision_send_data);

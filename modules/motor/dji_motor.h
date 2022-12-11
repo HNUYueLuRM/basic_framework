@@ -29,14 +29,15 @@
 /* DJI电机CAN反馈信息*/
 typedef struct
 {
-    uint16_t ecd;              // 0-8191,刻度总共有8192格
-    uint16_t last_ecd;         // 上一次读取的编码器值
-    float angle_single_round;  // 单圈角度
-    float speed_angle_per_sec; // 角速度,单位为:度/秒 rounds per minute
-    int16_t given_current;     // 实际电流
-    uint8_t temperate;         // 温度 Celsius
-    int16_t total_round;       // 总圈数,注意方向
-    int32_t total_angle;       // 总角度,注意方向
+    uint16_t last_ecd; // 上一次读取的编码器值
+    uint16_t ecd;      // 0-8191,刻度总共有8192格
+    float angle_single_round; // 单圈角度
+    float speed_aps;          // 角速度,单位为:度/秒 rounds per minute
+    int16_t real_current; // 实际电流
+    uint8_t temperate;    // 温度 Celsius
+
+    float total_angle;        // 总角度,注意方向
+    int32_t total_round;      // 总圈数,注意方向
 } DJI_Motor_Measure_s;
 
 /**

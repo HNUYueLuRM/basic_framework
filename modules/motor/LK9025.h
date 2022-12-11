@@ -15,7 +15,7 @@ typedef struct // 9025
     uint16_t last_ecd;
     uint16_t ecd;
     int16_t speed_rpm;
-    int16_t given_current;
+    int16_t real_current;
     uint8_t temperate;
 
     PIDInstance *pid;

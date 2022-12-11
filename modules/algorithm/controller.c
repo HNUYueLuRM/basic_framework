@@ -85,6 +85,12 @@ float PID_Calculate(PIDInstance *pid, float measure, float ref)
         // 输出限幅
         f_Output_Limit(pid);
     }
+    else // 进入死区,清空积分和输出
+    {
+        pid->Output=0;
+        pid->ITerm=0;
+    }
+    
     pid->Last_Measure = pid->Measure;
     pid->Last_Output = pid->Output;
     pid->Last_Dout = pid->Dout;

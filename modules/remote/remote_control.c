@@ -9,6 +9,22 @@ static RC_ctrl_t rc_ctrl[2]; //[0]:当前数据,[1]:上一次的数据.用于按
 // 遥控器拥有的串口实例
 static USARTInstance *rc_usart_instance;
 
+
+/**
+ * @brief 矫正遥控器摇杆的值
+ * 
+ */
+static void RectifyRCjoystick()
+{
+    for (uint8_t i = 0; i < 5; i++)
+    {
+        if(rc_ctrl[TEMP].rc.joystick[i]>660 || rc_ctrl[TEMP].rc.joystick[i]<-660)
+            rc_ctrl[TEMP].rc.joystick[i]=0;
+    }
+    
+}
+
+
 /**
  * @brief          remote control protocol resolution
  * @param[in]      sbus_buf: raw data point
@@ -24,6 +40,7 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
     rc_ctrl[TEMP].rc.joystick[2] = (((sbus_buf[2] >> 6) | (sbus_buf[3] << 2) | (sbus_buf[4] << 10)) & 0x07ff)- RC_CH_VALUE_OFFSET ; //!< Channel 2
     rc_ctrl[TEMP].rc.joystick[3] = (((sbus_buf[4] >> 1) | (sbus_buf[5] << 7)) & 0x07ff)- RC_CH_VALUE_OFFSET ;                       //!< Channel 3
     rc_ctrl[TEMP].rc.joystick[4] = ((sbus_buf[16] | (sbus_buf[17] << 8)) & 0x07FF)- RC_CH_VALUE_OFFSET;                                       // 左侧拨轮
+    RectifyRCjoystick();
     // 开关,0左1右
     rc_ctrl[TEMP].rc.s[0] = ((sbus_buf[5] >> 4) & 0x0003);      //!< Switch left
     rc_ctrl[TEMP].rc.s[1] = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch right

@@ -130,15 +130,15 @@ static void DecodeDJIMotor(CANInstance *_instance)
         {
             rxbuff = _instance->rx_buff;
             measure = &dji_motor_info[i]->motor_measure; // measure要多次使用,保存指针减小访存开销
-
+            uint8_t nice;
             // resolve data and apply filter to current and speed
             measure->last_ecd = measure->ecd;
-            measure->ecd = (uint16_t)(rxbuff[0] << 8 | rxbuff[1]);
-            measure->angle_single_round = ECD_ANGLE_COEF * measure->ecd;
-            measure->speed_angle_per_sec = (1 - SPEED_SMOOTH_COEF) * measure->speed_angle_per_sec +
-                                           RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (int16_t)(rxbuff[2] << 8 | rxbuff[3]);
-            measure->given_current = (1 - CURRENT_SMOOTH_COEF) * measure->given_current +
-                                     RPM_2_ANGLE_PER_SEC * CURRENT_SMOOTH_COEF * (uint16_t)(rxbuff[4] << 8 | rxbuff[5]);
+            measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
+            measure->angle_single_round = ECD_ANGLE_COEF * (float)measure->ecd;
+            measure->speed_aps = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps + RPM_2_ANGLE_PER_SEC * 
+                                 SPEED_SMOOTH_COEF *(float)((int16_t)(rxbuff[2] << 8 | rxbuff[3])) ;
+            measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
+                                    CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
             measure->temperate = rxbuff[6];
 
             // multi rounds calc,计算的前提是两次采样间电机转过的角度小于180°
@@ -176,6 +176,7 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
     dji_motor_info[idx]->motor_can_instance = CANRegister(&config->can_init_config);
 
+    DJIMotorEnable(dji_motor_info[idx]);
     return dji_motor_info[idx++];
 }
 
@@ -223,7 +224,7 @@ void DJIMotorControl()
     static Motor_Control_Setting_s *motor_setting;
     static Motor_Controller_s *motor_controller;
     static DJI_Motor_Measure_s *motor_measure;
-    static float pid_measure,pid_ref;
+    static float pid_measure, pid_ref;
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
     for (size_t i = 0; i < idx; i++)
     {
@@ -233,7 +234,7 @@ void DJIMotorControl()
             motor_setting = &motor->motor_settings;
             motor_controller = &motor->motor_controller;
             motor_measure = &motor->motor_measure;
-            pid_ref=motor_controller->pid_ref; //保存设定值,防止motor_controller->pid_ref在计算过程中被修改
+            pid_ref = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
 
             // pid_ref会顺次通过被启用的闭环充当数据的载体
             // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
@@ -253,7 +254,7 @@ void DJIMotorControl()
                 if (motor_setting->speed_feedback_source == OTHER_FEED)
                     pid_measure = *motor_controller->other_speed_feedback_ptr;
                 else // MOTOR_FEED
-                    pid_measure = motor_measure->speed_angle_per_sec;
+                    pid_measure = motor_measure->speed_aps;
                 // 更新pid_ref进入下一个环
                 pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, pid_ref);
             }
@@ -261,7 +262,7 @@ void DJIMotorControl()
             // 计算电流环,只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
             if (motor_setting->close_loop_type & CURRENT_LOOP)
             {
-                pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->given_current, pid_ref);
+                pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->real_current, pid_ref);
             }
 
             // 获取最终输出
@@ -272,14 +273,14 @@ void DJIMotorControl()
             // 分组填入发送数据
             group = motor->sender_group;
             num = motor->message_num;
-            sender_assignment[group].tx_buff[2 * num] = 0xff & set >> 8;
-            sender_assignment[group].tx_buff[2 * num + 1] = 0xff & set;
+            sender_assignment[group].tx_buff[2 * num] = (uint8_t)(set >> 8);
+            sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(set & 0x00ff);
 
             // 电机是否停止运行
-            // if (motor->stop_flag == MOTOR_STOP)
-            // { // 若该电机处于停止状态,直接将buff置零
-            //     memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
-            // }
+            if (motor->stop_flag == MOTOR_STOP)
+            { // 若该电机处于停止状态,直接将buff置零
+                memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
+            }
         }
     }
 

@@ -14,26 +14,27 @@
 void RobotInit()
 {
     BSPInit();
-#if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    ChassisInit();
-#endif
 
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
     GimbalCMDInit();
     GimbalInit();
     ShootInit();
 #endif
+
+#if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
+    ChassisInit();
+#endif
 }
 
 void RobotTask()
 {
-#if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    ChassisTask();
-#endif
-
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
     GimbalCMDTask();
     GimbalTask();
     ShootTask();
+#endif
+
+#if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
+    ChassisTask();
 #endif
 }
