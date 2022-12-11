@@ -17,13 +17,13 @@
 #include "stdint-gcc.h"
 
 /* 开发板类型定义,烧录时注意不要弄错对应功能;修改定义后需要重新编译,只能存在一个定义! */
-// #define ONE_BOARD // 单板控制整车
+#define ONE_BOARD // 单板控制整车
 // #define CHASSIS_BOARD //底盘板
-#define GIMBAL_BOARD  //云台板
+// #define GIMBAL_BOARD  //云台板
 
 /* 机器人重要参数定义,注意根据不同机器人进行修改,浮点数需要以.0或f结尾,无符号以u结尾 */
 // 云台参数
-#define YAW_CHASSIS_ALIGN_ECD 0     // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
+#define YAW_CHASSIS_ALIGN_ECD 4000     // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
 #define YAW_ECD_GREATER_THAN_4096 0 // yaw电机的初始编码器值是否大于4096,是为1,否为0
 #define PITCH_HORIZON_ECD 0         // 云台处于水平位置时编码器值,若对云台有机械改动需要修改
 // 发射参数
@@ -43,7 +43,7 @@
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
     (defined(CHASSIS_BOARD) && defined(GIMBAL_BOARD))
 #error Conflict board definition! You can only define one type.
-#endif 
+#endif
 
 #pragma pack(1) // 压缩结构体,取消字节对齐
 
@@ -56,7 +56,7 @@
 typedef enum
 {
     ROBOT_STOP,
-    ROBOT_WORKING,
+    ROBOT_READY,
 } Robot_Status_e;
 
 // 应用状态
@@ -88,13 +88,12 @@ typedef enum
     GIMBAL_GYRO_MODE,  // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
 } gimbal_mode_e;
 
-
 // 发射模式设置
 typedef enum
 {
-    SHOOT_ON=0,
+    SHOOT_ON = 0,
     SHOOT_OFF,
-}shoot_mode_e;
+} shoot_mode_e;
 typedef enum
 {
     FRICTION_OFF, // 摩擦轮关闭

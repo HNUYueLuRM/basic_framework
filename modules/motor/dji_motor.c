@@ -123,33 +123,26 @@ static void DecodeDJIMotor(CANInstance *_instance)
     // 由于需要多次变址访存,直接将buff和measure地址保存在寄存器里避免多次存取
     static uint8_t *rxbuff;
     static DJI_Motor_Measure_s *measure;
+    rxbuff = _instance->rx_buff;
+    measure = &((DJIMotorInstance*)_instance->id)->motor_measure; // measure要多次使用,保存指针减小访存开销
 
-    for (size_t i = 0; i < idx; i++)
-    {
-        if (dji_motor_info[i]->motor_can_instance == _instance)
-        {
-            rxbuff = _instance->rx_buff;
-            measure = &dji_motor_info[i]->motor_measure; // measure要多次使用,保存指针减小访存开销
-            uint8_t nice;
-            // resolve data and apply filter to current and speed
-            measure->last_ecd = measure->ecd;
-            measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
-            measure->angle_single_round = ECD_ANGLE_COEF * (float)measure->ecd;
-            measure->speed_aps = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps + RPM_2_ANGLE_PER_SEC * 
-                                 SPEED_SMOOTH_COEF *(float)((int16_t)(rxbuff[2] << 8 | rxbuff[3])) ;
-            measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
-                                    CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
-            measure->temperate = rxbuff[6];
+    uint8_t nice;
+    // resolve data and apply filter to current and speed
+    measure->last_ecd = measure->ecd;
+    measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
+    measure->angle_single_round = ECD_ANGLE_COEF * (float)measure->ecd;
+    measure->speed_aps = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps + RPM_2_ANGLE_PER_SEC * 
+                            SPEED_SMOOTH_COEF *(float)((int16_t)(rxbuff[2] << 8 | rxbuff[3])) ;
+    measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
+                            CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
+    measure->temperate = rxbuff[6];
 
-            // multi rounds calc,计算的前提是两次采样间电机转过的角度小于180°
-            if (measure->ecd - measure->last_ecd > 4096)
-                measure->total_round--;
-            else if (measure->ecd - measure->last_ecd < -4096)
-                measure->total_round++;
-            measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
-            break;
-        }
-    }
+    // multi rounds calc,计算的前提是两次采样间电机转过的角度小于180°
+    if (measure->ecd - measure->last_ecd > 4096)
+        measure->total_round--;
+    else if (measure->ecd - measure->last_ecd < -4096)
+        measure->total_round++;
+    measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
 }
 
 // 电机初始化,返回一个电机实例
@@ -174,6 +167,7 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
 
     // register motor to CAN bus
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
+    config->can_init_config.id=dji_motor_info[idx]; //set id,eq to address(it is identity)
     dji_motor_info[idx]->motor_can_instance = CANRegister(&config->can_init_config);
 
     DJIMotorEnable(dji_motor_info[idx]);

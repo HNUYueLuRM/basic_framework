@@ -32,10 +32,10 @@ void ShootInit()
                 .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
             .current_PID = {
-                .Kp = 10,
+                .Kp = 1,
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 2000,
@@ -61,10 +61,10 @@ void ShootInit()
                 .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 200,
+                .MaxOut = 2000,
             },
             .current_PID = {
-                .Kp = 5,
+                .Kp = 1,
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 2000,
@@ -200,8 +200,8 @@ void ShootTask()
         DJIMotorSetRef(friction_r, 0);
         break;
     default:
-        DJIMotorSetRef(friction_l, 200);
-        DJIMotorSetRef(friction_r, 200);
+        DJIMotorSetRef(friction_l, 4000);
+        DJIMotorSetRef(friction_r, 4000);
         break;
     } // 关闭摩擦轮
     if (shoot_cmd_recv.friction_mode==FRICTION_OFF)
@@ -210,8 +210,6 @@ void ShootTask()
         DJIMotorSetRef(friction_r, 0);
     }
     
-    
-
     // 开关弹舱盖
     if (shoot_cmd_recv.lid_mode == LID_CLOSE)
     {
@@ -221,4 +219,7 @@ void ShootTask()
     {
         //...
     }
+
+    // 反馈数据
+    PubPushMessage(shoot_pub,(void*)&shoot_feedback_data);
 }

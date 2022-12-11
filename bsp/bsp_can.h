@@ -23,6 +23,7 @@ typedef struct _
     uint8_t rx_len;                // 接收长度,可能为0-8
     // 接收的回调函数,用于解析接收到的数据
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
+    void* id;
 } CANInstance;
 #pragma pack()
 
@@ -33,6 +34,7 @@ typedef struct
     uint32_t tx_id;
     uint32_t rx_id;
     void (*can_module_callback)(CANInstance *);
+    void* id;
 } CAN_Init_Config_s;
 
 /**

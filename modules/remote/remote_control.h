@@ -17,7 +17,7 @@
 #include "main.h"
 #include "usart.h"
 
-// 
+//
 #define LAST 1
 #define TEMP 0
 
@@ -27,7 +27,7 @@
 #define KEY_PRESS_WITH_CTRL 2
 #define KEY_PRESS_WITH_SHIFT 3
 
-// 检查接受值是否出错
+// 检查接收值是否出错
 #define RC_CH_VALUE_MIN ((uint16_t)364)
 #define RC_CH_VALUE_OFFSET ((uint16_t)1024)
 #define RC_CH_VALUE_MAX ((uint16_t)1684)
@@ -87,8 +87,14 @@ typedef struct
 {
     struct
     {
-        int16_t joystick[5]; // 右|0 ,右-1 ,左-2 ,左|3 ,拨轮4
-        uint8_t s[2];  //[0]:left [1]:right
+        int16_t rocker_l_; // 左水平
+        int16_t rocker_l1; // 左竖直
+        int16_t rocker_r_; // 右水平
+        int16_t rocker_r1; // 右竖直
+        int16_t dial;      // 侧边拨轮
+
+        uint8_t switch_left;  // 左侧开关
+        uint8_t switch_right; // 右侧开关
     } rc;
     struct
     {
@@ -101,11 +107,9 @@ typedef struct
 
     uint16_t key_temp;
     uint8_t key[4][16]; // 当前使用的键盘索引
-    Key_t key_test[4];  // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
+    // Key_t key_test[4];  // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
 
 } RC_ctrl_t;
-
-
 
 /* ------------------------- Internal Data ----------------------------------- */
 

@@ -1,47 +1,75 @@
 #include "LK9025.h"
+#include "stdlib.h"
 
-static driven_instance *driven_motor_info[LK_MOTOR_CNT];
+static uint8_t idx;
+static LKMotorInstance* lkmotor_instance[LK_MOTOR_MX_CNT]={NULL};
 
-static void DecodeDriven(CANInstance *_instance)
+static void LKMotorDecode(CANInstance *_instance)
 {
-    for (size_t i = 0; i < LK_MOTOR_CNT; i++)
+    static LKMotor_Measure_t* measure;
+    static uint8_t* rx_buff;
+    rx_buff=_instance->rx_buff;
+    measure=&((LKMotorInstance*)_instance)->measure;
+    
+    measure->last_ecd=measure->ecd;
+    measure->ecd=(uint16_t)((rx_buff[7] << 8) | rx_buff[6]);
+    measure->angle_single_round=ECD_ANGLE_COEF*measure->ecd;
+    measure->speed_aps=(1-SPEED_SMOOTH_COEF)*measure->speed_aps+
+                       SPEED_SMOOTH_COEF*(float)((int16_t)(rx_buff[5] << 8 | rx_buff[4]));
+    measure->real_current=(1-CURRENT_SMOOTH_COEF)*measure->real_current+
+                          CURRENT_SMOOTH_COEF*(float)((int16_t)(rx_buff[3] << 8 | rx_buff[2]));
+    measure->temperate=rx_buff[1];
+
+    //计算多圈角度
+    if (measure->ecd - measure->last_ecd > 32678)
+        measure->total_round--;
+    else if (measure->ecd - measure->last_ecd < -32678)
+        measure->total_round++;
+    measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
+}
+
+
+void LKMotorControl()
+{
+    for (size_t i = 0; i < idx; i++)
     {
-        if (driven_motor_info[i]->motor_can_instance == _instance)
-        {
-            driven_motor_info[i]->last_ecd = driven_motor_info[i]->ecd;
-            driven_motor_info[i]->ecd = (uint16_t)((_instance->rx_buff[7] << 8) | _instance->rx_buff[6]);
-            driven_motor_info[i]->speed_rpm = (uint16_t)(_instance->rx_buff[5] << 8 | _instance->rx_buff[4]);
-            driven_motor_info[i]->real_current = (uint16_t)(_instance->rx_buff[3] << 8 | _instance->rx_buff[2]);
-            driven_motor_info[i]->temperate = _instance->rx_buff[1];
-            break;
-        }
+        
     }
 }
 
-driven_instance *LKMotroInit(CAN_Init_Config_s config)
+LKMotorInstance *LKMotroInit(Motor_Init_Config_s *config)
 {
-    static uint8_t idx;
-    driven_motor_info[idx] = (driven_instance *)malloc(sizeof(driven_instance));
-    config.can_module_callback = DecodeDriven;
-    driven_motor_info[idx]->motor_can_instance = CANRegister(&config);
-    return driven_motor_info[idx++];
+    lkmotor_instance[idx]=(LKMotorInstance*)malloc(sizeof(LKMotorInstance));
+    memset(lkmotor_instance[idx],0,sizeof(LKMotorInstance));
+
+    lkmotor_instance[idx]->motor_settings=config->controller_setting_init_config;
+    PID_Init(&lkmotor_instance[idx]->current_PID,&config->controller_param_init_config.current_PID);
+    PID_Init(&lkmotor_instance[idx]->current_PID,&config->controller_param_init_config.current_PID);
+    PID_Init(&lkmotor_instance[idx]->current_PID,&config->controller_param_init_config.current_PID);
+    lkmotor_instance[idx]->other_angle_feedback_ptr=config->controller_param_init_config.other_angle_feedback_ptr;
+    lkmotor_instance[idx]->other_speed_feedback_ptr=config->controller_param_init_config.other_speed_feedback_ptr;
+
+    config->can_init_config.can_module_callback=LKMotorDecode;
+    config->can_init_config.rx_id=0x140+config->can_init_config.tx_id;
+    config->can_init_config.tx_id=config->can_init_config.tx_id+0x240;
+    lkmotor_instance[idx]->motor_can_ins=CANRegister(&config->can_init_config);
+
+    LKMotorEnable(lkmotor_instance[idx]);
+    return lkmotor_instance[idx++];
 }
 
-void DrivenControl(int16_t motor1_current, int16_t motor2_current)
+
+void LKMotorStop(LKMotorInstance *motor)
 {
-    LIMIT_MIN_MAX(motor1_current, I_MIN, I_MAX);
-    LIMIT_MIN_MAX(motor2_current, I_MIN, I_MAX);
-    driven_motor_info[0]->motor_can_instance->tx_buff[0] = motor1_current;
-    driven_motor_info[0]->motor_can_instance->tx_buff[1] = motor1_current >> 8;
-    driven_motor_info[0]->motor_can_instance->tx_buff[2] = motor2_current;
-    driven_motor_info[0]->motor_can_instance->tx_buff[3] = motor2_current >> 8;
-    CANTransmit(driven_motor_info[0]->motor_can_instance);
+    motor->stop_flag=MOTOR_STOP;
 }
 
-void SetDrivenMode(driven_mode cmd, uint16_t motor_id)
+void LKMotorEnable(LKMotorInstance *motor)
 {
-    static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
-    // code goes here ...
+    motor->stop_flag=MOTOR_ENALBED;
+}
 
-    // CANTransmit(driven_mode)
+void LKMotorSetRef(LKMotorInstance *motor, float ref)
+{
+    motor->pid_ref=ref;
 }

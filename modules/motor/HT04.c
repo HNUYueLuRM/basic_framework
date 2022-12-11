@@ -1,7 +1,7 @@
 #include "HT04.h"
 #include "memory.h"
 
-joint_instance *joint_motor_info[HT_MOTOR_CNT];
+HKMotor_Measure_t *joint_motor_info[HT_MOTOR_CNT];
 
 static uint16_t float_to_uint(float x, float x_min, float x_max, uint8_t bits)
 {
@@ -36,15 +36,15 @@ static void DecodeJoint(CANInstance *motor_instance)
     }
 }
 
-joint_instance *HTMotorInit(CAN_Init_Config_s config)
+HKMotor_Measure_t *HTMotorInit(CAN_Init_Config_s config)
 {
     static uint8_t idx;
-    joint_motor_info[idx] = (joint_instance *)malloc(sizeof(joint_instance));
+    joint_motor_info[idx] = (HKMotor_Measure_t *)malloc(sizeof(HKMotor_Measure_t));
     joint_motor_info[idx]->motor_can_instace = CANRegister(&config);
     return joint_motor_info[idx++];
 }
 
-void JointControl(joint_instance *_instance, float current)
+void JointControl(HKMotor_Measure_t *_instance, float current)
 {
     uint16_t tmp;
     LIMIT_MIN_MAX(current, T_MIN, T_MAX);
@@ -54,7 +54,7 @@ void JointControl(joint_instance *_instance, float current)
     CANTransmit(_instance->motor_can_instace);
 }
 
-void SetJointMode(joint_mode cmd, joint_instance *_instance)
+void SetJointMode(joint_mode cmd, HKMotor_Measure_t *_instance)
 {
     static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
     buf[7] = (uint8_t)cmd;

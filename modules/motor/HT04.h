@@ -24,7 +24,7 @@ typedef struct // HT04
 
     PIDInstance pid;
     CANInstance *motor_can_instace;
-} joint_instance;
+} HKMotor_Measure_t;
 
 typedef enum
 {
@@ -33,10 +33,10 @@ typedef enum
     CMD_ZERO_POSITION = 0xfe
 } joint_mode;
 
-joint_instance *HTMotorInit(CAN_Init_Config_s config);
+HKMotor_Measure_t *HTMotorInit(CAN_Init_Config_s config);
 
-void JointControl(joint_instance *_instance, float current);
+void JointControl(HKMotor_Measure_t *_instance, float current);
 
-void SetJointMode(joint_mode cmd, joint_instance *_instance);
+void SetJointMode(joint_mode cmd, HKMotor_Measure_t *_instance);
 
 #endif // !HT04_H#define HT04_H

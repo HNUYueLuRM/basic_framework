@@ -22,8 +22,8 @@
 #define DJI_MOTOR_CNT 12
 
 /* 滤波系数设置为1的时候即关闭滤波 */
-#define SPEED_SMOOTH_COEF 0.9f    // better to be greater than 0.85
-#define CURRENT_SMOOTH_COEF 0.98f // this coef *must* be greater than 0.95
+#define SPEED_SMOOTH_COEF 0.85f    // better to be greater than 0.85
+#define CURRENT_SMOOTH_COEF 0.9f // this coef *must* be greater than 0.9
 #define ECD_ANGLE_COEF 0.043945f  // 360/8192,将编码器值转化为角度制
 
 /* DJI电机CAN反馈信息*/

@@ -9,10 +9,10 @@ static attitude_t *Gimbal_IMU_data;   // 云台IMU数据
 static DJIMotorInstance *yaw_motor;   // yaw电机
 static DJIMotorInstance *pitch_motor; // pitch电机
 
-static Publisher_t *gimbal_pub;
-static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给gimbal_cmd的云台状态信息
-static Subscriber_t *gimbal_sub;
-static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv; // 来自gimbal_cmd的控制信息
+static Publisher_t *gimbal_pub;                   // 云台应用消息发布者(云台反馈给cmd)
+static Subscriber_t *gimbal_sub;                  // cmd控制消息订阅者
+static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给cmd的云台状态信息
+static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
 void GimbalInit()
 {
@@ -26,17 +26,17 @@ void GimbalInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kp = 10,
+                .Kp = 20,
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 2000,
-                .DeadBand=0.3,
+                .DeadBand = 0.3,
             },
             .speed_PID = {
                 .Kp = 10,
                 .Ki = 0,
                 .Kd = 0,
-                .MaxOut = 2000,
+                .MaxOut = 4000,
             },
             .other_angle_feedback_ptr = &Gimbal_IMU_data->YawTotalAngle,
             // 还需要增加角速度额外反馈指针
@@ -62,7 +62,7 @@ void GimbalInit()
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 4000,
-                .DeadBand=0.3,
+                .DeadBand = 0.3,
             },
             .speed_PID = {
                 .Kp = 10,
@@ -91,15 +91,6 @@ void GimbalInit()
     gimbal_sub = SubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));
 }
 
-// /**
-//  * @brief
-//  *
-//  */
-// static void TransitionMode()
-// {
-
-// }
-
 void GimbalTask()
 {
     // 获取云台控制数据
@@ -107,7 +98,6 @@ void GimbalTask()
     SubGetMessage(gimbal_sub, &gimbal_cmd_recv);
 
     // 根据控制模式进行电机反馈切换和过渡,视觉模式在robot_cmd模块就已经设置好,gimbal只看yaw_ref和pitch_ref
-    // 是否要增加不同模式之间的过渡?
     switch (gimbal_cmd_recv.gimbal_mode)
     {
     // 停止
@@ -140,25 +130,11 @@ void GimbalTask()
     default:
         break;
     }
-    // 过渡示例:
-    /* 需要给每个case增加如下判断,并添加一个过渡行为函数和过渡标志位
-    case xxx:
-        if(last_mode!=xxx)
-        {
-            transition_flag=1;
-        }
-        break;
-
-    void TransitMode()
-    {
-        motor_output=lpf_coef * last_output+(1 - lpf_coef) * concur_output;
-    }
-    */
 
     // 设置反馈数据
     gimbal_feedback_data.gimbal_imu_data = *Gimbal_IMU_data;
     gimbal_feedback_data.yaw_motor_single_round_angle = yaw_motor->motor_measure.angle_single_round;
 
-    // 推送消息 
-    PubPushMessage(gimbal_pub, &gimbal_feedback_data);
+    // 推送消息
+    PubPushMessage(gimbal_pub, (void *)&gimbal_feedback_data);
 }
