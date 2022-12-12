@@ -1,7 +1,7 @@
 #ifndef BSP_CAN_H
 #define BSP_CAN_H
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 #include "can.h"
 
 #define MX_REGISTER_DEVICE_CNT 12  // maximum number of device can be registered to CAN service

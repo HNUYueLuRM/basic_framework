@@ -13,7 +13,7 @@
 #ifndef PUBSUB_H
 #define PUBSUB_H
 
-#include "stdint-gcc.h"
+#include "stdint.h"
 
 
 #define MAX_EVENT_NAME_LEN  32  //最大的事件名长度,每个事件都有字符串来命名
