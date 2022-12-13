@@ -1,7 +1,7 @@
 #ifndef HT04_H
 #define HT04_H
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 #include "bsp_can.h"
 #include "controller.h"
 #include "motor_def.h"

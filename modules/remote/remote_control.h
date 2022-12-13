@@ -13,7 +13,7 @@
 #ifndef REMOTE_CONTROL_H
 #define REMOTE_CONTROL_H
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 #include "main.h"
 #include "usart.h"
 

@@ -1,7 +1,7 @@
 #ifndef MONITOR_H
 #define MONITOR_H
 
-#include "stdint-gcc.h"
+#include "stdint.h"
 
 #define DAEMON_MX_CNT 64
 

@@ -14,7 +14,7 @@
 
 #include "ins_task.h"
 #include "master_process.h"
-#include "stdint-gcc.h"
+#include "stdint.h"
 
 /* 开发板类型定义,烧录时注意不要弄错对应功能;修改定义后需要重新编译,只能存在一个定义! */
 #define ONE_BOARD // 单板控制整车

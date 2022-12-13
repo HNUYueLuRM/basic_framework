@@ -2,7 +2,7 @@
 #define __SEASKY_PROTOCOL_H
 
 #include <stdio.h>
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 #define PROTOCOL_CMD_ID 0XA5
 #define OFFSET_BYTE 8 // 出数据段外，其他部分所占字节数

@@ -1,7 +1,7 @@
 {
     "files.associations": {
         "memory.h": "c",
-        "stdint-gcc.h": "c",
+        "stdint.h": "c",
         "led_task.h": "c",
         "stdinf.h": "c",
         "usart.h": "c",

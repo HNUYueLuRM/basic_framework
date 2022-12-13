@@ -1,7 +1,7 @@
 #ifndef BSP_RC_H
 #define BSP_RC_H
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 #include "main.h"
 
 #define DEVICE_USART_CNT 3     // C板至多分配3个串口

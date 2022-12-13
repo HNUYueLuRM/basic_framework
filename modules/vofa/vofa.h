@@ -7,7 +7,7 @@
  */
 #ifndef VOFA_H
 #define VOFA_H
-#include <stdint-gcc.h>
+#include <stdint.h>
 #include "bsp_usart.h"
 #include "usart.h"
 

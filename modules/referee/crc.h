@@ -1,7 +1,7 @@
 #ifndef __CRC_H_
 #define __CRC_H_
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 #define TRUE 1
 #define FALSE 0

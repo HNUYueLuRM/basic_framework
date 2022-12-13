@@ -12,7 +12,7 @@
 
 #include "led_task.h"
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 #include "bsp_led.h"
 #include "main.h"
