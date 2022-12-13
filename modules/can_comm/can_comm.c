@@ -26,52 +26,49 @@ static void CANCommResetRx(CANCommInstance *ins)
  */
 static void CANCommRxCallback(CANInstance *_instance)
 {
-    for (size_t i = 0; i < idx; i++)
+    static CANCommInstance *comm;
+    comm = (CANCommInstance *)_instance->id;
+
+    /* 接收状态判断 */
+    if (_instance->rx_buff[0] == CAN_COMM_HEADER && comm->recv_state == 0) // 尚未开始接收且新的一包里有帧头
     {
-        if (can_comm_instance[i]->can_ins == _instance) // 遍历,找到对应的接收CAN COMM实例
+        if (_instance->rx_buff[1] == comm->recv_data_len) // 接收长度等于设定接收长度
         {
-            /* 接收状态判断 */
-            if (_instance->rx_buff[0] == CAN_COMM_HEADER && can_comm_instance[i]->recv_state == 0) // 尚未开始接收且新的一包里有帧头
+            comm->recv_state = 1;
+        }
+        else
+            return; // 直接跳过即可
+    }
+    if (comm->recv_state) // 已经收到过帧头
+    {                     // 如果已经接收到的长度加上当前一包的长度大于总buf len,说明接收错误
+        if (comm->cur_recv_len + _instance->rx_len > comm->recv_buf_len)
+        {
+            CANCommResetRx(comm);
+            return; // 重置状态然后返回
+        }
+
+        // 直接拷贝到当前的接收buffer后面
+        memcpy(comm->raw_recvbuf + comm->cur_recv_len, _instance->rx_buff, _instance->rx_len);
+        comm->cur_recv_len += _instance->rx_len;
+
+        // 当前已经收满
+        if (comm->cur_recv_len == comm->recv_buf_len)
+        { // buff里本该是tail的位置不等于CAN_COMM_TAIL
+            if (comm->raw_recvbuf[comm->recv_buf_len - 1] != CAN_COMM_TAIL)
             {
-                if (_instance->rx_buff[1] == can_comm_instance[i]->recv_data_len) // 接收长度等于设定接收长度
-                {
-                    can_comm_instance[i]->recv_state = 1;
-                }
-                else
-                    return; // 直接跳过即可
+                CANCommResetRx(comm);
+                return; // 重置状态然后返回
             }
-            if (can_comm_instance[i]->recv_state) // 已经收到过帧头
-            {                                     // 如果已经接收到的长度加上当前一包的长度大于总buf len,说明接收错误
-                if (can_comm_instance[i]->cur_recv_len + _instance->rx_len > can_comm_instance[i]->recv_buf_len)
-                {
-                    CANCommResetRx(can_comm_instance[i]);
-                    return; // 重置状态然后返回
+            else // tail正确, 对数据进行crc8校验
+            {
+                if (comm->raw_recvbuf[comm->recv_buf_len - 2] ==
+                    crc_8(comm->raw_recvbuf + 2, comm->recv_data_len))
+                { // 通过校验,复制数据到unpack_data中
+                    memcpy(comm->unpacked_recv_data, comm->raw_recvbuf + 2, comm->recv_data_len);
+                    comm->update_flag = 1; // 数据更新flag置为1
                 }
-
-                // 直接拷贝到当前的接收buffer后面
-                memcpy(can_comm_instance[i]->raw_recvbuf + can_comm_instance[i]->cur_recv_len, _instance->rx_buff, _instance->rx_len);
-                can_comm_instance[i]->cur_recv_len += _instance->rx_len;
-
-                // 当前已经收满
-                if (can_comm_instance[i]->cur_recv_len == can_comm_instance[i]->recv_buf_len)
-                { // buff里本该是tail的位置不等于CAN_COMM_TAIL
-                    if (can_comm_instance[i]->raw_recvbuf[can_comm_instance[i]->recv_buf_len - 1] != CAN_COMM_TAIL)
-                    {
-                        CANCommResetRx(can_comm_instance[i]);
-                        return; // 重置状态然后返回
-                    }
-                    else // tail正确, 对数据进行crc8校验
-                    {
-                        if (can_comm_instance[i]->raw_recvbuf[can_comm_instance[i]->recv_buf_len - 2] ==
-                            crc_8(can_comm_instance[i]->raw_recvbuf + 2, can_comm_instance[i]->recv_data_len))
-                        { // 通过校验,复制数据到unpack_data中
-                            memcpy(can_comm_instance[i]->unpacked_recv_data, can_comm_instance[i]->raw_recvbuf + 2, can_comm_instance[i]->recv_data_len);
-                            can_comm_instance[i]->update_flag = 1; // 数据更新flag置为1
-                        }
-                        CANCommResetRx(can_comm_instance[i]);
-                        return; // 重置状态然后返回
-                    }
-                }
+                CANCommResetRx(comm);
+                return; // 重置状态然后返回
             }
             return; // 访问完一个can comm直接退出,一次中断只会也只可能会处理一个实例的回调
         }
@@ -90,6 +87,7 @@ CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
     can_comm_instance[idx]->raw_sendbuf[1] = comm_config->send_data_len;
     can_comm_instance[idx]->raw_sendbuf[comm_config->send_data_len + CAN_COMM_OFFSET_BYTES - 1] = CAN_COMM_TAIL;
 
+    comm_config->can_config.id = can_comm_instance[idx];
     comm_config->can_config.can_module_callback = CANCommRxCallback;
     can_comm_instance[idx]->can_ins = CANRegister(&comm_config->can_config);
     return can_comm_instance[idx++];

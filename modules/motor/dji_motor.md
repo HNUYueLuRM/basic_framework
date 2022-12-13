@@ -387,7 +387,7 @@ static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
 
 ```c
 #define PI2 (3.141592f * 2)
-#define ECD_ANGLE_COEF 3.835e-4 // ecd/8192*pi
+#define ECD_ANGLE_COEF_DJI 3.835e-4 // ecd/8192*pi
 ```
 
 这两个宏用于在电机反馈信息中的多圈角度计算，将编码器的0~8192转化为角度表示。

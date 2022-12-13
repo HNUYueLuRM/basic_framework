@@ -31,7 +31,7 @@ uint8_t DaemonIsOnline(DaemonInstance *instance)
 void DaemonTask()
 {
     static DaemonInstance* pins; //提高可读性同时降低访存开销
-    for (size_t i = 0; i < idx; i++)
+    for (size_t i = 0; i < idx; ++i)
     {
         pins=daemon_instances[i];
         if(pins->temp_count>0)

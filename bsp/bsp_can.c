@@ -115,7 +115,7 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
     uint8_t can_rx_buff[8];
     CAN_RxHeaderTypeDef rxconf;
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff);
-    for (size_t i = 0; i < MX_REGISTER_DEVICE_CNT; i++)
+    for (size_t i = 0; i < MX_REGISTER_DEVICE_CNT; ++i)
     {
         if (instance[i] != NULL) // 碰到NULL说明已经遍历完所有实例
         {                        // 两者相等说明这是要找的实例

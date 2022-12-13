@@ -156,7 +156,7 @@ void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, 
 
     // set z,单位化重力加速度向量
     accelInvNorm = invSqrt(QEKF_INS.Accel[0] * QEKF_INS.Accel[0] + QEKF_INS.Accel[1] * QEKF_INS.Accel[1] + QEKF_INS.Accel[2] * QEKF_INS.Accel[2]);
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
     {
         QEKF_INS.IMU_QuaternionEKF.MeasuredVector[i] = QEKF_INS.Accel[i] * accelInvNorm; // 用加速度向量更新量测值
     }
@@ -238,7 +238,7 @@ static void IMU_QuaternionEKF_F_Linearization_P_Fading(KalmanFilter_t *kf)
 
     // quaternion normalize
     qInvNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < 4; ++i)
     {
         kf->xhatminus_data[i] *= qInvNorm;
     }
@@ -352,7 +352,7 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
     kf->temp_vector_data[2] = q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3; // temp_vector = h(xhat'(k))
 
     // 计算预测值和各个轴的方向余弦
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
     {
         QEKF_INS.OrientationCosine[i] = acosf(fabsf(kf->temp_vector_data[i]));
     }
@@ -426,13 +426,13 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
     kf->MatStatus = Matrix_Multiply(&kf->temp_matrix, &kf->temp_matrix1, &kf->K);
 
     // implement adaptive
-    for (uint8_t i = 0; i < kf->K.numRows * kf->K.numCols; i++)
+    for (uint8_t i = 0; i < kf->K.numRows * kf->K.numCols; ++i)
     {
         kf->K_data[i] *= QEKF_INS.AdaptiveGainScale;
     }
-    for (uint8_t i = 4; i < 6; i++)
+    for (uint8_t i = 4; i < 6; ++i)
     {
-        for (uint8_t j = 0; j < 3; j++)
+        for (uint8_t j = 0; j < 3; ++j)
         {
             kf->K_data[i * 3 + j] *= QEKF_INS.OrientationCosine[i - 4] / 1.5707963f; // 1 rad
         }
@@ -445,7 +445,7 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
     // 零漂修正限幅,一般不会有过大的漂移
     if (QEKF_INS.ConvergeFlag)
     {
-        for (uint8_t i = 4; i < 6; i++)
+        for (uint8_t i = 4; i < 6; ++i)
         {
             if (kf->temp_vector.pData[i] > 1e-2f * QEKF_INS.dt)
             {

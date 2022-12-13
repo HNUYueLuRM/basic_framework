@@ -76,7 +76,7 @@ static void MotorSenderGrouping(CAN_Init_Config_s *config)
         dji_motor_info[idx]->sender_group = motor_grouping;
 
         // 检查是否发生id冲突
-        for (size_t i = 0; i < idx; i++)
+        for (size_t i = 0; i < idx; ++i)
         {
             if (dji_motor_info[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_info[i]->motor_can_instance->rx_id == config->rx_id)
                 IDcrash_Handler(i, idx);
@@ -100,7 +100,7 @@ static void MotorSenderGrouping(CAN_Init_Config_s *config)
         dji_motor_info[idx]->message_num = motor_send_num;
         dji_motor_info[idx]->sender_group = motor_grouping;
 
-        for (size_t i = 0; i < idx; i++)
+        for (size_t i = 0; i < idx; ++i)
         {
             if (dji_motor_info[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_info[i]->motor_can_instance->rx_id == config->rx_id)
                 IDcrash_Handler(i, idx);
@@ -124,15 +124,14 @@ static void DecodeDJIMotor(CANInstance *_instance)
     static uint8_t *rxbuff;
     static DJI_Motor_Measure_s *measure;
     rxbuff = _instance->rx_buff;
-    measure = &((DJIMotorInstance*)_instance->id)->motor_measure; // measure要多次使用,保存指针减小访存开销
+    measure = &((DJIMotorInstance *)_instance->id)->motor_measure; // measure要多次使用,保存指针减小访存开销
 
-    uint8_t nice;
     // resolve data and apply filter to current and speed
     measure->last_ecd = measure->ecd;
     measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
-    measure->angle_single_round = ECD_ANGLE_COEF * (float)measure->ecd;
-    measure->speed_aps = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps + RPM_2_ANGLE_PER_SEC * 
-                            SPEED_SMOOTH_COEF *(float)((int16_t)(rxbuff[2] << 8 | rxbuff[3])) ;
+    measure->angle_single_round = ECD_ANGLE_COEF_DJI * (float)measure->ecd;
+    measure->speed_aps = (1.0f - SPEED_SMOOTH_COEF) * measure->speed_aps + 
+                        RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float)((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
     measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
     measure->temperate = rxbuff[6];
@@ -167,7 +166,7 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
 
     // register motor to CAN bus
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
-    config->can_init_config.id=dji_motor_info[idx]; //set id,eq to address(it is identity)
+    config->can_init_config.id = dji_motor_info[idx];             // set id,eq to address(it is identity)
     dji_motor_info[idx]->motor_can_instance = CANRegister(&config->can_init_config);
 
     DJIMotorEnable(dji_motor_info[idx]);
@@ -220,7 +219,7 @@ void DJIMotorControl()
     static DJI_Motor_Measure_s *motor_measure;
     static float pid_measure, pid_ref;
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
-    for (size_t i = 0; i < idx; i++)
+    for (size_t i = 0; i < idx; ++i)
     {
         if (dji_motor_info[i])
         {
@@ -279,7 +278,7 @@ void DJIMotorControl()
     }
 
     // 遍历flag,检查是否要发送这一帧报文
-    for (size_t i = 0; i < 6; i++)
+    for (size_t i = 0; i < 6; ++i)
     {
         if (sender_enable_flag[i])
         {

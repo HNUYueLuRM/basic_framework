@@ -70,7 +70,7 @@ void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size)
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
     {
         if (huart == instance[i]->usart_handle)
         {
@@ -93,7 +93,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
  */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
     {
         if (huart == instance[i]->usart_handle)
         {

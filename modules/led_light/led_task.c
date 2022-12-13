@@ -29,7 +29,7 @@ void led_RGB_flow_task()
 	static float alpha, red, green, blue;
 	static uint32_t aRGB;
 
-	for (size_t i = 0; i < RGB_FLOW_COLOR_LENGHT; i++)
+	for (size_t i = 0; i < RGB_FLOW_COLOR_LENGHT; ++i)
 	{
 		alpha = (RGB_flow_color[i] & 0xFF000000) >> 24;
 		red = ((RGB_flow_color[i] & 0x00FF0000) >> 16);
@@ -45,7 +45,7 @@ void led_RGB_flow_task()
 		delta_red /= RGB_FLOW_COLOR_CHANGE_TIME;
 		delta_green /= RGB_FLOW_COLOR_CHANGE_TIME;
 		delta_blue /= RGB_FLOW_COLOR_CHANGE_TIME;
-		for (size_t j = 0; j < RGB_FLOW_COLOR_CHANGE_TIME; j++)
+		for (size_t j = 0; j < RGB_FLOW_COLOR_CHANGE_TIME; ++j)
 		{
 			alpha += delta_alpha;
 			red += delta_red;

@@ -14,11 +14,11 @@ void MessageInit()
 {
     // pub必须唯一,即消息名称不能重复,不得有多个pub发布相同消息名称
     // 对每一个subscriber,寻找相同消息名称的publisher,可能有多个sub从相同pub获取消息
-    for (size_t i = 0; i < MAX_EVENT_COUNT; i++)
+    for (size_t i = 0; i < MAX_EVENT_COUNT; ++i)
     {
         if (s_pptr[i] != NULL)
         {
-            for (size_t j = 0; j < MAX_EVENT_COUNT; j++) // 遍历publisher
+            for (size_t j = 0; j < MAX_EVENT_COUNT; ++j) // 遍历publisher
             {
                 if (p_ptr[j] != NULL) // 不为空
                 {
@@ -46,7 +46,7 @@ void MessageInit()
 void PublisherRegister(char *name, void *data)
 {
     static uint8_t idx;
-    for (size_t i = 0; i < idx; i++)
+    for (size_t i = 0; i < idx; ++i)
     {
         if (strcmp(pname[i], name) == 0)
             while (1)
@@ -105,7 +105,7 @@ Subscriber_t *SubRegister(char *name, uint8_t data_len)
             memset(ret, 0, sizeof(Subscriber_t));
             // 对新建的Subscriber进行初始化
             ret->data_len = data_len; // 设定数据长度
-            for (size_t i = 0; i < QUEUE_SIZE; i++)
+            for (size_t i = 0; i < QUEUE_SIZE; ++i)
             { // 给消息队列的每一个元素分配空间,queue里保存的实际上是数据执指针,这样可以兼容不同的数据长度
                 ret->queue[i] = malloc(sizeof(data_len));
             }
@@ -135,7 +135,7 @@ Subscriber_t *SubRegister(char *name, uint8_t data_len)
     Subscriber_t *ret = (Subscriber_t *)malloc(sizeof(Subscriber_t));
     memset(ret, 0, sizeof(Subscriber_t));
     ret->data_len = data_len;
-    for (size_t i = 0; i < QUEUE_SIZE; i++)
+    for (size_t i = 0; i < QUEUE_SIZE; ++i)
     { // 给消息队列分配空间
         ret->queue[i] = malloc(sizeof(data_len));
     }

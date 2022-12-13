@@ -112,7 +112,7 @@ void INS_Task(void)
         // 将重力从导航坐标系n转换到机体系b,随后根据加速度计数据计算运动加速度
         float gravity_b[3];
         EarthFrameToBodyFrame(gravity, gravity_b, INS.q);
-        for (uint8_t i = 0; i < 3; i++) // 同样过一个低通滤波
+        for (uint8_t i = 0; i < 3; ++i) // 同样过一个低通滤波
         {
             INS.MotionAccel_b[i] = (INS.Accel[i] - gravity_b[i]) * dt / (INS.AccelLPF + dt) + INS.MotionAccel_b[i] * INS.AccelLPF / (INS.AccelLPF + dt);
         }
@@ -218,7 +218,7 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
         param->flag = 0;
     }
     float gyro_temp[3];
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
         gyro_temp[i] = gyro[i] * param->scale[i];
 
     gyro[X] = c_11 * gyro_temp[X] +
@@ -232,7 +232,7 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
               c_33 * gyro_temp[Z];
 
     float accel_temp[3];
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; ++i)
         accel_temp[i] = accel[i];
 
     accel[X] = c_11 * accel_temp[X] +

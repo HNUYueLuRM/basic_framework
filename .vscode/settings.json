@@ -41,7 +41,8 @@
         "motor_def.h": "c",
         "quaternionekf.h": "c",
         "shoot.h": "c",
-        "lk9025.h": "c"
+        "lk9025.h": "c",
+        "ht04.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
 }

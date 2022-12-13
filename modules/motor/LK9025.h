@@ -13,7 +13,7 @@
 #define CURRENT_SMOOTH_COEF 0.9f
 #define SPEED_SMOOTH_COEF 0.85f
 #define REDUCTION_RATIO_DRIVEN 1
-#define ECD_ANGLE_COEF (360.0f/65536.0f)
+#define ECD_ANGLE_COEF_LK (360.0f/65536.0f)
 
 typedef struct // 9025
 {

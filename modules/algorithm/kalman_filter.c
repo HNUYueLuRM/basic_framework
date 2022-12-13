@@ -420,7 +420,7 @@ float *Kalman_Filter_Update(KalmanFilter_t *kf)
 
     // 避免滤波器过度收敛
     // suppress filter excessive convergence
-    for (uint8_t i = 0; i < kf->xhatSize; i++)
+    for (uint8_t i = 0; i < kf->xhatSize; ++i)
     {
         if (kf->P_data[i * kf->xhatSize + i] < kf->StateMinVariance[i])
             kf->P_data[i * kf->xhatSize + i] = kf->StateMinVariance[i];
@@ -445,7 +445,7 @@ static void H_K_R_Adjustment(KalmanFilter_t *kf)
     // recognize measurement validity and adjust matrices H R K
     memset(kf->R_data, 0, sizeof_float * kf->zSize * kf->zSize);
     memset(kf->H_data, 0, sizeof_float * kf->xhatSize * kf->zSize);
-    for (uint8_t i = 0; i < kf->zSize; i++)
+    for (uint8_t i = 0; i < kf->zSize; ++i)
     {
         if (kf->z_data[i] != 0)
         {
@@ -459,7 +459,7 @@ static void H_K_R_Adjustment(KalmanFilter_t *kf)
             kf->MeasurementValidNum++;
         }
     }
-    for (uint8_t i = 0; i < kf->MeasurementValidNum; i++)
+    for (uint8_t i = 0; i < kf->MeasurementValidNum; ++i)
     {
         // 重构矩阵R
         // rebuild matrix R

@@ -144,7 +144,7 @@ void Calibrate_MPU_Offset(IMU_Data_t *bmi088)
         bmi088->GyroOffset[1] = 0;
         bmi088->GyroOffset[2] = 0;
 
-        for (uint16_t i = 0; i < CaliTimes; i++)
+        for (uint16_t i = 0; i < CaliTimes; ++i)
         {
             BMI088_accel_read_muli_reg(BMI088_ACCEL_XOUT_L, buf, 6);
             bmi088_raw_temp = (int16_t)((buf[1]) << 8) | buf[0];
@@ -176,7 +176,7 @@ void Calibrate_MPU_Offset(IMU_Data_t *bmi088)
             {
                 gNormMax = gNormTemp;
                 gNormMin = gNormTemp;
-                for (uint8_t j = 0; j < 3; j++)
+                for (uint8_t j = 0; j < 3; ++j)
                 {
                     gyroMax[j] = bmi088->Gyro[j];
                     gyroMin[j] = bmi088->Gyro[j];
@@ -188,7 +188,7 @@ void Calibrate_MPU_Offset(IMU_Data_t *bmi088)
                     gNormMax = gNormTemp;
                 if (gNormTemp < gNormMin)
                     gNormMin = gNormTemp;
-                for (uint8_t j = 0; j < 3; j++)
+                for (uint8_t j = 0; j < 3; ++j)
                 {
                     if (bmi088->Gyro[j] > gyroMax[j])
                         gyroMax[j] = bmi088->Gyro[j];
@@ -198,7 +198,7 @@ void Calibrate_MPU_Offset(IMU_Data_t *bmi088)
             }
 
             gNormDiff = gNormMax - gNormMin;
-            for (uint8_t j = 0; j < 3; j++)
+            for (uint8_t j = 0; j < 3; ++j)
                 gyroDiff[j] = gyroMax[j] - gyroMin[j];
             if (gNormDiff > 0.5f ||
                 gyroDiff[0] > 0.15f ||
@@ -209,7 +209,7 @@ void Calibrate_MPU_Offset(IMU_Data_t *bmi088)
         }
 
         bmi088->gNorm /= (float)CaliTimes;
-        for (uint8_t i = 0; i < 3; i++)
+        for (uint8_t i = 0; i < 3; ++i)
             bmi088->GyroOffset[i] /= (float)CaliTimes;
 
         BMI088_accel_read_muli_reg(BMI088_TEMP_M, buf, 2);

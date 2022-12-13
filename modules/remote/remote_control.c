@@ -15,7 +15,7 @@ static USARTInstance *rc_usart_instance;
  */
 static void RectifyRCjoystick()
 {
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 0; i < 5; ++i)
     {
         if (*(&rc_ctrl[TEMP].rc.rocker_l_+i) > 660 || *(&rc_ctrl[TEMP].rc.rocker_l_+i) < -660)
             *(&rc_ctrl[TEMP].rc.rocker_l_+i) = 0;
