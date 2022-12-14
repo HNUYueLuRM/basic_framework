@@ -42,7 +42,13 @@
         "quaternionekf.h": "c",
         "shoot.h": "c",
         "lk9025.h": "c",
-        "ht04.h": "c"
+        "ht04.h": "c",
+        "rtc.h": "c",
+        "tim.h": "c",
+        "usb_device.h": "c",
+        "gpio.h": "c",
+        "rng.h": "c",
+        "cmsis_os.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
     "C_Cpp.intelliSenseEngineFallback": "enabled",

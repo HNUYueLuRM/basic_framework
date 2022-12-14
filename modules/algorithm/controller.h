@@ -28,7 +28,7 @@
 // PID 优化环节使能标志位
 typedef enum
 {
-    NONE = 0b00000000,                        // 0000 0000
+    PID_IMPROVE_NONE = 0b00000000,                        // 0000 0000
     Integral_Limit = 0b00000001,              // 0000 0001
     Derivative_On_Measurement = 0b00000010,   // 0000 0010
     Trapezoid_Intergral = 0b00000100,         // 0000 0100

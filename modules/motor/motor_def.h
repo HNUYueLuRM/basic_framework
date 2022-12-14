@@ -45,7 +45,7 @@ typedef enum
 /* 反馈来源设定,若设为OTHER_FEED则需要指定数据来源指针,详见Motor_Controller_s*/
 typedef enum
 {
-    MOTOR_FEED,
+    MOTOR_FEED=0,
     OTHER_FEED,
 } Feedback_Source_e;
 
@@ -94,11 +94,12 @@ typedef struct
 /* 电机类型枚举 */
 typedef enum
 {
-    GM6020 = 0,
-    M3508 = 1,
-    M2006 = 2,
-    LK9025 = 3,
-    HT04 = 4,
+    MOTOR_TYPE_NONE = 0,
+    GM6020,
+    M3508,
+    M2006,
+    LK9025,
+    HT04,
 } Motor_Type_e;
 
 /**

@@ -79,6 +79,7 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     instance[idx]->tx_id = config->tx_id; // 好像没用,可以删掉
     instance[idx]->rx_id = config->rx_id;
     instance[idx]->can_module_callback = config->can_module_callback;
+    instance[idx]->id=config->id;
 
     CANAddFilter(instance[idx]); // 添加CAN过滤器规则
     return instance[idx++];      // 返回指针

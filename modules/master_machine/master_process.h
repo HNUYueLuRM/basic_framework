@@ -52,13 +52,14 @@ typedef enum
 
 typedef enum
 {
-	MODE_AIM = 0,
-	MODE_SMALL_BUFF = 1,
-	MODE_BIG_BUFF = 2
+	VISION_MODE_AIM = 0,
+	VISION_MODE_SMALL_BUFF = 1,
+	VISION_MODE_BIG_BUFF = 2
 } Work_Mode_e;
 
 typedef enum
 {
+	BULLET_SPEED_NONE = 0,
 	BIG_AMU_10 = 10,
 	SMALL_AMU_15 = 15,
 	BIG_AMU_16 = 16,

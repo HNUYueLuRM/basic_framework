@@ -50,14 +50,14 @@ static void HTMotorDecode(CANInstance *motor_can)
     measure->last_angle = measure->total_angle;
 
     tmp = (uint16_t)((rxbuff[1] << 8) | rxbuff[2]);
-    measure->total_angle = RAD_2_ANGLE * uint_to_float(tmp, P_MAX, P_MIN, 16);
+    measure->total_angle = RAD_2_ANGLE * uint_to_float(tmp, P_MIN, P_MAX, 16);
 
     tmp = (uint16_t)((rxbuff[3] << 4) | (rxbuff[4] >> 4));
-    measure->speed_aps = RAD_2_ANGLE * SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MAX, V_MIN, 12) +
+    measure->speed_aps = RAD_2_ANGLE * SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MIN, V_MAX, 12) +
                          (1 - SPEED_SMOOTH_COEF) * measure->speed_aps;
 
     tmp = (uint16_t)(((rxbuff[4] & 0x0f) << 8) | rxbuff[5]);
-    measure->real_current = CURRENT_SMOOTH_COEF * uint_to_float(tmp, T_MAX, T_MIN, 12) +
+    measure->real_current = CURRENT_SMOOTH_COEF * uint_to_float(tmp, T_MIN, T_MAX, 12) +
                             (1 - CURRENT_SMOOTH_COEF) * measure->real_current;
 }
 

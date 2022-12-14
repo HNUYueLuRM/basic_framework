@@ -55,14 +55,14 @@
 // 机器人状态
 typedef enum
 {
-    ROBOT_STOP,
+    ROBOT_STOP=0,
     ROBOT_READY,
 } Robot_Status_e;
 
 // 应用状态
 typedef enum
 {
-    APP_OFFLINE,
+    APP_OFFLINE=0,
     APP_ONLINE,
     APP_ERROR,
 } App_Status_e;
@@ -74,7 +74,7 @@ typedef enum
  */
 typedef enum
 {
-    CHASSIS_ZERO_FORCE,        // 电流零输入
+    CHASSIS_ZERO_FORCE=0,        // 电流零输入
     CHASSIS_ROTATE,            // 小陀螺模式
     CHASSIS_NO_FOLLOW,         // 不跟随，允许全向平移
     CHASSIS_FOLLOW_GIMBAL_YAW, // 跟随模式，底盘叠加角度环控制
@@ -83,7 +83,7 @@ typedef enum
 // 云台模式设置
 typedef enum
 {
-    GIMBAL_ZERO_FORCE, // 电流零输入
+    GIMBAL_ZERO_FORCE=0, // 电流零输入
     GIMBAL_FREE_MODE,  // 云台自由运动模式,即与底盘分离(底盘此时应为NO_FOLLOW)反馈值为电机total_angle;似乎可以改为全部用IMU数据?
     GIMBAL_GYRO_MODE,  // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
 } gimbal_mode_e;
@@ -91,24 +91,24 @@ typedef enum
 // 发射模式设置
 typedef enum
 {
-    SHOOT_ON = 0,
-    SHOOT_OFF,
+    SHOOT_OFF = 0,
+    SHOOT_ON,
 } shoot_mode_e;
 typedef enum
 {
-    FRICTION_OFF, // 摩擦轮关闭
+    FRICTION_OFF=0, // 摩擦轮关闭
     FRICTION_ON,  // 摩擦轮开启
 } friction_mode_e;
 
 typedef enum
 {
-    LID_CLOSE, // 弹舱盖打开
-    LID_OPEN,  // 弹舱盖关闭
+    LID_OPEN=0, // 弹舱盖打开
+    LID_CLOSE,  // 弹舱盖关闭
 } lid_mode_e;
 
 typedef enum
 {
-    LOAD_STOP,      // 停止发射
+    LOAD_STOP=0,      // 停止发射
     LOAD_REVERSE,   // 反转
     LOAD_1_BULLET,  // 单发
     LOAD_3_BULLET,  // 三发
