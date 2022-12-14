@@ -8,6 +8,7 @@
 #include "super_cap.h"
 #include "memory.h"
 #include "stdlib.h"
+
 static SuperCapInstance *super_cap_instance = NULL;
 
 static void SuperCapRxCallback(CANInstance *_instance)

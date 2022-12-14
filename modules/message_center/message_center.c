@@ -64,6 +64,8 @@ void SubscribeEvent(char *name, void **data_ptr)
     s_pptr[idx++] = data_ptr;
 }
 
+
+
 /* ----------------------------------链表-队列版的实现----------------------------------- */
 
 /* message_center是fake node,是方便链表编写的技巧,这样不需要处理链表头的特殊情况 */

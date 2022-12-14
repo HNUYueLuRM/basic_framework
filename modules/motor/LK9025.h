@@ -6,7 +6,7 @@
 #include "controller.h"
 #include "motor_def.h"
 
-#define LK_MOTOR_MX_CNT 4
+#define LK_MOTOR_MX_CNT 4 // 最多允许4个LK电机使用多电机指令,挂载在一条总线上
 
 #define I_MIN -2000
 #define I_MAX 2000
@@ -37,6 +37,8 @@ typedef struct
 
     float *other_angle_feedback_ptr; // 其他反馈来源的反馈数据指针
     float *other_speed_feedback_ptr;
+    float *speed_feedforward_ptr;
+    float *current_feedforward_ptr;
     PIDInstance current_PID;
     PIDInstance speed_PID;
     PIDInstance angle_PID;

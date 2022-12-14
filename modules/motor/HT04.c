@@ -89,15 +89,63 @@ void HTMotorSetRef(HTMotorInstance *motor, float ref)
 
 void HTMotorControl()
 {
+    static float set, pid_measure, pid_ref;
     static uint16_t tmp;
+    static HTMotorInstance *motor;
+    static HTMotor_Measure_t *measure;
+    static Motor_Control_Setting_s *setting;
+    static CANInstance *motor_can;
+
+    // 遍历所有电机实例,计算PID
     for (size_t i = 0; i < idx; i++)
-    {
-        // tmp=float_to_uint()
-        // _instance->motor_can_instace->rx_buff[6] = tmp >> 8;
-        // _instance->motor_can_instace->rx_buff[7] = tmp & 0xff;
-        // CANTransmit(_instance->motor_can_instace);
+    { // 先获取地址避免反复寻址
+        motor = ht_motor_info[i];
+        measure = &motor->motor_measure;
+        setting = &motor->motor_settings;
+        motor_can = motor_can;
+        pid_ref = motor->pid_ref;
+
+        if ((setting->close_loop_type & ANGLE_LOOP) && setting->outer_loop_type == ANGLE_LOOP)
+        {
+            if (setting->angle_feedback_source == OTHER_FEED)
+                pid_measure = *motor->other_angle_feedback_ptr;
+            else
+                pid_measure = measure->real_current;
+            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
+            if (setting->feedforward_flag & SPEED_FEEDFORWARD)
+                pid_ref += *motor->speed_feedforward_ptr;
+        }
+
+        if ((setting->close_loop_type & SPEED_LOOP) && setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP))
+        {
+            if (setting->angle_feedback_source == OTHER_FEED)
+                pid_measure = *motor->other_speed_feedback_ptr;
+            else
+                pid_measure = measure->speed_aps;
+            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
+            if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
+                pid_ref += *motor->current_feedforward_ptr;
+        }
+
+        if (setting->close_loop_type & CURRENT_LOOP)
+        {
+            pid_ref = PID_Calculate(&motor->current_PID, measure->real_current, pid_ref);
+        }
+
+        set = pid_ref;
+        if (setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
+            set *= -1;
+
+        tmp = float_to_uint(set, T_MIN, T_MAX, 12);
+        motor_can->tx_buff[6] = tmp >> 8;
+        motor_can->tx_buff[7] = tmp & 0xff;
+
+        if (motor->stop_flag == MOTOR_STOP)
+        { // 若该电机处于停止状态,直接将发送buff置零
+            memset(motor_can->tx_buff + 6, 0, sizeof(uint16_t));
+        }
+        CANTransmit(motor_can);
     }
-    
 }
 
 void HTMotorStop(HTMotorInstance *motor)

@@ -3,10 +3,6 @@
 #include "stdlib.h"
 #include "crc8.h"
 
-/* can_comm用于保存每个实例的指针数组,用于回调函数区分实例 */
-static CANCommInstance *can_comm_instance[MX_CAN_COMM_COUNT] = {NULL};
-static uint8_t idx; // 配合can_comm_instance的初始化使用,标识当前初始化的是哪一个实例
-
 /**
  * @brief 重置CAN comm的接收状态和buffer
  *
@@ -77,20 +73,20 @@ static void CANCommRxCallback(CANInstance *_instance)
 
 CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
 {
-    can_comm_instance[idx] = (CANCommInstance *)malloc(sizeof(CANCommInstance));
-    memset(can_comm_instance[idx], 0, sizeof(CANCommInstance));
-    can_comm_instance[idx]->recv_data_len = comm_config->recv_data_len;
-    can_comm_instance[idx]->recv_buf_len = comm_config->recv_data_len + CAN_COMM_OFFSET_BYTES;
-    can_comm_instance[idx]->send_data_len = comm_config->send_data_len;
-    can_comm_instance[idx]->send_buf_len = comm_config->send_data_len + CAN_COMM_OFFSET_BYTES;
-    can_comm_instance[idx]->raw_sendbuf[0] = CAN_COMM_HEADER;
-    can_comm_instance[idx]->raw_sendbuf[1] = comm_config->send_data_len;
-    can_comm_instance[idx]->raw_sendbuf[comm_config->send_data_len + CAN_COMM_OFFSET_BYTES - 1] = CAN_COMM_TAIL;
+    CANCommInstance* ins = (CANCommInstance *)malloc(sizeof(CANCommInstance));
+    memset(ins, 0, sizeof(CANCommInstance));
+    ins->recv_data_len = comm_config->recv_data_len;
+    ins->recv_buf_len = comm_config->recv_data_len + CAN_COMM_OFFSET_BYTES;
+    ins->send_data_len = comm_config->send_data_len;
+    ins->send_buf_len = comm_config->send_data_len + CAN_COMM_OFFSET_BYTES;
+    ins->raw_sendbuf[0] = CAN_COMM_HEADER;
+    ins->raw_sendbuf[1] = comm_config->send_data_len;
+    ins->raw_sendbuf[comm_config->send_data_len + CAN_COMM_OFFSET_BYTES - 1] = CAN_COMM_TAIL;
 
-    comm_config->can_config.id = can_comm_instance[idx];
+    comm_config->can_config.id = ins;
     comm_config->can_config.can_module_callback = CANCommRxCallback;
-    can_comm_instance[idx]->can_ins = CANRegister(&comm_config->can_config);
-    return can_comm_instance[idx++];
+    ins->can_ins = CANRegister(&comm_config->can_config);
+    return ins;
 }
 
 void CANCommSend(CANCommInstance *instance, uint8_t *data)

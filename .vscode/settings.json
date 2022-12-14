@@ -45,4 +45,5 @@
         "ht04.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "C_Cpp.intelliSenseEngineFallback": "enabled",
 }

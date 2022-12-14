@@ -37,8 +37,12 @@ typedef struct
     PIDInstance angle_PID;
     float *other_angle_feedback_ptr;
     float *other_speed_feedback_ptr;
+    float *speed_feedforward_ptr;
+    float *current_feedforward_ptr;
     float pid_ref;
 
+    Motor_Working_Type_e stop_flag; // 启停标志
+    
     CANInstance *motor_can_instace;
 } HTMotorInstance;
 

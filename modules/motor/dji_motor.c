@@ -242,7 +242,7 @@ void DJIMotorControl()
             }
 
             // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
-            if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type | (ANGLE_LOOP | SPEED_LOOP)))
+            if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
             {
                 if (motor_setting->speed_feedback_source == OTHER_FEED)
                     pid_measure = *motor_controller->other_speed_feedback_ptr;
