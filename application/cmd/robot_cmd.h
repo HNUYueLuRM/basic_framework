@@ -3,6 +3,6 @@
 
 void GimbalCMDInit();
 
-void GimbalCMDTask();
+void RobotCMDTask();
 
 #endif // !GIMBAL_CMD_H
