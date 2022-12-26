@@ -1,6 +1,5 @@
 #include "bsp_can.h"
 #include "main.h"
-#include <stdlib.h>
 #include "memory.h"
 
 /* can instance ptrs storage, used for recv callback */

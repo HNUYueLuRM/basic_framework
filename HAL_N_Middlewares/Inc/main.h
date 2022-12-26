@@ -59,8 +59,12 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define IMU_TEMP_Pin GPIO_PIN_8
 #define IMU_TEMP_GPIO_Port GPIOB
+#define MAG_RST_Pin GPIO_PIN_6
+#define MAG_RST_GPIO_Port GPIOG
 #define LED_R_Pin GPIO_PIN_12
 #define LED_R_GPIO_Port GPIOH
+#define MAG_DR_Pin GPIO_PIN_3
+#define MAG_DR_GPIO_Port GPIOG
 #define LED_G_Pin GPIO_PIN_11
 #define LED_G_GPIO_Port GPIOH
 #define LED_B_Pin GPIO_PIN_10
@@ -75,6 +79,7 @@ void Error_Handler(void);
 #define SERVO_GPIO_Port GPIOE
 #define CS1_GYRO_Pin GPIO_PIN_0
 #define CS1_GYRO_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

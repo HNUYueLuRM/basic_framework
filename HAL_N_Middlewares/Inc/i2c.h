@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    spi.h
+  * @file    i2c.h
   * @brief   This file contains all the function prototypes for
-  *          the spi.c file
+  *          the i2c.c file
   ******************************************************************************
   * @attention
   *
@@ -18,8 +18,8 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SPI_H__
-#define __SPI_H__
+#ifndef __I2C_H__
+#define __I2C_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,16 +32,16 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern SPI_HandleTypeDef hspi1;
+extern I2C_HandleTypeDef hi2c2;
 
-extern SPI_HandleTypeDef hspi2;
+extern I2C_HandleTypeDef hi2c3;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_SPI1_Init(void);
-void MX_SPI2_Init(void);
+void MX_I2C2_Init(void);
+void MX_I2C3_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
@@ -51,5 +51,5 @@ void MX_SPI2_Init(void);
 }
 #endif
 
-#endif /* __SPI_H__ */
+#endif /* __I2C_H__ */
 
