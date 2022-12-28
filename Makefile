@@ -102,8 +102,11 @@ HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_printf.c \
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT.c \
 bsp/bsp_dwt.c \
+bsp/bsp_pwm.c \
 bsp/bsp_temperature.c \
 bsp/bsp_led.c \
+bsp/bsp_spi.c \
+bsp/bsp_iic.c \
 bsp/bsp_can.c \
 bsp/bsp_buzzer.c \
 bsp/bsp_usart.c \
