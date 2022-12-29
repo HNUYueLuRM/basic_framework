@@ -317,7 +317,7 @@ uint8_t bmi088_gyro_init(void)
 
 void BMI088_Read(IMU_Data_t *bmi088)
 {
-    static uint8_t buf[8] = {0, 0, 0, 0, 0, 0};
+    static uint8_t buf[8] = {0};
     static int16_t bmi088_raw_temp;
     static float dt = 1.0;
     static uint8_t first_read_flag = 0;

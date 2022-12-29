@@ -39,6 +39,7 @@ BUILD_DIR = build
 C_SOURCES =  \
 HAL_N_Middlewares/Src/main.c \
 HAL_N_Middlewares/Src/gpio.c \
+HAL_N_Middlewares/Src/i2c.c \
 HAL_N_Middlewares/Src/adc.c \
 HAL_N_Middlewares/Src/can.c \
 HAL_N_Middlewares/Src/dma.c \
@@ -64,6 +65,8 @@ HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c \
@@ -99,8 +102,11 @@ HAL_N_Middlewares/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_printf.c \
 HAL_N_Middlewares/Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT.c \
 bsp/bsp_dwt.c \
+bsp/bsp_pwm.c \
 bsp/bsp_temperature.c \
 bsp/bsp_led.c \
+bsp/bsp_spi.c \
+bsp/bsp_iic.c \
 bsp/bsp_can.c \
 bsp/bsp_buzzer.c \
 bsp/bsp_usart.c \

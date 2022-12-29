@@ -29,7 +29,7 @@ void RobotInit()
 void RobotTask()
 {
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
-    GimbalCMDTask();
+    RobotCMDTask();
     GimbalTask();
     ShootTask();
 #endif
