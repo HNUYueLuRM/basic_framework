@@ -17,24 +17,32 @@ typedef enum
 /* SPI实例结构体定义 */
 typedef struct spi_ins_temp
 {
-    SPI_HandleTypeDef *spi_handle;           // SPI外设handle
-    GPIO_TypeDef *GPIO_cs;                   // 片选信号对应的GPIO,如GPIOA,GPIOB等等
-    uint16_t cs_pin;                         // 片选信号对应的引脚号,GPIO_PIN_1,GPIO_PIN_2等等
+    SPI_HandleTypeDef *spi_handle; // SPI外设handle
+    GPIO_TypeDef *GPIO_cs;         // 片选信号对应的GPIO,如GPIOA,GPIOB等等
+    uint16_t cs_pin;               // 片选信号对应的引脚号,GPIO_PIN_1,GPIO_PIN_2等等
+
     SPI_TXRX_MODE_e spi_work_mode;           // 传输工作模式
+    uint8_t rx_size;                         // 本次接收的数据长度
+    uint8_t *rx_buffer;                      // 本次接收的数据缓冲区
     void (*callback)(struct spi_ins_temp *); // 接收回调函数
+
+    void *id; // 模块指针
 } SPIInstance;
 
 /* rx data resolve callback*/
 typedef void (*spi_rx_callback)(SPIInstance *);
 
-/* SPI初始化配置,其实和SPIIstance一模一样,为了代码风格统一因此再次定义 */
+/* SPI初始化配置,其实基本和SPIIstance一模一样,为了代码风格统一因此再次定义 */
 typedef struct
 {
     SPI_HandleTypeDef *spi_handle; // SPI外设handle
     GPIO_TypeDef *GPIO_cs;         // 片选信号对应的GPIO,如GPIOA,GPIOB等等
     uint16_t cs_pin;               // 片选信号对应的引脚号,GPIO_PIN_1,GPIO_PIN_2等等
+
     SPI_TXRX_MODE_e spi_work_mode; // 传输工作模式
-    spi_rx_callback callback;      // 接收回调函数
+
+    spi_rx_callback callback; // 接收回调函数
+    void *id;                 // 模块指针
 } SPI_Init_Config_s;
 
 /**
@@ -78,5 +86,8 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
  *
  * @param spi_ins spi实例指针
  * @param spi_mode 工作模式,包括阻塞模式(block),中断模式(IT),DMA模式.详见SPI_TXRX_MODE_e的定义
+ * @param force_set_flag 强制设置标志,当该标志为1时,强制停止当前spi的收发,并切换到新的工作模式;
+ *                       当该标志为0时,如果当前spi正在收发,则不会切换工作模式,等待传输完成后切换.
+ * @todo HAL已经提供了防止重入的机制,因此强制设置标志可以去掉,也不需要再判断spi是否正在收发
  */
 void SPISetMode(SPIInstance *spi_ins, SPI_TXRX_MODE_e spi_mode);

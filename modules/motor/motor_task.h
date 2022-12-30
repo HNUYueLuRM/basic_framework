@@ -11,14 +11,10 @@
 #ifndef MOTOR_TASK_H
 #define MOTOR_TASK_H
 
-#include "LK9025.h"
-#include "HT04.h"
-#include "dji_motor.h"
 
-// 舵机控制任务的频率设定为20Hz或更低
-// 开关式的舵机控制不应该放在该函数中
 /**
- * @brief 
+ * @brief 电机控制闭环任务,在RTOS中应该设定为1Khz运行
+ *        舵机控制任务的频率设定为20Hz或更低
  * 
  */
 void MotorControlTask();

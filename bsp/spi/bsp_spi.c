@@ -15,11 +15,16 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
     for (size_t i = 0; i < idx; i++)
     {
-        if (spi_instance[i]->spi_handle == hspi && spi_instance[i]->callback)
+        // 如果是当前spi硬件发出的complete,且cs_pin为低电平(说明正在传输),则尝试调用回调函数
+        if (spi_instance[i]->spi_handle == hspi &&
+            HAL_GPIO_ReadPin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin) == GPIO_PIN_RESET)
         {
-            // 拉高片选(关闭传输),调用解析回调函数
-            HAL_GPIO_WritePin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin, GPIO_PIN_SET);
-            spi_instance[i]->callback(spi_instance[i]);
+            if (spi_instance[i]->callback) // 回调函数不为空, 则调用回调函数
+            {
+                // 先拉高片选,结束传输
+                HAL_GPIO_WritePin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin, GPIO_PIN_SET);
+                spi_instance[i]->callback(spi_instance[i]);
+            }
             break;
         }
     }
@@ -41,6 +46,9 @@ SPIInstance *SPIRegister(SPI_Init_Config_s *conf)
     spi_instance[idx]->callback = conf->callback;
     spi_instance[idx]->spi_work_mode = conf->spi_work_mode;
     spi_instance[idx]->spi_handle = conf->spi_handle;
+    spi_instance[idx]->GPIO_cs = conf->GPIO_cs;
+    spi_instance[idx]->cs_pin = conf->cs_pin;
+    spi_instance[idx]->id = conf->id;
     return spi_instance[idx++];
 }
 
@@ -70,6 +78,9 @@ void SPITransmit(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
 
 void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
 {
+    // 用于稍后回调使用
+    spi_ins->rx_size = len;
+    spi_ins->rx_buffer = ptr_data;
     // 拉低片选,开始传输
     HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_RESET);
     switch (spi_ins->spi_work_mode)
@@ -94,6 +105,9 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
 
 void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len)
 {
+    // 用于稍后回调使用
+    spi_ins->rx_size = len;
+    spi_ins->rx_buffer = ptr_data_rx;
     // 拉低片选,开始传输
     HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_RESET);
     switch (spi_ins->spi_work_mode)
@@ -118,26 +132,12 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
 
 void SPISetMode(SPIInstance *spi_ins, SPI_TXRX_MODE_e spi_mode)
 {
+    if (spi_mode != SPI_DMA_MODE && spi_mode != SPI_IT_MODE && spi_mode != SPI_BLOCK_MODE)
+        while (1)
+            ; // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
+
     if (spi_ins->spi_work_mode != spi_mode)
     {
-        switch (spi_ins->spi_work_mode)
-        {
-        case SPI_IT_MODE:
-        case SPI_DMA_MODE:
-            // IT和DMA处理相同,都是先终止传输,防止传输未完成直接切换导致spi死机
-            HAL_SPI_Abort_IT(spi_ins->spi_handle);
-            HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_SET); // 关闭后拉高片选
-            break;
-        case SPI_BLOCK_MODE:
-            // 阻塞模式仍然有可能在多线程的情况下出现传输到一半切换,因此先终止
-            HAL_SPI_Abort(spi_ins->spi_handle);
-            HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_SET); // 关闭后拉高片选
-            break;
-        default:
-            while (1)
-                ; // error mode! 请查看是否正确设置模式，或出现指针越界导致模式被异常修改的情况
-            break;
-        }
         spi_ins->spi_work_mode = spi_mode;
     }
 }
