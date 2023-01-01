@@ -26,6 +26,7 @@ SuperCapInstance *SuperCapInit(SuperCap_Init_Config_s *supercap_config)
 {
     super_cap_instance = (SuperCapInstance *)malloc(sizeof(SuperCapInstance));
     memset(super_cap_instance, 0, sizeof(SuperCapInstance));
+    
     supercap_config->can_config.can_module_callback = SuperCapRxCallback;
     super_cap_instance->can_ins = CANRegister(&supercap_config->can_config);
     return super_cap_instance;

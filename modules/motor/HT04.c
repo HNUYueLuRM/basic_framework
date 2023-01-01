@@ -3,7 +3,7 @@
 #include "general_def.h"
 
 static uint8_t idx;
-HTMotorInstance *ht_motor_info[HT_MOTOR_CNT];
+HTMotorInstance *ht_motor_instance[HT_MOTOR_CNT];
 
 /**
  * @brief
@@ -45,7 +45,7 @@ static void HTMotorDecode(CANInstance *motor_can)
     static uint8_t *rxbuff;
 
     rxbuff = motor_can->rx_buff;
-    measure = &((HTMotorInstance *)motor_can->id)->motor_measure;
+    measure = &((HTMotorInstance *)motor_can->id)->motor_measure; // 将can实例中保存的id转换成电机实例的指针
 
     measure->last_angle = measure->total_angle;
 
@@ -63,23 +63,23 @@ static void HTMotorDecode(CANInstance *motor_can)
 
 HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config)
 {
+    HTMotorInstance *motor = (HTMotorInstance *)malloc(sizeof(HTMotorInstance));
+    memset(motor, 0, sizeof(HTMotorInstance));
 
-    ht_motor_info[idx] = (HTMotorInstance *)malloc(sizeof(HTMotorInstance));
-    memset(ht_motor_info[idx], 0, sizeof(HTMotorInstance));
-
-    ht_motor_info[idx]->motor_settings = config->controller_setting_init_config;
-    PID_Init(&ht_motor_info[idx]->current_PID, &config->controller_param_init_config.current_PID);
-    PID_Init(&ht_motor_info[idx]->speed_PID, &config->controller_param_init_config.speed_PID);
-    PID_Init(&ht_motor_info[idx]->angle_PID, &config->controller_param_init_config.angle_PID);
-    ht_motor_info[idx]->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
-    ht_motor_info[idx]->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
+    motor->motor_settings = config->controller_setting_init_config;
+    PID_Init(&motor->current_PID, &config->controller_param_init_config.current_PID);
+    PID_Init(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
+    PID_Init(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
+    motor->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
+    motor->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
     config->can_init_config.can_module_callback = HTMotorDecode;
-    config->can_init_config.id = ht_motor_info[idx];
-    ht_motor_info[idx]->motor_can_instace = CANRegister(&config->can_init_config);
+    config->can_init_config.id = motor;
+    motor->motor_can_instace = CANRegister(&config->can_init_config);
 
-    HTMotorEnable(ht_motor_info[idx]);
-    return ht_motor_info[idx++];
+    HTMotorEnable(motor);
+    ht_motor_instance[idx++] = motor;
+    return motor;
 }
 
 void HTMotorSetRef(HTMotorInstance *motor, float ref)
@@ -99,7 +99,7 @@ void HTMotorControl()
     // 遍历所有电机实例,计算PID
     for (size_t i = 0; i < idx; i++)
     { // 先获取地址避免反复寻址
-        motor = ht_motor_info[i];
+        motor = ht_motor_instance[i];
         measure = &motor->motor_measure;
         setting = &motor->motor_settings;
         motor_can = motor_can;

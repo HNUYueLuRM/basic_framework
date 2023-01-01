@@ -16,7 +16,7 @@ static void CANCommResetRx(CANCommInstance *ins)
 }
 
 /**
- * @brief
+ * @brief cancomm的接收回调函数
  *
  * @param _instance
  */
@@ -66,7 +66,7 @@ static void CANCommRxCallback(CANInstance *_instance)
                 CANCommResetRx(comm);
                 return; // 重置状态然后返回
             }
-            return; // 访问完一个can comm直接退出,一次中断只会也只可能会处理一个实例的回调
+            return; // 访问完一个can comm直接退出,一次中断只处理一个实例的回调
         }
     }
 }

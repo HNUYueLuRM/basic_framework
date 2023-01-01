@@ -25,7 +25,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
                 HAL_GPIO_WritePin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin, GPIO_PIN_SET);
                 spi_instance[i]->callback(spi_instance[i]);
             }
-            break;
+            return;
         }
     }
 }
@@ -42,14 +42,17 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 
 SPIInstance *SPIRegister(SPI_Init_Config_s *conf)
 {
-    spi_instance[idx] = (SPIInstance *)malloc(sizeof(SPIInstance));
-    spi_instance[idx]->callback = conf->callback;
-    spi_instance[idx]->spi_work_mode = conf->spi_work_mode;
-    spi_instance[idx]->spi_handle = conf->spi_handle;
-    spi_instance[idx]->GPIO_cs = conf->GPIO_cs;
-    spi_instance[idx]->cs_pin = conf->cs_pin;
-    spi_instance[idx]->id = conf->id;
-    return spi_instance[idx++];
+    SPIInstance *instance = (SPIInstance *)malloc(sizeof(SPIInstance));
+    memset(instance, 0, sizeof(SPIInstance));
+    instance->spi_handle = conf->spi_handle;
+    instance->GPIO_cs = conf->GPIO_cs;
+    instance->cs_pin = conf->cs_pin;
+    instance->spi_work_mode = conf->spi_work_mode;
+    instance->callback = conf->callback;
+    instance->id = conf->id;
+
+    spi_instance[idx++] = instance;
+    return instance;
 }
 
 void SPITransmit(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)

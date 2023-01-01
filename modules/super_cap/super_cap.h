@@ -28,8 +28,6 @@ typedef struct
 typedef struct
 {
     CAN_Init_Config_s can_config;
-    uint8_t send_data_len;
-    uint8_t recv_data_len;
 } SuperCap_Init_Config_s;
 
 SuperCapInstance *SuperCapInit(SuperCap_Init_Config_s *supercap_config);

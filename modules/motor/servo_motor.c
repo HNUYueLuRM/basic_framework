@@ -1,22 +1,26 @@
 #include "servo_motor.h"
+#include "stdlib.h"
+#include "memory.h"
 
 extern TIM_HandleTypeDef htim1;
 /*第二版*/
-static ServoInstance *servo_motor[SERVO_MOTOR_CNT] = {NULL};
-static int16_t compare_value[SERVO_MOTOR_CNT]={0};
+static ServoInstance *servo_motor_instance[SERVO_MOTOR_CNT] = {NULL};
+static int16_t compare_value[SERVO_MOTOR_CNT] = {0};
 static uint8_t servo_idx = 0; // register servo_idx,是该文件的全局舵机索引,在注册时使用
 
 // 通过此函数注册一个舵机
 ServoInstance *ServoInit(Servo_Init_Config_s *Servo_Init_Config)
 {
-    servo_motor[servo_idx] = (ServoInstance *)malloc(sizeof(ServoInstance));
-    memset(servo_motor[servo_idx], 0, sizeof(ServoInstance));
-    servo_motor[servo_idx]->Servo_type = Servo_Init_Config->Servo_type;
-    servo_motor[servo_idx]->htim = Servo_Init_Config->htim;
-    servo_motor[servo_idx]->Channel = Servo_Init_Config->Channel;
-    HAL_TIM_Base_Start(Servo_Init_Config->htim);
+    ServoInstance *servo = (ServoInstance *)malloc(sizeof(ServoInstance));
+    memset(servo, 0, sizeof(ServoInstance));
+
+    servo->Servo_type = Servo_Init_Config->Servo_type;
+    servo->htim = Servo_Init_Config->htim;
+    servo->Channel = Servo_Init_Config->Channel;
+
     HAL_TIM_PWM_Start(Servo_Init_Config->htim, Servo_Init_Config->Channel);
-    return servo_motor[servo_idx++];
+    servo_motor_instance[servo_idx++] = servo;
+    return servo;
 }
 
 /**
@@ -63,15 +67,14 @@ void Servo_Motor_StartSTOP_Angle_Set(ServoInstance *Servo_Motor, int16_t Start_a
 }
 /**
  * @brief 舵机模式选择
- * 
+ *
  * @param Servo_Motor 注册的舵机实例
  * @param mode 需要选择的模式
  */
-void Servo_Motor_Type_Select(ServoInstance *Servo_Motor,int16_t mode)
+void Servo_Motor_Type_Select(ServoInstance *Servo_Motor, int16_t mode)
 {
     Servo_Motor->Servo_Angle_Type = mode;
 }
-
 
 /**
  * @brief 舵机输出控制
@@ -84,9 +87,9 @@ void Servo_Motor_Control()
 
     for (size_t i = 0; i < servo_idx; i++)
     {
-        if (servo_motor[i])
+        if (servo_motor_instance[i])
         {
-            Servo_Motor = servo_motor[i];
+            Servo_Motor = servo_motor_instance[i];
             Servo_type = Servo_Motor->Servo_type;
 
             switch (Servo_type)

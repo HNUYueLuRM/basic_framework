@@ -1,21 +1,23 @@
 #include "daemon.h"
 #include "bsp_dwt.h" // 后续通过定时器来计时?
 #include "stdlib.h"
+#include "memory.h"
 
+// 用于保存所有的daemon instance
 static DaemonInstance *daemon_instances[DAEMON_MX_CNT] = {NULL};
-static uint8_t idx;
+static uint8_t idx; // 用于记录当前的daemon instance数量,配合回调使用
 
 DaemonInstance *DaemonRegister(Daemon_Init_Config_s *config)
 {
-    
-    daemon_instances[idx] = (DaemonInstance *)malloc(sizeof(DaemonInstance));
+    DaemonInstance *instance = (DaemonInstance *)malloc(sizeof(DaemonInstance));
+    memset(instance, 0, sizeof(DaemonInstance));
 
-    daemon_instances[idx]->reload_count = config->reload_count;
-    daemon_instances[idx]->callback = config->callback;
-    daemon_instances[idx]->owner_id = config->id;
-    daemon_instances[idx]->temp_count = config->reload_count;
+    instance->owner_id = config->owner_id;
+    instance->reload_count = config->reload_count;
+    instance->callback = config->callback;
 
-    return daemon_instances[idx++];
+    daemon_instances[idx++] = instance;
+    return instance;
 }
 
 void DaemonReload(DaemonInstance *instance)
@@ -25,20 +27,20 @@ void DaemonReload(DaemonInstance *instance)
 
 uint8_t DaemonIsOnline(DaemonInstance *instance)
 {
-    return instance->temp_count>0;
+    return instance->temp_count > 0;
 }
 
 void DaemonTask()
 {
-    static DaemonInstance* pins; //提高可读性同时降低访存开销
+    static DaemonInstance *dins; // 提高可读性同时降低访存开销
     for (size_t i = 0; i < idx; ++i)
     {
-        pins=daemon_instances[i];
-        if(pins->temp_count>0)
-            pins->temp_count--;
-        else if(pins->callback)
-        {   // 每个module根据自身的offline callback进行调用
-            pins->callback(pins->owner_id); // module将owner_id强制类型转换成自身类型
+        dins = daemon_instances[i];
+        if (dins->temp_count > 0)
+            dins->temp_count--;
+        else if (dins->callback) // 如果有callback
+        {
+            dins->callback(dins->owner_id); // module内可以将owner_id强制类型转换成自身类型从而调用自身的offline callback
         }
     }
 }

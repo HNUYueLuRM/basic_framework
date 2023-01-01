@@ -5,7 +5,7 @@
 
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
-static CANInstance *instance[MX_REGISTER_DEVICE_CNT] = {NULL};
+static CANInstance *can_instance[MX_REGISTER_DEVICE_CNT] = {NULL};
 static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
 
 /* ----------------two static function called by CANRegister()-------------------- */
@@ -67,22 +67,24 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     {
         CANServiceInit(); // 第一次注册,先进行硬件初始化
     }
-    instance[idx] = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
-    memset(instance[idx], 0, sizeof(CANInstance));
+    CANInstance *instance = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
+    memset(instance, 0, sizeof(CANInstance));
     // 进行发送报文的配置
-    instance[idx]->txconf.StdId = config->tx_id;
-    instance[idx]->txconf.IDE = CAN_ID_STD;
-    instance[idx]->txconf.RTR = CAN_RTR_DATA;
-    instance[idx]->txconf.DLC = 0x08; // 默认发送长度为8
+    instance->txconf.StdId = config->tx_id;
+    instance->txconf.IDE = CAN_ID_STD;
+    instance->txconf.RTR = CAN_RTR_DATA;
+    instance->txconf.DLC = 0x08; // 默认发送长度为8
     // 设置回调函数和接收发送id
-    instance[idx]->can_handle = config->can_handle;
-    instance[idx]->tx_id = config->tx_id; // 好像没用,可以删掉
-    instance[idx]->rx_id = config->rx_id;
-    instance[idx]->can_module_callback = config->can_module_callback;
-    instance[idx]->id = config->id;
+    instance->can_handle = config->can_handle;
+    instance->tx_id = config->tx_id; // 好像没用,可以删掉
+    instance->rx_id = config->rx_id;
+    instance->can_module_callback = config->can_module_callback;
+    instance->id = config->id;
 
-    CANAddFilter(instance[idx]); // 添加CAN过滤器规则
-    return instance[idx++];      // 返回指针
+    CANAddFilter(instance);         // 添加CAN过滤器规则
+    can_instance[idx++] = instance; // 将实例保存到can_instance中
+
+    return instance; // 返回can实例指针
 }
 
 /* TODO:目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
@@ -117,17 +119,16 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
     static CAN_RxHeaderTypeDef rxconf;
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff);
     for (size_t i = 0; i < idx; ++i)
-    {
-        // 两者相等说明这是要找的实例
-        if (_hcan == instance[i]->can_handle && rxconf.StdId == instance[i]->rx_id)
+    { // 两者相等说明这是要找的实例
+        if (_hcan == can_instance[i]->can_handle && rxconf.StdId == can_instance[i]->rx_id)
         {
-            instance[i]->rx_len = rxconf.DLC;
-            memcpy(instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
-            if (instance[i]->can_module_callback != NULL)
+            if (can_instance[i]->can_module_callback != NULL)
             {
-                instance[i]->can_module_callback(instance[i]); // 触发回调进行数据解析和处理
+                can_instance[i]->rx_len = rxconf.DLC;                      // 保存接收到的数据长度
+                memcpy(can_instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
+                can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
             }
-            break;
+            return;
         }
     }
 }

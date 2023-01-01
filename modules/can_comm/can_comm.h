@@ -26,16 +26,16 @@ typedef struct
 {
     CANInstance *can_ins;
     /* 发送部分 */
-    uint8_t send_data_len;
-    uint8_t send_buf_len;
+    uint8_t send_data_len; // 发送数据长度
+    uint8_t send_buf_len;  // 发送缓冲区长度,为发送数据长度+帧头单包数据长度帧尾以及校验和(4)
     uint8_t raw_sendbuf[CAN_COMM_MAX_BUFFSIZE + CAN_COMM_OFFSET_BYTES]; // 额外4个bytes保存帧头帧尾和校验和
     /* 接收部分 */
-    uint8_t recv_data_len;
-    uint8_t recv_buf_len;
+    uint8_t recv_data_len; // 接收数据长度
+    uint8_t recv_buf_len;  // 接收缓冲区长度,为接收数据长度+帧头单包数据长度帧尾以及校验和(4)
     uint8_t raw_recvbuf[CAN_COMM_MAX_BUFFSIZE + CAN_COMM_OFFSET_BYTES]; // 额外4个bytes保存帧头帧尾和校验和
     uint8_t unpacked_recv_data[CAN_COMM_MAX_BUFFSIZE];                  // 解包后的数据,调用CANCommGet()后cast成对应的类型通过指针读取即可
     /* 接收和更新标志位*/
-    uint8_t recv_state;
+    uint8_t recv_state; // 接收状态,
     uint8_t cur_recv_len;
     uint8_t update_flag;
 } CANCommInstance;

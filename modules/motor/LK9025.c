@@ -11,7 +11,7 @@ static void LKMotorDecode(CANInstance *_instance)
     static LKMotor_Measure_t *measure;
     static uint8_t *rx_buff;
     rx_buff = _instance->rx_buff;
-    measure = &((LKMotorInstance *)_instance)->measure;
+    measure = &((LKMotorInstance *)_instance)->measure; // 通过caninstance保存的id获取对应的motorinstance
 
     measure->last_ecd = measure->ecd;
     measure->ecd = (uint16_t)((rx_buff[7] << 8) | rx_buff[6]);
@@ -36,26 +36,27 @@ static void LKMotorDecode(CANInstance *_instance)
 
 LKMotorInstance *LKMotroInit(Motor_Init_Config_s *config)
 {
-    lkmotor_instance[idx] = (LKMotorInstance *)malloc(sizeof(LKMotorInstance));
-    memset(lkmotor_instance[idx], 0, sizeof(LKMotorInstance));
+    LKMotorInstance *motor = (LKMotorInstance *)malloc(sizeof(LKMotorInstance));
+    motor = (LKMotorInstance *)malloc(sizeof(LKMotorInstance));
+    memset(motor, 0, sizeof(LKMotorInstance));
 
-    lkmotor_instance[idx]->motor_settings = config->controller_setting_init_config;
-    PID_Init(&lkmotor_instance[idx]->current_PID, &config->controller_param_init_config.current_PID);
-    PID_Init(&lkmotor_instance[idx]->speed_PID, &config->controller_param_init_config.speed_PID);
-    PID_Init(&lkmotor_instance[idx]->angle_PID, &config->controller_param_init_config.angle_PID);
-    lkmotor_instance[idx]->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
-    lkmotor_instance[idx]->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
+    motor->motor_settings = config->controller_setting_init_config;
+    PID_Init(&motor->current_PID, &config->controller_param_init_config.current_PID);
+    PID_Init(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
+    PID_Init(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
+    motor->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
+    motor->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
-    config->can_init_config.id = lkmotor_instance[idx];
+    config->can_init_config.id = motor;
     config->can_init_config.can_module_callback = LKMotorDecode;
     config->can_init_config.rx_id = 0x140 + config->can_init_config.tx_id;
     config->can_init_config.tx_id = config->can_init_config.tx_id + 0x280;
-    lkmotor_instance[idx]->motor_can_ins = CANRegister(&config->can_init_config);
+    motor->motor_can_ins = CANRegister(&config->can_init_config);
 
     if (idx == 0)
-        sender_instance = lkmotor_instance[idx]->motor_can_ins;
+        sender_instance = motor->motor_can_ins;
 
-    LKMotorEnable(lkmotor_instance[idx]);
+    LKMotorEnable(motor);
     return lkmotor_instance[idx++];
 }
 

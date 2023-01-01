@@ -37,16 +37,18 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 IICInstance *IICRegister(IIC_Init_Config_s *conf)
 {
     // 申请到的空间未必是0, 所以需要手动初始化
-    iic_instance[idx] = (IICInstance *)malloc(sizeof(IICInstance));
-    memset(iic_instance[idx], 0, sizeof(IICInstance));
+    IICInstance *instance = (IICInstance *)malloc(sizeof(IICInstance));
+    instance = (IICInstance *)malloc(sizeof(IICInstance));
+    memset(instance, 0, sizeof(IICInstance));
 
-    iic_instance[idx]->dev_address = conf->dev_address;
-    iic_instance[idx]->callback = conf->callback;
-    iic_instance[idx]->work_mode = conf->work_mode;
-    iic_instance[idx]->handle = conf->handle;
-    iic_instance[idx]->id = conf->id;
+    instance->dev_address = conf->dev_address;
+    instance->callback = conf->callback;
+    instance->work_mode = conf->work_mode;
+    instance->handle = conf->handle;
+    instance->id = conf->id;
 
-    return iic_instance[idx++];
+    iic_instance[idx++] = instance;
+    return instance;
 }
 
 void IICSetMode(IICInstance *iic, IIC_Work_Mode_e mode)
