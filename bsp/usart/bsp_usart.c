@@ -42,6 +42,7 @@ USARTInstance *USARTRegister(USART_Init_Config_s *init_config)
     instance->module_callback = init_config->module_callback;
 
     usart_instance[idx++] = instance;
+    USARTServiceInit(instance);
     return instance;
 }
 

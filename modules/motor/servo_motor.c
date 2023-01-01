@@ -83,32 +83,30 @@ void Servo_Motor_Type_Select(ServoInstance *Servo_Motor, int16_t mode)
 void Servo_Motor_Control()
 {
     static ServoInstance *Servo_Motor;
-    static Servo_Type_e Servo_type;
 
     for (size_t i = 0; i < servo_idx; i++)
     {
         if (servo_motor_instance[i])
         {
             Servo_Motor = servo_motor_instance[i];
-            Servo_type = Servo_Motor->Servo_type;
 
-            switch (Servo_type)
+            switch (Servo_Motor->Servo_type)
             {
             case Servo180:
-                if (Servo_Motor->Servo_type == Start_mode)
+                if (Servo_Motor->Servo_Angle_Type == Start_mode)
                     compare_value[i] = 0.5 * 20000 / 20 + Servo_Motor->Servo_Angle.Init_angle * 20000 / 20 / 90;
-                if (Servo_Motor->Servo_type == Final_mode)
+                if (Servo_Motor->Servo_Angle_Type == Final_mode)
                     compare_value[i] = 0.5 * 20000 / 20 + Servo_Motor->Servo_Angle.Final_angle * 20000 / 20 / 90;
-                if (Servo_Motor->Servo_type == Free_Angle_mode)
+                if (Servo_Motor->Servo_Angle_Type == Free_Angle_mode)
                     compare_value[i] = 0.5 * 20000 / 20 + Servo_Motor->Servo_Angle.free_angle * 20000 / 20 / 90;
                 __HAL_TIM_SET_COMPARE(Servo_Motor->htim, Servo_Motor->Channel, compare_value[i]);
                 break;
             case Servo270:
-                if (Servo_Motor->Servo_type == Start_mode)
+                if (Servo_Motor->Servo_Angle_Type == Start_mode)
                     compare_value[i] = 0.5 * 20000 / 20 + Servo_Motor->Servo_Angle.Init_angle * 20000 / 20 / 135;
-                if (Servo_Motor->Servo_type == Final_mode)
+                if (Servo_Motor->Servo_Angle_Type == Final_mode)
                     compare_value[i] = 0.5 * 20000 / 20 + Servo_Motor->Servo_Angle.Final_angle * 20000 / 20 / 135;
-                if (Servo_Motor->Servo_type == Free_Angle_mode)
+                if (Servo_Motor->Servo_Angle_Type == Free_Angle_mode)
                     compare_value[i] = 0.5 * 20000 / 20 + Servo_Motor->Servo_Angle.free_angle * 20000 / 20 / 135;
                 __HAL_TIM_SET_COMPARE(Servo_Motor->htim, Servo_Motor->Channel, compare_value[i]);
                 break;
