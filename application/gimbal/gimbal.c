@@ -91,6 +91,7 @@ void GimbalInit()
     gimbal_sub = SubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));
 }
 
+/* 机器人云台控制核心任务,后续考虑只保留IMU控制,不再需要电机的反馈 */
 void GimbalTask()
 {
     // 获取云台控制数据
@@ -106,7 +107,7 @@ void GimbalTask()
         DJIMotorStop(pitch_motor);
         break;
     // 使用陀螺仪的反馈,底盘根据yaw电机的offset跟随云台或视觉模式采用
-    case GIMBAL_GYRO_MODE:
+    case GIMBAL_GYRO_MODE: // 后续只保留此模式
         DJIMotorEnable(yaw_motor);
         DJIMotorEnable(pitch_motor);
         DJIMotorChangeFeed(yaw_motor, ANGLE_LOOP, OTHER_FEED);
@@ -117,7 +118,7 @@ void GimbalTask()
         DJIMotorSetRef(pitch_motor, gimbal_cmd_recv.pitch);
         break;
     // 云台自由模式,使用编码器反馈,底盘和云台分离,仅云台旋转,一般用于调整云台姿态(英雄吊射等)/能量机关
-    case GIMBAL_FREE_MODE:
+    case GIMBAL_FREE_MODE: // 后续删除,或加入云台追地盘的跟随模式(响应速度更快)
         DJIMotorEnable(yaw_motor);
         DJIMotorEnable(pitch_motor);
         DJIMotorChangeFeed(yaw_motor, ANGLE_LOOP, MOTOR_FEED);
@@ -131,7 +132,7 @@ void GimbalTask()
         break;
     }
 
-    // 设置反馈数据
+    // 设置反馈数据,主要是imu和yaw的ecd
     gimbal_feedback_data.gimbal_imu_data = *Gimbal_IMU_data;
     gimbal_feedback_data.yaw_motor_single_round_angle = yaw_motor->motor_measure.angle_single_round;
 

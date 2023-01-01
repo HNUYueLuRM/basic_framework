@@ -34,6 +34,9 @@ static void USARTServiceInit(USARTInstance *_instance)
 
 USARTInstance *USARTRegister(USART_Init_Config_s *init_config)
 {
+    if (idx >= DEVICE_USART_CNT) // 超过最大实例数
+        while (1)
+            ;
     USARTInstance *instance = (USARTInstance *)malloc(sizeof(USARTInstance));
     memset(instance, 0, sizeof(USARTInstance));
 

@@ -13,7 +13,6 @@
 #include "usart.h"
 #include "seasky_protocol.h"
 
-/* use usart1 as vision communication*/
 static Vision_Recv_s recv_data;
 // @todo:由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务,或由IMU采集完成产生的中断唤醒的任务,
 // 使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
@@ -58,7 +57,8 @@ void VisionSend(Vision_Send_s *send)
     static uint8_t send_buff[VISION_SEND_SIZE];
     static uint16_t tx_len;
     // TODO: code to set flag_register
-
+    
+    // 将数据转化为seasky协议的数据包
     get_protocol_send_data(0x02, flag_register, &send->yaw, 3, send_buff, &tx_len);
     USARTSend(vision_usart_instance, send_buff, tx_len);
 }

@@ -197,24 +197,27 @@ Module层主要存放的是类型定义和实例指针数组，在该层没有�
 板级支持包的每个组件,每个moduel,每个app都有对应的说明文档.
 ```shell
 ROOT:.
-│  .gitignore             # git版本管理忽略文件
-│  .mxproject			  # CubeMX项目文件
-│  basic_framework.ioc	  # CubeMX初始化配置文件
-│  Makefile               # 编译管理文件,为make(mingw32-make)命令的目标
-│  openocd_dap.cfg		  # 用于OpenOCD调试使用的配置文件
-│  openocd_jlink.cfg	  # 同上
-│  README.md              # 本说明文档
+│  .gitignore # git版本管理忽略文件
+│  .mxproject # CubeMX项目文件
+│  basic_framework.ioc # CubeMX初始化配置文件
+│  LICENSE # 开源协议文件
+│  Makefile # 编译管理文件,为make(mingw32-make)命令的目标
+│  openocd_dap.cfg # 用于OpenOCD调试使用的配置文件,dap用
+│  openocd_jlink.cfg # 用于OpenOCD调试使用的配置文件,jlink用
+│  README.md # 本说明文档
 │  startup_stm32f407xx.s  # F407汇编启动文件
-│  STM32F407.svd          # F407外设地址映射文件,用于调试 
-│  STM32F407IGHx_FLASH.ld # F407IGH(C板使用的MCU)的文件目标FLASH地址,用于烧录和调试
+│  stm32.jflash # 烧录的配置文件,一键下载用
+│  STM32F407.svd # F407外设地址映射文件,用于调试
+│  STM32F407IGHx_FLASH.ld # 包含了F407IGH(C板使用的MCU)的文件目标FLASH地址,用于编译(作为链接阶段的链接器),烧录和调试
+│  TODO.md # 项目待完成的任务
 │  VSCode+Ozone使用方法.md # 开发环境配置和前置知识介绍
-|
-├─.vscode       
-│      launch.json  # 用于VSCode插件CORTEX-DEBUG调试的配置文件
-│      settings.json# 工作区配置文件,设置了代码缩进和format风格等
-│      tasks.json   # 启动编译的任务配置文件
-├─assets # markdown存放图片和外链文件夹
-|
+│  修改HAL配置时文件目录的更改.md # 重新配置CubeMX时的步骤和注意事项
+│
+├─.vscode
+│      launch.json # 调试的配置文件
+│      settings.json # 工作区配置文件,根据自己的需要配置
+│      tasks.json # 任务配置文件,包括一键编译下载调试等
+│
 ├─application
 │  │  application.md
 │  │  APP层应用编写指引.md
@@ -228,10 +231,9 @@ ROOT:.
 │  │      chassis.md
 │  │
 │  ├─cmd
-│  │      chassis_cmd.c
-│  │      chassis_cmd.h
-│  │      gimbal_cmd.c
-│  │      gimbal_cmd.h
+│  │      robot_cmd.c
+│  │      robot_cmd.h
+│  │      robot_cmd.md
 │  │
 │  ├─gimbal
 │  │      gimbal.c
@@ -243,108 +245,168 @@ ROOT:.
 │          shoot.h
 │          shoot.md
 │
-├─bsp  # 板级支持包,提供对硬件的封装,将接口暴露给module层
-│      bsp.md
-│      bsp_buzzer.c
-│      bsp_buzzer.h
-│      bsp_can.c
-│      bsp_can.h
-│      bsp_can.md
-│      bsp_dwt.c
-│      bsp_dwt.h
-│      bsp_init.c # bsp初始化
-│      bsp_init.h
-│      bsp_led.c
-│      bsp_led.h
-│      bsp_log.c
-│      bsp_log.h
-│      bsp_log.md
-│      bsp_temperature.c
-│      bsp_temperature.h
-│      bsp_usart.c
-│      bsp_usart.h
-│      bsp_usart.md
+├─assets # 说明文档的图片
 │
-|
-├─HAL_N_Middlewares # HAL库对寄存器操作的封装,以及FreeRTOS/Segger RTT等中间件
-|
-|
-└─modules  # 模块层,使用BSP提供的接口构建对应的功能模块,将模块实例提供给应用层
-	|   module.md
-	|
-    ├─algorithm # 算法
+├─bsp
+│  │  bsp.md
+│  │  bsp_buzzer.c
+│  │  bsp_buzzer.h
+│  │  bsp_init.c
+│  │  bsp_init.h
+│  │  bsp_led.c
+│  │  bsp_led.h
+│  │  bsp_spi.md
+│  │  bsp_temperature.c
+│  │  bsp_temperature.h
+│  │
+│  ├─adc
+│  │      bsp_adc.c
+│  │      bsp_adc.h
+│  │      bsp_adc.md
+│  │
+│  ├─can
+│  │      bsp_can.c
+│  │      bsp_can.h
+│  │      bsp_can.md
+│  │
+│  ├─dwt
+│  │      bsp_dwt.c
+│  │      bsp_dwt.h
+│  │      bsp_dwt.md
+│  │
+│  ├─gpio
+│  │      bsp_gpio.c
+│  │      bsp_gpio.h
+│  │      bsp_gpio.md
+│  │
+│  ├─iic
+│  │      bsp_iic.c
+│  │      bsp_iic.h
+│  │      bsp_iic.md
+│  │
+│  ├─log
+│  │      bsp_log.c
+│  │      bsp_log.h
+│  │      bsp_log.md
+│  │
+│  ├─pwm
+│  │      bsp_pwm.c
+│  │      bsp_pwm.h
+│  │      bsp_pwm.md
+│  │
+│  ├─spi
+│  │      bsp_spi.c
+│  │      bsp_spi.h
+│  │
+│  ├─usart
+│  │      bsp_usart.c
+│  │      bsp_usart.h
+│  │      bsp_usart.md
+│  │
+│  └─usb
+└─modules
+    │  general_def.h
+    │  module.md
+    │
+    ├─algorithm
     │      algorithm.md
-    │      controller.c # 控制器
+    │      controller.c
     │      controller.h
-    │      crc16.c		# 循环冗余校验
+    │      crc16.c
     │      crc16.h
     │      crc8.c
     │      crc8.h
-    │      kalman_filter.c # KF
+    │      kalman_filter.c
     │      kalman_filter.h
-    │      LQR.c           # LQR控制器
+    │      LQR.c
     │      LQR.h
-    │      QuaternionEKF.c # 四元数EKF融合
+    │      QuaternionEKF.c
     │      QuaternionEKF.h
-    │      user_lib.c      # 多个模块都会使用到的函数
+    │      user_lib.c
     │      user_lib.h
     │
-    ├─can_comm # 双板CAN通信组件
+    ├─BMI088
+    │      bmi088.c
+    │      bmi088.h
+    │      bmi088_regNdef.h
+    │
+    ├─can_comm
     │      can_comm.c
     │      can_comm.h
-    │      can_comm.md   
-    | 
-    ├─imu  # 考虑到使用SPI的设备较少,这里没有对SPI提供bsp支持,直接于此实现
+    │      can_comm.md
+    │
+    ├─daemon
+    │      daemon.c
+    │      daemon.h
+    │      daemon.md
+    │
+    ├─imu
     │      BMI088driver.c
     │      BMI088driver.h
     │      BMI088Middleware.c
     │      BMI088Middleware.h
     │      BMI088reg.h
-    │      ins_task.c # 姿态解算任务,在RTOS中以1kHz运行
+    │      ins_task.c
     │      ins_task.h
+    │      ins_task.md
     │
     ├─led_light
-    │      led_task.c # 用于指示错误和主控是否正常运行,流水灯任务
+    │      led.md
+    │      led_task.c
     │      led_task.h
     │
-    ├─master_machine # 和上位机(视觉PC)通信的模块
+    ├─master_machine
     │      master_process.c
     │      master_process.h
-    │      master_process.md 
-    │      seasky_protocol.c 
+    │      master_process.md
+    │      seasky_protocol.c
     │      seasky_protocol.h
     │      湖南大学RoboMaster电控组通信协议.md
     │
-    ├─message_center # 发布-订阅机制,app层应用之间交换数据用
+    ├─message_center
     │      message_center.c
     │      message_center.h
     │      message_center.md
-    |
-    ├─motor # 电机模块
-    │      dji_motor.c  # DJI智能电机
-    │      dji_motor.h
-    │      HT04.c       # 海泰-04关节电机
-    │      HT04.h
-    │      LK9025.c     # 瓴控9025驱动轮电机
-    │      LK9025.h
-    │      motor_def.h  # 电机通用定义
-    │      motor_task.c # 电机控制任务,1kHz运行在RTOS上
-    │      motor_task.h
     │
-    ├─referee # 裁判系统模块
-    │      referee.c # 接收裁判系统信息
+    ├─motor
+    │      dji_motor.c
+    │      dji_motor.h
+    │      dji_motor.md
+    │      HT04.c
+    │      HT04.h
+    │      LK9025.c
+    │      LK9025.h
+    │      motor_def.h
+    │      motor_task.c
+    │      motor_task.h
+    │      servo_motor.c
+    │      servo_motor.h
+    │      servo_motor.md
+    │      step_motor.c
+    │      step_motor.h
+    │
+    ├─referee
+    │      crc.c
+    │      crc.h
+    │      referee.c
     │      referee.h
-    │      referee_UI.c # UI绘制(发送)
-    │      referee_communication.c # 多机通信
-    |
-    ├─remote # 遥控器模块
+    │      referee.md
+    │      referee_communication.c
+    │      referee_UI.c
+    │
+    ├─remote
+    │      remote.md
     │      remote_control.c
     │      remote_control.h
     │
-    └─super_cap # 超级电容
-           super_cap.c
-           super_cap.h
-    	   super_cap.md
+    ├─super_cap
+    │      super_cap.c
+    │      super_cap.h
+    │      super_cap.md
+    │
+    └─vofa
+            vofa.c
+            vofa.h
 ```
 
 

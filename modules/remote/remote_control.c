@@ -2,11 +2,12 @@
 #include "string.h"
 #include "bsp_usart.h"
 #include "memory.h"
+#include "stdlib.h"
 
 #define REMOTE_CONTROL_FRAME_SIZE 18u // 遥控器接收的buffer大小
 // 遥控器数据
-static RC_ctrl_t rc_ctrl[2]; //[0]:当前数据,[1]:上一次的数据.用于按键判断
-// 遥控器拥有的串口实例
+static RC_ctrl_t rc_ctrl[2]; //[0]:当前数据TEMP,[1]:上一次的数据LAST.用于按键持续按下和切换的判断
+// 遥控器拥有的串口实例,因为遥控器是单例,所以这里只有一个,就不封装了
 static USARTInstance *rc_usart_instance;
 
 /**
@@ -17,8 +18,8 @@ static void RectifyRCjoystick()
 {
     for (uint8_t i = 0; i < 5; ++i)
     {
-        if (*(&rc_ctrl[TEMP].rc.rocker_l_+i) > 660 || *(&rc_ctrl[TEMP].rc.rocker_l_+i) < -660)
-            *(&rc_ctrl[TEMP].rc.rocker_l_+i) = 0;
+        if (abs(*(&rc_ctrl[TEMP].rc.rocker_l_ + i)) > 660)
+            *(&rc_ctrl[TEMP].rc.rocker_l_ + i) = 0;
     }
 }
 
@@ -28,7 +29,7 @@ static void RectifyRCjoystick()
  * @param[out]     rc_ctrl: remote control data struct point
  * @retval         none
  */
-static void sbus_to_rc(volatile const uint8_t *sbus_buf)
+static void sbus_to_rc(const uint8_t *sbus_buf)
 {
     memcpy(&rc_ctrl[1], &rc_ctrl[TEMP], sizeof(RC_ctrl_t)); // 保存上一次的数据
     // 摇杆,直接解算时减去偏置
@@ -68,7 +69,7 @@ static void sbus_to_rc(volatile const uint8_t *sbus_buf)
             rc_ctrl[TEMP].key[KEY_PRESS_WITH_CTRL][j] = rc_ctrl[TEMP].key_temp & i;
     }
 
-    // 位域的按键值解算,直接memcpy即可,注意小端低字节在前,即lsb在第一位
+    // 位域的按键值解算,直接memcpy即可,注意小端低字节在前,即lsb在第一位,msb在最后. 尚未测试
     // *(uint16_t *)&rc_ctrl[TEMP].key_test[KEY_PRESS] = (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
     // *(uint16_t *)&rc_ctrl[TEMP].key_test[KEY_STATE] = *(uint16_t *)&rc_ctrl[TEMP].key_test[KEY_PRESS] & ~(*(uint16_t *)&(rc_ctrl[1].key_test[KEY_PRESS]));
     // if (rc_ctrl[TEMP].key_test[KEY_PRESS].ctrl)

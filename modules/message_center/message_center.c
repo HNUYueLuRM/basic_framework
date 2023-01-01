@@ -8,7 +8,7 @@ static char sname[MAX_EVENT_COUNT][MAX_EVENT_NAME_LEN + 1];
 static void *p_ptr[MAX_EVENT_COUNT] = {NULL};
 static void **s_pptr[MAX_EVENT_COUNT] = {NULL}; // 因为要修改指针,所以需要二重指针
 
-/* ----------------------------------第三方指针传递版的实现----------------------------------- */
+/* ----------------------------------第三方指针传递版的实现,deprecated----------------------------------- */
 
 void MessageInit()
 {
@@ -68,11 +68,12 @@ void SubscribeEvent(char *name, void **data_ptr)
 
 /* ----------------------------------链表-队列版的实现----------------------------------- */
 
-/* message_center是fake node,是方便链表编写的技巧,这样不需要处理链表头的特殊情况 */
+/* message_center是fake head node,是方便链表编写的技巧,这样就不需要处理链表头的特殊情况 */
 static Publisher_t message_center = {
     .event_name = "Message_Manager",
     .first_subs = NULL,
-    .next_event_node = NULL};
+    .next_event_node = NULL
+    };
 
 static void CheckName(char *name)
 {
@@ -88,7 +89,7 @@ static void CheckLen(uint8_t len1, uint8_t len2)
     if (len1 != len2)
     {
         while (1)
-            ; // 相同事件的消息长度不同
+            ; // 进入这里说明相同事件的消息长度却不同
     }
 }
 
@@ -111,14 +112,14 @@ Subscriber_t *SubRegister(char *name, uint8_t data_len)
             { // 给消息队列的每一个元素分配空间,queue里保存的实际上是数据执指针,这样可以兼容不同的数据长度
                 ret->queue[i] = malloc(sizeof(data_len));
             }
-            //如果之前没有订阅者,特殊处理一下
+            //如果是第一个订阅者,特殊处理一下
             if(node->first_subs==NULL) 
             {
                 node->first_subs=ret;
                 return ret;
             }
             // 遍历订阅者链表,直到到达尾部
-            Subscriber_t *sub = node->first_subs; // iterator
+            Subscriber_t *sub = node->first_subs; // 作为iterator
             while (sub->next_subs_queue) // 遍历订阅了该事件的订阅者链表
             {
                 sub = sub->next_subs_queue; // 移动到下一个订阅者,遇到空指针停下,说明到了链表尾部
@@ -182,11 +183,14 @@ uint8_t SubGetMessage(Subscriber_t *sub, void *data_ptr)
 
 uint8_t PubPushMessage(Publisher_t *pub, void *data_ptr)
 {
-    Subscriber_t *iter = pub->first_subs; // iter作为订阅者指针,遍历订阅该事件的所有订阅者;如果为空说明遍历结束
-    while (iter)                          // 遍历订阅了当前事件的所有订阅者,依次填入最新消息
+    static Subscriber_t *iter;
+    iter = pub->first_subs; // iter作为订阅者指针,遍历订阅该事件的所有订阅者;如果为空说明遍历结束
+    // 遍历订阅了当前事件的所有订阅者,依次填入最新消息
+    while (iter)
     {
         if (iter->temp_size == QUEUE_SIZE) // 如果队列已满,则需要删除最老的数据(头部),再填入
-        {                                  // 队列头索引前移动,相当于抛弃前一个位置,被抛弃的位置稍后会被写入新的数据
+        {                                  
+            // 队列头索引前移动,相当于抛弃前一个位置的数据,被抛弃的位置稍后会被写入新的数据
             iter->front_idx = (iter->front_idx + 1) % QUEUE_SIZE;
             iter->temp_size--; // 相当于出队,size-1
         }

@@ -7,7 +7,6 @@
 // 参考深圳大学  Infantry_X-master
 #define RE_RX_BUFFER_SIZE 200
 
-// static USARTInstance referee_usart_instance;
 static USARTInstance *referee_usart_instance;
 
 /**************裁判系统数据******************/
@@ -17,7 +16,7 @@ static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
 
 /**
  * @brief  读取裁判数据,中断中读取保证速度
- * @param  缓存数据
+ * @param  ReadFromUsart: 读取到的裁判系统原始数据
  * @retval 是否对正误判断做处理
  * @attention  在此判断帧头和CRC校验,无误再写入数据，不重复判断帧头
  */

@@ -4,9 +4,10 @@
 #include "bsp_usart.h"
 #include "seasky_protocol.h"
 
-#define VISION_RECV_SIZE 36u
+#define VISION_RECV_SIZE 36u // 当前为固定值,36字节
 #define VISION_SEND_SIZE 36u
 
+#pragma pack(1)
 typedef enum
 {
 	NO_FIRE = 0,
@@ -79,6 +80,7 @@ typedef struct
 
 	// uint32_t time_stamp; // @todo 用于和相机的时间戳对齐
 } Vision_Send_s;
+#pragma pack()
 
 /**
  * @brief 调用此函数初始化和视觉的串口通信

@@ -1,8 +1,16 @@
 #ifndef GIMBAL_H
 #define GIMBAL_H
 
+/**
+ * @brief 初始化云台
+ * 
+ */
 void GimbalInit();
 
+/**
+ * @brief 云台任务
+ * 
+ */
 void GimbalTask();
 
 #endif // GIMBAL_H

@@ -17,7 +17,7 @@
 #include "main.h"
 #include "usart.h"
 
-//
+// 用于遥控器数据读取,遥控器数据是一个大小为2的数组
 #define LAST 1
 #define TEMP 0
 
@@ -33,17 +33,18 @@
 #define RC_CH_VALUE_MAX ((uint16_t)1684)
 
 /* ----------------------- RC Switch Definition----------------------------- */
-#define RC_SW_UP ((uint16_t)1)
-#define RC_SW_MID ((uint16_t)3)
-#define RC_SW_DOWN ((uint16_t)2)
+#define RC_SW_UP ((uint16_t)1)   // 开关向上时的值
+#define RC_SW_MID ((uint16_t)3)  // 开关中间时的值
+#define RC_SW_DOWN ((uint16_t)2) // 开关向下时的值
+// 三个判断开关状态的宏
 #define switch_is_down(s) (s == RC_SW_DOWN)
 #define switch_is_mid(s) (s == RC_SW_MID)
 #define switch_is_up(s) (s == RC_SW_UP)
-#define LEFT_SW 1
-#define RIGHT_SW 0
+#define LEFT_SW 1  // 左侧开关
+#define RIGHT_SW 0 // 右侧开关
 
 /* ----------------------- PC Key Definition-------------------------------- */
-// 对应key[x][0~16],获取对应的键;例如通过key[KEY_PRESS][Key_W]获取W键是否按下
+// 对应key[x][0~16],获取对应的键;例如通过key[KEY_PRESS][Key_W]获取W键是否按下,后续改为位域后删除
 #define Key_W 0
 #define Key_S 1
 #define Key_D 2

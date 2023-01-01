@@ -21,15 +21,15 @@ typedef struct spi_ins_temp
     GPIO_TypeDef *GPIO_cs;         // 片选信号对应的GPIO,如GPIOA,GPIOB等等
     uint16_t cs_pin;               // 片选信号对应的引脚号,GPIO_PIN_1,GPIO_PIN_2等等
 
-    SPI_TXRX_MODE_e spi_work_mode;           // 传输工作模式
-    uint8_t rx_size;                         // 本次接收的数据长度
-    uint8_t *rx_buffer;                      // 本次接收的数据缓冲区
-    void (*callback)(struct spi_ins_temp *); // 接收回调函数
+    SPI_TXRX_MODE_e spi_work_mode; // 传输工作模式
+    uint8_t rx_size;               // 本次接收的数据长度
+    uint8_t *rx_buffer;            // 本次接收的数据缓冲区
 
-    void *id; // 模块指针
+    void (*callback)(struct spi_ins_temp *); // 接收回调函数
+    void *id;                                // 模块指针
 } SPIInstance;
 
-/* rx data resolve callback*/
+/* 接收回调函数定义,包含SPI的module按照此格式构建回调函数 */
 typedef void (*spi_rx_callback)(SPIInstance *);
 
 /* SPI初始化配置,其实基本和SPIIstance一模一样,为了代码风格统一因此再次定义 */

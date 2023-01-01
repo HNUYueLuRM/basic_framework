@@ -5,37 +5,11 @@
 static uint8_t idx = 0; // 配合中断以及初始化
 static IICInstance *iic_instance[IIC_DEVICE_CNT] = {NULL};
 
-/**
- * @brief 接收完成回调函数
- *
- * @param hi2c handle
- */
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-    // 如果是当前i2c硬件发出的complete,且dev_address和之前发起接收的地址相同,同时回到函数不为空, 则调用回调函数
-    for (uint8_t i = 0; i < idx; i++)
-    {
-        if (iic_instance[i]->handle == hi2c && hi2c->Devaddress == iic_instance[i]->dev_address)
-        {
-            if (iic_instance[i]->callback != NULL)
-                iic_instance[i]->callback(iic_instance[i]);
-            return;
-        }
-    }
-}
-
-/**
- * @brief 仅做形式上的封装,仍然使用HAL_I2C_MasterRxCpltCallback
- *
- * @param hi2c handle
- */
-void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-    HAL_I2C_MasterRxCpltCallback(hi2c);
-}
-
 IICInstance *IICRegister(IIC_Init_Config_s *conf)
 {
+    if (idx >= MX_IIC_SLAVE_CNT) // 超过最大实例数
+        while (1)                // 酌情增加允许的实例上限,也有可能是内存泄漏
+            ;
     // 申请到的空间未必是0, 所以需要手动初始化
     IICInstance *instance = (IICInstance *)malloc(sizeof(IICInstance));
     instance = (IICInstance *)malloc(sizeof(IICInstance));
@@ -53,9 +27,9 @@ IICInstance *IICRegister(IIC_Init_Config_s *conf)
 
 void IICSetMode(IICInstance *iic, IIC_Work_Mode_e mode)
 { // HAL自带重入保护,不需要手动终止或等待传输完成
-    if (iic->work_mode != mode) // 如果不同才需要修改
+    if (iic->work_mode != mode)
     {
-        iic->work_mode = mode;
+        iic->work_mode = mode; // 如果不同才需要修改
     }
 }
 
@@ -65,13 +39,14 @@ void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e 
         while (1)
             ; // 未知传输模式, 程序停止
 
+    // 根据不同的工作模式进行不同的传输
     switch (iic->work_mode)
     {
     case IIC_BLOCK_MODE:
         if (seq_mode != IIC_RELEASE)
             while (1)
-                ; // 阻塞模式下不支持HOLD ON模式!!!
-        HAL_I2C_Master_Transmit(iic->handle, iic->dev_address, data, size, 100);
+                ;                                                                // 阻塞模式下不支持HOLD ON模式!!!只能传输完成后立刻释放总线
+        HAL_I2C_Master_Transmit(iic->handle, iic->dev_address, data, size, 100); // 默认超时时间100ms
         break;
     case IIC_IT_MODE:
         if (seq_mode == IIC_RELEASE)
@@ -88,7 +63,6 @@ void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e 
     default:
         while (1)
             ; // 未知传输模式, 程序停止
-        break;
     }
 }
 
@@ -108,7 +82,7 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e s
         if (seq_mode != IIC_RELEASE)
             while (1)
                 ; // 阻塞模式下不支持HOLD ON模式!!!
-        HAL_I2C_Master_Receive(iic->handle, iic->dev_address, data, size, 100);
+        HAL_I2C_Master_Receive(iic->handle, iic->dev_address, data, size, 100); // 默认超时时间100ms
         break;
     case IIC_IT_MODE:
         if (seq_mode == IIC_RELEASE)
@@ -133,15 +107,44 @@ void IICAcessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t siz
 {
     if (mem_mode == IIC_WRITE_MEM)
     {
-        HAL_I2C_Mem_Write(iic->handle, iic->dev_address, mem_addr, I2C_MEMADD_SIZE_8BIT, data, size, 1000);
+        HAL_I2C_Mem_Write(iic->handle, iic->dev_address, mem_addr, I2C_MEMADD_SIZE_8BIT, data, size, 100);
     }
     else if (mem_mode == IIC_READ_MEM)
     {
-        HAL_I2C_Mem_Read(iic->handle, iic->dev_address, mem_addr, I2C_MEMADD_SIZE_8BIT, data, size, 1000);
+        HAL_I2C_Mem_Read(iic->handle, iic->dev_address, mem_addr, I2C_MEMADD_SIZE_8BIT, data, size, 100);
     }
     else
     {
         while (1)
             ; // 未知模式, 程序停止
     }
+}
+
+/**
+ * @brief IIC接收完成回调函数
+ *
+ * @param hi2c handle
+ */
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+    // 如果是当前i2c硬件发出的complete,且dev_address和之前发起接收的地址相同,同时回到函数不为空, 则调用回调函数
+    for (uint8_t i = 0; i < idx; i++)
+    {   
+        if (iic_instance[i]->handle == hi2c && hi2c->Devaddress == iic_instance[i]->dev_address)
+        {
+            if (iic_instance[i]->callback != NULL) // 回调函数不为空
+                iic_instance[i]->callback(iic_instance[i]);
+            return;
+        }
+    }
+}
+
+/**
+ * @brief 仅做形式上的封装,仍然使用HAL_I2C_MasterRxCpltCallback
+ *
+ * @param hi2c handle
+ */
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+    HAL_I2C_MasterRxCpltCallback(hi2c);
 }

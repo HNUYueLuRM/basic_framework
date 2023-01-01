@@ -4,7 +4,7 @@
 #include "tim.h"
 #include "stdint.h"
 
-#define PWM_DEVICE_CNT 16 // PWM实例数量
+#define PWM_DEVICE_CNT 16 // 最大支持的PWM实例数量
 
 /* pwm实例结构体 */
 typedef struct pwm_ins_temp
@@ -15,6 +15,9 @@ typedef struct pwm_ins_temp
     uint32_t pulse;                          // 脉宽
     void (*callback)(struct pwm_ins_temp *); // DMA传输完成回调函数
     void *id;                                // 实例ID
+
+    // 后续还要添加更多的参数,以提供更直观的封装,比如直接按照百分比设置占空比,直接设置频率等
+    // ...
 } PWMInstance;
 
 typedef struct
@@ -49,6 +52,7 @@ void PWMStart(PWMInstance *pwm);
  */
 void PWMStop(PWMInstance *pwm);
 
+// @todo 这三个函数还需要进一步封装,协调好三者之间的关系
 /**
  * @brief 设置pwm脉宽
  *
@@ -56,6 +60,8 @@ void PWMStop(PWMInstance *pwm);
  * @param pulse 脉宽
  */
 void PWMSetPulse(PWMInstance *pwm, uint32_t pulse);
+void PWMSetPeriod(PWMInstance *pwm, uint32_t period);       // 未实现
+void PWMSetPrescaler(PWMInstance *pwm, uint32_t prescaler); // 未实现
 
 /**
  * @brief 启动pwm dma传输

@@ -34,6 +34,7 @@ typedef struct _
     uint8_t rx_buff[8];
     uint32_t rx_id;
     void (*can_module_callback)(struct _*);
+    void* id;
 } can_instance;
 
 typedef struct 
@@ -42,6 +43,7 @@ typedef struct
     uint32_t tx_id;
     uint32_t rx_id;
     void (*can_module_callback)(can_instance*);
+    void* id;
 } can_instance_config;
 
 typedef void (*can_callback)(can_instance*);

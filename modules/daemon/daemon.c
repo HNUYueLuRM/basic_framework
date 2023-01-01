@@ -20,6 +20,7 @@ DaemonInstance *DaemonRegister(Daemon_Init_Config_s *config)
     return instance;
 }
 
+/* "喂狗"函数 */
 void DaemonReload(DaemonInstance *instance)
 {
     instance->temp_count = instance->reload_count;
@@ -36,11 +37,15 @@ void DaemonTask()
     for (size_t i = 0; i < idx; ++i)
     {
         dins = daemon_instances[i];
-        if (dins->temp_count > 0)
+        if (dins->temp_count > 0) // 如果计数器还有值,说明上一次喂狗后还没有超时,则计数器减一
             dins->temp_count--;
-        else if (dins->callback) // 如果有callback
+        else if (dins->callback) // 等于零说明超时了,调用回调函数(如果有的话)
         {
-            dins->callback(dins->owner_id); // module内可以将owner_id强制类型转换成自身类型从而调用自身的offline callback
+            dins->callback(dins->owner_id); // module内可以将owner_id强制类型转换成自身类型从而调用特定module的offline callback
         }
     }
 }
+// (需要id的原因是什么?) 下面是copilot的回答!
+// 需要id的原因是因为有些module可能有多个实例,而我们需要知道具体是哪个实例offline
+// 如果只有一个实例,则可以不用id,直接调用callback即可
+// 比如: 有一个module叫做"电机",它有两个实例,分别是"电机1"和"电机2",那么我们调用电机的离线处理函数时就需要知道是哪个电机offline

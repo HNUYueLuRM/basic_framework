@@ -21,10 +21,18 @@
 // #define CHASSIS_BOARD //底盘板
 // #define GIMBAL_BOARD  //云台板
 
+/* 机器人类型定义 */
+// #define ROBOT_HERO 1     // 英雄机器人
+// #define ROBOT_ENINEER 2  // 工程机器人
+#define ROBOT_INFANTRY 3 // 步兵机器人3
+// #define ROBOT_INFANTRY 4 // 步兵机器人4
+// #define ROBOT_INFANTRY 5 // 步兵机器人5
+// #define ROBOT_SENTRY 6   // 哨兵机器人
+
 /* 机器人重要参数定义,注意根据不同机器人进行修改,浮点数需要以.0或f结尾,无符号以u结尾 */
 // 云台参数
-#define YAW_CHASSIS_ALIGN_ECD 4000     // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
-#define YAW_ECD_GREATER_THAN_4096 0 // yaw电机的初始编码器值是否大于4096,是为1,否为0
+#define YAW_CHASSIS_ALIGN_ECD 4000  // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
+#define YAW_ECD_GREATER_THAN_4096 0 // ALIGN_ECD值是否大于4096,是为1,否为0;用于计算云台偏转角度
 #define PITCH_HORIZON_ECD 0         // 云台处于水平位置时编码器值,若对云台有机械改动需要修改
 // 发射参数
 #define ONE_BULLET_DELTA_ANGLE 0     // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
@@ -55,14 +63,14 @@
 // 机器人状态
 typedef enum
 {
-    ROBOT_STOP=0,
+    ROBOT_STOP = 0,
     ROBOT_READY,
 } Robot_Status_e;
 
 // 应用状态
 typedef enum
 {
-    APP_OFFLINE=0,
+    APP_OFFLINE = 0,
     APP_ONLINE,
     APP_ERROR,
 } App_Status_e;
@@ -74,7 +82,7 @@ typedef enum
  */
 typedef enum
 {
-    CHASSIS_ZERO_FORCE=0,        // 电流零输入
+    CHASSIS_ZERO_FORCE = 0,    // 电流零输入
     CHASSIS_ROTATE,            // 小陀螺模式
     CHASSIS_NO_FOLLOW,         // 不跟随，允许全向平移
     CHASSIS_FOLLOW_GIMBAL_YAW, // 跟随模式，底盘叠加角度环控制
@@ -83,9 +91,9 @@ typedef enum
 // 云台模式设置
 typedef enum
 {
-    GIMBAL_ZERO_FORCE=0, // 电流零输入
-    GIMBAL_FREE_MODE,  // 云台自由运动模式,即与底盘分离(底盘此时应为NO_FOLLOW)反馈值为电机total_angle;似乎可以改为全部用IMU数据?
-    GIMBAL_GYRO_MODE,  // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
+    GIMBAL_ZERO_FORCE = 0, // 电流零输入
+    GIMBAL_FREE_MODE,      // 云台自由运动模式,即与底盘分离(底盘此时应为NO_FOLLOW)反馈值为电机total_angle;似乎可以改为全部用IMU数据?
+    GIMBAL_GYRO_MODE,      // 云台陀螺仪反馈模式,反馈值为陀螺仪pitch,total_yaw_angle,底盘可以为小陀螺和跟随模式
 } gimbal_mode_e;
 
 // 发射模式设置
@@ -96,19 +104,19 @@ typedef enum
 } shoot_mode_e;
 typedef enum
 {
-    FRICTION_OFF=0, // 摩擦轮关闭
-    FRICTION_ON,  // 摩擦轮开启
+    FRICTION_OFF = 0, // 摩擦轮关闭
+    FRICTION_ON,      // 摩擦轮开启
 } friction_mode_e;
 
 typedef enum
 {
-    LID_OPEN=0, // 弹舱盖打开
-    LID_CLOSE,  // 弹舱盖关闭
+    LID_OPEN = 0, // 弹舱盖打开
+    LID_CLOSE,    // 弹舱盖关闭
 } lid_mode_e;
 
 typedef enum
 {
-    LOAD_STOP=0,      // 停止发射
+    LOAD_STOP = 0,  // 停止发射
     LOAD_REVERSE,   // 反转
     LOAD_1_BULLET,  // 单发
     LOAD_3_BULLET,  // 三发

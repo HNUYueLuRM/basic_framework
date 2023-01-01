@@ -10,23 +10,23 @@ static DJIMotorInstance *dji_motor_instance[DJI_MOTOR_CNT] = {NULL};
  * @brief 由于DJI电机发送以四个一组的形式进行,故对其进行特殊处理,用6个(2can*3group)can_instance专门负责发送
  *        该变量将在 DJIMotorControl() 中使用,分组在 MotorSenderGrouping()中进行
  *
- * C610(m2006)/C620(m3508):0x1ff,0x200; GM6020:0x1ff,0x2ff
- * 反馈: GM6020: 0x204+id ; C610/C620: 0x200+id
+ * C610(m2006)/C620(m3508):0x1ff,0x200;
+ * GM6020:0x1ff,0x2ff
+ * 反馈(rx_id): GM6020: 0x204+id ; C610/C620: 0x200+id
  * can1: [0]:0x1FF,[1]:0x200,[2]:0x2FF
  * can2: [3]:0x1FF,[4]:0x200,[5]:0x2FF
  */
-static CANInstance sender_assignment[6] =
-    {
-        [0] = {.can_handle = &hcan1, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-        [1] = {.can_handle = &hcan1, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-        [2] = {.can_handle = &hcan1, .txconf.StdId = 0x2ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-        [3] = {.can_handle = &hcan2, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-        [4] = {.can_handle = &hcan2, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-        [5] = {.can_handle = &hcan2, .txconf.StdId = 0x2ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+static CANInstance sender_assignment[6] = {
+    [0] = {.can_handle = &hcan1, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+    [1] = {.can_handle = &hcan1, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+    [2] = {.can_handle = &hcan1, .txconf.StdId = 0x2ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+    [3] = {.can_handle = &hcan2, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+    [4] = {.can_handle = &hcan2, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+    [5] = {.can_handle = &hcan2, .txconf.StdId = 0x2ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
 };
 
 /**
- * @brief 6个用于确认是否有电机注册到sender_assignment中的标志位,防止发送空帧,此变量将在 DJIMotorControl() 使用
+ * @brief 6个用于确认是否有电机注册到sender_assignment中的标志位,防止发送空帧,此变量将在DJIMotorControl()使用
  *        flag的初始化在 MotorSenderGrouping()中进行
  *
  */
@@ -38,9 +38,7 @@ static uint8_t sender_enable_flag[6] = {0};
  */
 static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
 {
-    while (1)
-    {
-    };
+    while (1);
 }
 
 /**
@@ -108,7 +106,7 @@ static void MotorSenderGrouping(CAN_Init_Config_s *config)
         break;
 
     default: // other motors should not be registered here
-        break;
+        while(1); // 其他电机不应该在这里注册
     }
 }
 
@@ -124,9 +122,10 @@ static void DecodeDJIMotor(CANInstance *_instance)
     static uint8_t *rxbuff;
     static DJI_Motor_Measure_s *measure;
     rxbuff = _instance->rx_buff;
+    // 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
     measure = &((DJIMotorInstance *)_instance->id)->motor_measure; // measure要多次使用,保存指针减小访存开销
 
-    // resolve data and apply filter to current and speed
+    // 解析数据并对电流和速度进行滤波
     measure->last_ecd = measure->ecd;
     measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
     measure->angle_single_round = ECD_ANGLE_COEF_DJI * (float)measure->ecd;
@@ -136,7 +135,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
     measure->temperate = rxbuff[6];
 
-    // multi rounds calc,计算的前提是两次采样间电机转过的角度小于180°
+    // 多圈角度计算,计算的前提是两次采样间电机转过的角度小于180°
     if (measure->ecd - measure->last_ecd > 4096)
         measure->total_round--;
     else if (measure->ecd - measure->last_ecd < -4096)
@@ -150,23 +149,23 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     DJIMotorInstance *instance = (DJIMotorInstance *)malloc(sizeof(DJIMotorInstance));
     memset(instance, 0, sizeof(DJIMotorInstance));
 
-    // motor basic setting
+    // motor basic setting 电机基本设置
     instance->motor_type = config->motor_type;
     instance->motor_settings = config->controller_setting_init_config;
 
-    // motor controller init
+    // motor controller init 电机控制器初始化
     PID_Init(&instance->motor_controller.current_PID, &config->controller_param_init_config.current_PID);
     PID_Init(&instance->motor_controller.speed_PID, &config->controller_param_init_config.speed_PID);
     PID_Init(&instance->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
     instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
-    // group motors, because 4 motors share the same CAN control message
+    // 电机分组,因为至多4个电机可以共用一帧CAN控制报文
     MotorSenderGrouping(&config->can_init_config);
 
-    // register motor to CAN bus
+    // 注册电机到CAN总线
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
-    config->can_init_config.id = instance;                        // set id,eq to address(it is identity)
+    config->can_init_config.id = instance;// set id,eq to address(it is identity)
     instance->motor_can_instance = CANRegister(&config->can_init_config);
 
     DJIMotorEnable(instance);
@@ -228,7 +227,7 @@ void DJIMotorControl()
     static float pid_measure, pid_ref;             // 电机PID测量值和设定值
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
     for (size_t i = 0; i < idx; ++i)
-    {   // 减小访存开销,先保存指针引用
+    { // 减小访存开销,先保存指针引用
         motor = dji_motor_instance[i];
         motor_setting = &motor->motor_settings;
         motor_controller = &motor->motor_controller;
@@ -280,7 +279,6 @@ void DJIMotorControl()
         { // 若该电机处于停止状态,直接将buff置零
             memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
         }
-        
     }
 
     // 遍历flag,检查是否要发送这一帧报文

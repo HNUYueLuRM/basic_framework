@@ -5,23 +5,21 @@
 
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
-static CANInstance *can_instance[MX_REGISTER_DEVICE_CNT] = {NULL};
+static CANInstance *can_instance[CAN_MX_REGISTER_CNT] = {NULL};
 static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
 
 /* ----------------two static function called by CANRegister()-------------------- */
 
 /**
- * @brief add filter to receive mesg with specific ID,called by CANRegister()
+ * @brief 添加过滤器以实现对特定id的报文的接收,会被CANRegister()调用
  *        给CAN添加过滤器后,BxCAN会根据接收到的报文的id进行消息过滤,符合规则的id会被填入FIFO触发中断
  *
- * @note there are total 28 filter and 2 FIFO in bxCAN of STM32F4 series product.
- *       here, we assign the former 14 to CAN1 and the rest for CAN2
- *       when initializing, module with odd ID will be assigned to FIFO0 while even one to FIFO1
- *       those modules which registered in CAN1 would use Filter0-13, while CAN2 use Filter14-27
+ * @note f407的bxCAN有28个过滤器,这里将其配置为前14个过滤器给CAN1使用,后14个被CAN2使用
+ *       初始化时,奇数id的模块会被分配到FIFO0,偶数id的模块会被分配到FIFO1
+ *       注册到CAN1的模块使用过滤器0-13,CAN2使用过滤器14-27
  *
- * @attention you don't have to fully understand what this function done, cause it is basically
- *            for initialization.Enjoy developing without caring about the infrastructure!
- *            if you really want to know what is happeng, contact author.
+ * @attention 你不需要完全理解这个函数的作用,因为它主要是用于初始化,在开发过程中不需要关心底层的实现
+ *            享受开发的乐趣吧!如果你真的想知道这个函数在干什么,请联系作者或自己查阅资料(请直接查阅官方的reference manual)
  *
  * @param _instance can instance owned by specific module
  */
@@ -42,11 +40,9 @@ static void CANAddFilter(CANInstance *_instance)
 }
 
 /**
- * @brief called by CANRegister before the first module being registered
- *        在第一个CAN实例初始化的时候会自动调用此函数,启动CAN服务
+ * @brief 在第一个CAN实例初始化的时候会自动调用此函数,启动CAN服务
  *
- * @note this func will handle all these thing automatically
- *       there is no need to worry about hardware initialization, we do these for you!
+ * @note 此函数会启动CAN1和CAN2,开启CAN1和CAN2的FIFO0 & FIFO1溢出通知
  *
  */
 static void CANServiceInit()
@@ -67,13 +63,16 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     {
         CANServiceInit(); // 第一次注册,先进行硬件初始化
     }
+    if (idx >= CAN_MX_REGISTER_CNT) // 超过最大实例数
+        while (1)
+            ;
     CANInstance *instance = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
-    memset(instance, 0, sizeof(CANInstance));
+    memset(instance, 0, sizeof(CANInstance));                           // 分配的空间未必是0,所以要先清空
     // 进行发送报文的配置
-    instance->txconf.StdId = config->tx_id;
-    instance->txconf.IDE = CAN_ID_STD;
-    instance->txconf.RTR = CAN_RTR_DATA;
-    instance->txconf.DLC = 0x08; // 默认发送长度为8
+    instance->txconf.StdId = config->tx_id; // 发送id
+    instance->txconf.IDE = CAN_ID_STD;      // 使用标准id,扩展id则使用CAN_ID_EXT(目前没有需求)
+    instance->txconf.RTR = CAN_RTR_DATA;    // 发送数据帧
+    instance->txconf.DLC = 0x08;            // 默认发送长度为8
     // 设置回调函数和接收发送id
     instance->can_handle = config->can_handle;
     instance->tx_id = config->tx_id; // 好像没用,可以删掉
@@ -87,10 +86,11 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     return instance; // 返回can实例指针
 }
 
-/* TODO:目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
+/* @todo 目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
+/* 如果让CANinstance保存txbuff,会增加一次复制的开销 */
 void CANTransmit(CANInstance *_instance)
 {
-    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0)
+    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
         ;
     // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
     HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
@@ -107,22 +107,23 @@ void CANSetDLC(CANInstance *_instance, uint8_t length)
 /* -----------------------belows are callback definitions--------------------------*/
 
 /**
- * @brief this func will recv data from @param:fifox to a tmp can_rx_buff
- *        then, all the instances will be polling to check which should recv this pack of data
+ * @brief 此函数会被下面两个函数调用,用于处理FIFO0和FIFO1溢出中断(说明收到了新的数据)
+ *        所有的实例都会被遍历,找到can_handle和rx_id相等的实例时,调用该实例的回调函数
  *
  * @param _hcan
  * @param fifox passed to HAL_CAN_GetRxMessage() to get mesg from a specific fifo
  */
 static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
 {
-    static uint8_t can_rx_buff[8];
-    static CAN_RxHeaderTypeDef rxconf;
-    HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff);
+    static uint8_t can_rx_buff[8];     // 用于保存接收到的数据,static是为了减少栈空间占用,避免重复分配
+    static CAN_RxHeaderTypeDef rxconf; // 同上
+
+    HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
     for (size_t i = 0; i < idx; ++i)
     { // 两者相等说明这是要找的实例
         if (_hcan == can_instance[i]->can_handle && rxconf.StdId == can_instance[i]->rx_id)
         {
-            if (can_instance[i]->can_module_callback != NULL)
+            if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
             {
                 can_instance[i]->rx_len = rxconf.DLC;                      // 保存接收到的数据长度
                 memcpy(can_instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
@@ -133,8 +134,13 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
     }
 }
 
-/* ATTENTION: two CAN devices in STM32 share two FIFOs */
-/* functions below will call CANFIFOxCallback() to further process message from a specific CAN device */
+/**
+ * @brief 注意,STM32的两个CAN设备共享两个FIFO
+ * 下面两个函数是HAL库中的回调函数,他们声明为__weak,这里对他们进行重载(重写)
+ * 当FIFO0或FIFO1溢出时会调用这两个函数
+ */
+// 下面的函数会调用CANFIFOxCallback()来进一步处理来自特定CAN设备的消息
+
 /**
  * @brief rx fifo callback. Once FIFO_0 is full,this func would be called
  *
@@ -142,7 +148,7 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
  */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-    CANFIFOxCallback(hcan, CAN_RX_FIFO0);
+    CANFIFOxCallback(hcan, CAN_RX_FIFO0); // 调用我们自己写的函数来处理消息
 }
 
 /**
@@ -152,5 +158,5 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
  */
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-    CANFIFOxCallback(hcan, CAN_RX_FIFO1);
+    CANFIFOxCallback(hcan, CAN_RX_FIFO1); // 调用我们自己写的函数来处理消息
 }
