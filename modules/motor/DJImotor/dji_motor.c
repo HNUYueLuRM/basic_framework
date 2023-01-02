@@ -38,7 +38,8 @@ static uint8_t sender_enable_flag[6] = {0};
  */
 static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
 {
-    while (1);
+    while (1)
+        ;
 }
 
 /**
@@ -46,13 +47,13 @@ static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
  *
  * @param config
  */
-static void MotorSenderGrouping(CAN_Init_Config_s *config)
+static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *config)
 {
     uint8_t motor_id = config->tx_id - 1; // 下标从零开始,先减一方便赋值
     uint8_t motor_send_num;
     uint8_t motor_grouping;
 
-    switch (dji_motor_instance[idx]->motor_type)
+    switch (motor->motor_type)
     {
     case M2006:
     case M3508:
@@ -70,8 +71,8 @@ static void MotorSenderGrouping(CAN_Init_Config_s *config)
         // 计算接收id并设置分组发送id
         config->rx_id = 0x200 + motor_id + 1;
         sender_enable_flag[motor_grouping] = 1;
-        dji_motor_instance[idx]->message_num = motor_send_num;
-        dji_motor_instance[idx]->sender_group = motor_grouping;
+        motor->message_num = motor_send_num;
+        motor->sender_group = motor_grouping;
 
         // 检查是否发生id冲突
         for (size_t i = 0; i < idx; ++i)
@@ -95,8 +96,8 @@ static void MotorSenderGrouping(CAN_Init_Config_s *config)
 
         config->rx_id = 0x204 + motor_id + 1;
         sender_enable_flag[motor_grouping] = 1;
-        dji_motor_instance[idx]->message_num = motor_send_num;
-        dji_motor_instance[idx]->sender_group = motor_grouping;
+        motor->message_num = motor_send_num;
+        motor->sender_group = motor_grouping;
 
         for (size_t i = 0; i < idx; ++i)
         {
@@ -106,7 +107,8 @@ static void MotorSenderGrouping(CAN_Init_Config_s *config)
         break;
 
     default: // other motors should not be registered here
-        while(1); // 其他电机不应该在这里注册
+        while (1)
+            ; // 其他电机不应该在这里注册
     }
 }
 
@@ -161,11 +163,11 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
     // 电机分组,因为至多4个电机可以共用一帧CAN控制报文
-    MotorSenderGrouping(&config->can_init_config);
+    MotorSenderGrouping(instance, &config->can_init_config);
 
     // 注册电机到CAN总线
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
-    config->can_init_config.id = instance;// set id,eq to address(it is identity)
+    config->can_init_config.id = instance;                        // set id,eq to address(it is identity)
     instance->motor_can_instance = CANRegister(&config->can_init_config);
 
     DJIMotorEnable(instance);

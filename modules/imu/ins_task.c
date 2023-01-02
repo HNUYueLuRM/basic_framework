@@ -57,7 +57,7 @@ attitude_t *INS_Init(void)
 
     IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0);
     // imu heat init
-    PID_Init_config_s config = {.MaxOut = 2000,
+    PID_Init_Config_s config = {.MaxOut = 2000,
                                 .IntegralLimit = 300,
                                 .DeadBand = 0,
                                 .Kp = 1000,
@@ -68,7 +68,7 @@ attitude_t *INS_Init(void)
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
-    return (attitude_t*)&INS.Roll;
+    return (attitude_t*)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
 }
 
 /* 注意以1kHz的频率运行此任务 */
@@ -96,8 +96,8 @@ void INS_Task(void)
         IMU_Param_Correction(&IMU_Param, INS.Gyro, INS.Accel);
 
         // 计算重力加速度矢量和b系的XY两轴的夹角,可用作功能扩展,本demo暂时没用
-        INS.atanxz = -atan2f(INS.Accel[X], INS.Accel[Z]) * 180 / PI;
-        INS.atanyz = atan2f(INS.Accel[Y], INS.Accel[Z]) * 180 / PI;
+        // INS.atanxz = -atan2f(INS.Accel[X], INS.Accel[Z]) * 180 / PI;
+        // INS.atanyz = atan2f(INS.Accel[Y], INS.Accel[Z]) * 180 / PI;
 
         // 核心函数,EKF更新四元数
         IMU_QuaternionEKF_Update(INS.Gyro[X], INS.Gyro[Y], INS.Gyro[Z], INS.Accel[X], INS.Accel[Y], INS.Accel[Z], dt);

@@ -5,7 +5,7 @@
 #include "message_center.h"
 #include "general_def.h"
 
-static attitude_t *Gimbal_IMU_data;   // 云台IMU数据
+static attitude_t *gimba_IMU_data;   // 云台IMU数据
 static DJIMotorInstance *yaw_motor;   // yaw电机
 static DJIMotorInstance *pitch_motor; // pitch电机
 
@@ -16,7 +16,7 @@ static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
 void GimbalInit()
 {
-    // Gimbal_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+    gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
 
     // YAW
     Motor_Init_Config_s yaw_config = {
@@ -38,9 +38,9 @@ void GimbalInit()
                 .Kd = 0,
                 .MaxOut = 4000,
             },
-            .other_angle_feedback_ptr = &Gimbal_IMU_data->YawTotalAngle,
-            // 还需要增加角速度额外反馈指针
-            // .other_speed_feedback_ptr=&Gimbal_IMU_data.wz;
+            .other_angle_feedback_ptr = &gimba_IMU_data->YawTotalAngle,
+            // 还需要增加角速度额外反馈指针,注意方向,ins_task.md中有c板的bodyframe坐标系说明
+            // .other_speed_feedback_ptr=&gimba_IMU_data.wz;
         },
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
@@ -70,9 +70,9 @@ void GimbalInit()
                 .Kd = 0,
                 .MaxOut = 4000,
             },
-            .other_angle_feedback_ptr = &Gimbal_IMU_data->Pitch,
-            // 还需要增加角速度额外反馈指针
-            // .other_speed_feedback_ptr=&Gimbal_IMU_data.wy,
+            .other_angle_feedback_ptr = &gimba_IMU_data->Pitch,
+            // 还需要增加角速度额外反馈指针,注意方向,ins_task.md中有c板的bodyframe坐标系说明
+            // .other_speed_feedback_ptr=&gimba_IMU_data.wy,
         },
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
@@ -133,7 +133,7 @@ void GimbalTask()
     }
 
     // 设置反馈数据,主要是imu和yaw的ecd
-    gimbal_feedback_data.gimbal_imu_data = *Gimbal_IMU_data;
+    gimbal_feedback_data.gimbal_imu_data = *gimba_IMU_data;
     gimbal_feedback_data.yaw_motor_single_round_angle = yaw_motor->motor_measure.angle_single_round;
 
     // 推送消息

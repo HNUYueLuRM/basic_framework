@@ -9,7 +9,7 @@
  ******************************************************************************
  * @attention INS任务的初始化不要放入实时系统!应该由application拥有实例,随后在
  *            应用层调用初始化函数.
- * 
+ *
  ******************************************************************************
  */
 #ifndef __INS_TASK_H
@@ -27,32 +27,36 @@
 
 typedef struct
 {
+    float Gyro[3];  // 角速度
+    float Accel[3]; // 加速度
     // 还需要增加角速度数据
     float Roll;
     float Pitch;
     float Yaw;
     float YawTotalAngle;
-} attitude_t; //最终解算得到的角度,以及yaw转动的总角度(方便多圈控制)
+} attitude_t; // 最终解算得到的角度,以及yaw转动的总角度(方便多圈控制)
 
 typedef struct
 {
     float q[4]; // 四元数估计值
 
-    float Gyro[3];          // 角速度
-    float Accel[3];         // 加速度
     float MotionAccel_b[3]; // 机体坐标加速度
     float MotionAccel_n[3]; // 绝对系加速度
 
     float AccelLPF; // 加速度低通滤波系数
 
-    // 加速度在绝对系的向量表示
+    // bodyframe在绝对系的向量表示
     float xn[3];
     float yn[3];
     float zn[3];
 
-    float atanxz;
-    float atanyz;
+    // 加速度在机体系和XY两轴的夹角
+    // float atanxz;
+    // float atanyz;
 
+    // IMU量测值
+    float Gyro[3];  // 角速度
+    float Accel[3]; // 加速度
     // 位姿
     float Roll;
     float Pitch;

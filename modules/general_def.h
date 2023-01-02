@@ -3,13 +3,12 @@
 
 #ifndef PI
 #define PI 3.1415926535f
-#endif // !PI
+#endif                  // !PI
 #define PI2 (PI * 2.0f) // 2 pi
 
-#define RAD_2_ANGLE (180.0f / PI)
-#define ANGLE_2_RAD (PI / 180.0f)
+#define RAD_2_ANGLE 57.2957795f    // 180/pi
+#define ANGLE_2_RAD 0.01745329252f // pi/180
 
-#define RPM_2_ANGLE_PER_SEC (360.0f/60.0f) // ×360°/60sec
-
+#define RPM_2_ANGLE_PER_SEC 6.0f // ×360°/60sec
 
 #endif // !GENERAL_DEF_H

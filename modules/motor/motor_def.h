@@ -115,9 +115,9 @@ typedef struct
     float *speed_feedforward_ptr;   // 速度前馈数据指针
     float *current_feedforward_ptr; // 电流前馈数据指针
 
-    PID_Init_config_s current_PID;
-    PID_Init_config_s speed_PID;
-    PID_Init_config_s angle_PID;
+    PID_Init_Config_s current_PID;
+    PID_Init_Config_s speed_PID;
+    PID_Init_Config_s angle_PID;
 } Motor_Controller_Init_s;
 
 /* 用于初始化CAN电机的结构体,各类电机通用 */

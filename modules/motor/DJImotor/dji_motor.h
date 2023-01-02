@@ -18,6 +18,7 @@
 #include "bsp_can.h"
 #include "controller.h"
 #include "motor_def.h"
+#include "stdint.h"
 
 #define DJI_MOTOR_CNT 12
 

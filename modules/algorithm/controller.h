@@ -28,7 +28,7 @@
 // PID 优化环节使能标志位
 typedef enum
 {
-    PID_IMPROVE_NONE = 0b00000000,                        // 0000 0000
+    PID_IMPROVE_NONE = 0b00000000,            // 0000 0000
     Integral_Limit = 0b00000001,              // 0000 0001
     Derivative_On_Measurement = 0b00000010,   // 0000 0010
     Trapezoid_Intergral = 0b00000100,         // 0000 0100
@@ -112,7 +112,7 @@ typedef struct
     float Derivative_LPF_RC;
 
     PID_Improvement_e Improve;
-} PID_Init_config_s;
+} PID_Init_Config_s;
 
 /**
  * @brief 初始化PID实例
@@ -120,7 +120,7 @@ typedef struct
  * @param pid    PID实例指针
  * @param config PID初始化配置
  */
-void PID_Init(PIDInstance *pid, PID_Init_config_s *config);
+void PID_Init(PIDInstance *pid, PID_Init_Config_s *config);
 
 /**
  * @brief 计算PID输出

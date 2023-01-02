@@ -126,14 +126,14 @@ static void f_PID_ErrorHandle(PIDInstance *pid)
  * @param pid    PID实例
  * @param config PID初始化设置
  */
-void PID_Init(PIDInstance *pid, PID_Init_config_s *config)
+void PID_Init(PIDInstance *pid, PID_Init_Config_s *config)
 {   
     // config的数据和pid的部分数据是连续且相同的的,所以可以直接用memcpy
     // @todo: 不建议这样做,可扩展性差,不知道的开发者可能会误以为pid和config是同一个结构体
     // 后续修改为逐个赋值
     memset(pid, 0, sizeof(PIDInstance));
     // utilize the quality of struct that its memeory is continuous
-    memcpy(pid, config, sizeof(PID_Init_config_s));
+    memcpy(pid, config, sizeof(PID_Init_Config_s));
     // set rest of memory to 0
     
 }

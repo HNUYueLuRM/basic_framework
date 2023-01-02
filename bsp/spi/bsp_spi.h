@@ -55,6 +55,7 @@ SPIInstance *SPIRegister(SPI_Init_Config_s *conf);
 
 /**
  * @brief 通过spi向对应从机发送数据
+ * @todo  后续加入阻塞模式下的timeout参数
  *
  * @param spi_ins spi实例指针
  * @param ptr_data 要发送的数据
@@ -73,7 +74,8 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len);
 
 /**
  * @brief 通过spi利用移位寄存器同时收发数据
- *
+ * @todo  后续加入阻塞模式下的timeout参数
+ * 
  * @param spi_ins spi实例指针
  * @param ptr_data_rx 接收数据地址
  * @param ptr_data_tx 发送数据地址
