@@ -21,6 +21,7 @@
 // #define CHASSIS_BOARD //底盘板
 // #define GIMBAL_BOARD  //云台板
 
+// @todo: 增加机器人类型定义,后续是否要兼容所有机器人?(只兼容步兵英雄哨兵似乎就够了)
 /* 机器人类型定义 */
 // #define ROBOT_HERO 1     // 英雄机器人
 // #define ROBOT_ENINEER 2  // 工程机器人
@@ -46,11 +47,11 @@
 #define RADIUS_WHEEL 60             // 轮子半径
 #define REDUCTION_RATIO_WHEEL 19.0f // 电机减速比,因为编码器量测的是转子的速度而不是输出轴的速度故需进行转换
 
-// 检查是否出现定义冲突
+// 检查是否出现定义冲突,只允许一个开发板定义存在,否则编译会自动报错
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
     (defined(CHASSIS_BOARD) && defined(GIMBAL_BOARD))
-#error Conflict board definition! You can only define one type.
+#error Conflict board definition! You can only define one board type.
 #endif
 
 #pragma pack(1) // 压缩结构体,取消字节对齐

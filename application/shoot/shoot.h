@@ -2,7 +2,7 @@
 #define SHOOT_H
 
 /**
- * @brief 发射初始化
+ * @brief 发射初始化,会被RobotInit()调用
  * 
  */
 void ShootInit();

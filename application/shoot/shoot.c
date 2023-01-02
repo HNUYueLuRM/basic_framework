@@ -205,7 +205,7 @@ void ShootTask()
             DJIMotorSetRef(friction_l, 0);
             DJIMotorSetRef(friction_r, 0);
             break;
-        default: // 当前为了调试设定的4000,因为还没有加入裁判系统无法读取弹速.后续修改为while(1);表明模式错误
+        default: // 当前为了调试设定的默认值4000,因为还没有加入裁判系统无法读取弹速.
             DJIMotorSetRef(friction_l, 4000);
             DJIMotorSetRef(friction_r, 4000);
             break;
