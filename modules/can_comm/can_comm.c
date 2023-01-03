@@ -109,7 +109,7 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data)
         send_len = instance->send_buf_len - i >= 8 ? 8 : instance->send_buf_len - i;
         CANSetDLC(instance->can_ins, send_len);
         memcpy(instance->can_ins->tx_buff, instance->raw_sendbuf + i, send_len);
-        CANTransmit(instance->can_ins);
+        CANTransmit(instance->can_ins,1);
     }
 }
 

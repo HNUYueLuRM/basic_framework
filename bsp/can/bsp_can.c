@@ -2,6 +2,7 @@
 #include "main.h"
 #include "memory.h"
 #include "stdlib.h"
+#include "bsp_dwt.h"
 
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
@@ -88,12 +89,15 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
 
 /* @todo 目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
 /* 如果让CANinstance保存txbuff,会增加一次复制的开销 */
-void CANTransmit(CANInstance *_instance)
+uint8_t CANTransmit(CANInstance *_instance,uint8_t timeout)
 {
+    float dwt_start = DWT_GetTimeline_ms();
     while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
-        ;
+        if (DWT_GetTimeline_ms() - dwt_start > timeout) // 超时
+            return 0;
     // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
     HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
+    return 1; // 发送成功
 }
 
 void CANSetDLC(CANInstance *_instance, uint8_t length)

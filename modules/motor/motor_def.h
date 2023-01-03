@@ -29,9 +29,9 @@ typedef enum
     ANGLE_LOOP = 0b0100,
 
     // only for checking
-    _ = 0b0011,
-    __ = 0b0110,
-    ___ = 0b0111
+    SPEED_AND_CURRENT_LOOP = 0b0011,
+    ANGLE_AND_SPEED_LOOP = 0b0110,
+    ALL_THREE_LOOP = 0b0111
 } Closeloop_Type_e;
 
 typedef enum
@@ -80,7 +80,6 @@ typedef struct
 {
     float *other_angle_feedback_ptr; // 其他反馈来源的反馈数据指针
     float *other_speed_feedback_ptr;
-    // float *angle_foward_ptr; //前馈数据指针
     // float *speed_foward_ptr;
     // float *current_foward_ptr;
 

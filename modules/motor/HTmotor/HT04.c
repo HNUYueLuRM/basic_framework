@@ -16,7 +16,7 @@ static void HTMotorSetMode(HTMotor_Mode_t cmd, HTMotorInstance *motor)
     static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
     buf[7] = (uint8_t)cmd;
     memcpy(motor->motor_can_instace->tx_buff, buf, sizeof(buf));
-    CANTransmit(motor->motor_can_instace);
+    CANTransmit(motor->motor_can_instace,1);
 }
 
 /* 两个用于将uint值和float值进行映射的函数,在设定发送值和解析反馈值时使用 */
@@ -144,7 +144,7 @@ void HTMotorControl()
         { // 若该电机处于停止状态,直接将发送buff置零
             memset(motor_can->tx_buff + 6, 0, sizeof(uint16_t));
         }
-        CANTransmit(motor_can);
+        CANTransmit(motor_can,1);
     }
 }
 

@@ -117,7 +117,7 @@ void LKMotorControl()
 
     if (idx) // 如果有电机注册了
     {
-        CANTransmit(sender_instance);
+        CANTransmit(sender_instance,1);
     }
 }
 

@@ -11,7 +11,7 @@ static RC_ctrl_t rc_ctrl[2]; //[0]:当前数据TEMP,[1]:上一次的数据LAST.�
 static USARTInstance *rc_usart_instance;
 
 /**
- * @brief 矫正遥控器摇杆的值
+ * @brief 矫正遥控器摇杆的值,超过660或者小于-660的值都认为是无效值,置0
  *
  */
 static void RectifyRCjoystick()
@@ -31,7 +31,7 @@ static void RectifyRCjoystick()
  */
 static void sbus_to_rc(const uint8_t *sbus_buf)
 {
-    memcpy(&rc_ctrl[1], &rc_ctrl[TEMP], sizeof(RC_ctrl_t)); // 保存上一次的数据
+    memcpy(&rc_ctrl[1], &rc_ctrl[TEMP], sizeof(RC_ctrl_t)); // 保存上一次的数据,用于按键持续按下和切换的判断
     // 摇杆,直接解算时减去偏置
     rc_ctrl[TEMP].rc.rocker_r_ = ((sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff) - RC_CH_VALUE_OFFSET;                              //!< Channel 0
     rc_ctrl[TEMP].rc.rocker_r1 = (((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff) - RC_CH_VALUE_OFFSET;                       //!< Channel 1
@@ -40,8 +40,8 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
     rc_ctrl[TEMP].rc.dial = ((sbus_buf[16] | (sbus_buf[17] << 8)) & 0x07FF) - RC_CH_VALUE_OFFSET;                                 // 左侧拨轮
     RectifyRCjoystick();
     // 开关,0左1右
-    rc_ctrl[TEMP].rc.switch_right = ((sbus_buf[5] >> 4) & 0x0003);     //!< Switch left
-    rc_ctrl[TEMP].rc.switch_left = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch right
+    rc_ctrl[TEMP].rc.switch_right = ((sbus_buf[5] >> 4) & 0x0003);     //!< Switch right
+    rc_ctrl[TEMP].rc.switch_left = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch left
 
     // 鼠标解析
     rc_ctrl[TEMP].mouse.x = sbus_buf[6] | (sbus_buf[7] << 8);   //!< Mouse X axis
@@ -81,8 +81,7 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
 /**
  * @brief protocol resolve callback
  *        this func would be called when usart3 idle interrupt happens
- *        对sbus_to_rc的简单封装
- *
+ *        对sbus_to_rc的简单封装,用于注册到bsp_usart的回调函数中
  */
 static void RemoteControlRxCallback()
 {

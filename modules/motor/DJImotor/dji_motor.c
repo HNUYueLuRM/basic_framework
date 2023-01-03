@@ -288,7 +288,7 @@ void DJIMotorControl()
     {
         if (sender_enable_flag[i])
         {
-            CANTransmit(&sender_assignment[i]);
+            CANTransmit(&sender_assignment[i],1);
         }
     }
 }
