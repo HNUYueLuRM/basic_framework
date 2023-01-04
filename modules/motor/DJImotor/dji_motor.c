@@ -43,7 +43,8 @@ static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
 }
 
 /**
- * @brief 根据电调/拨码开关上的ID,计算发送ID和接收ID,并对电机进行分组以便处理多电机控制命令
+ * @brief 根据电调/拨码开关上的ID,根据说明书的默认id分配方式计算发送ID和接收ID,
+ *        并对电机进行分组以便处理多电机控制命令
  *
  * @param config
  */
@@ -69,8 +70,8 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         }
 
         // 计算接收id并设置分组发送id
-        config->rx_id = 0x200 + motor_id + 1;
-        sender_enable_flag[motor_grouping] = 1;
+        config->rx_id = 0x200 + motor_id + 1;   // 把ID+1,进行分组设置
+        sender_enable_flag[motor_grouping] = 1; // 设置发送标志位,防止发送空帧
         motor->message_num = motor_send_num;
         motor->sender_group = motor_grouping;
 
@@ -94,8 +95,8 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
             motor_grouping = config->can_handle == &hcan1 ? 2 : 5;
         }
 
-        config->rx_id = 0x204 + motor_id + 1;
-        sender_enable_flag[motor_grouping] = 1;
+        config->rx_id = 0x204 + motor_id + 1;   // 把ID+1,进行分组设置
+        sender_enable_flag[motor_grouping] = 1; // 只要有电机注册到这个分组,置为1;在发送函数中会通过此标志判断是否有电机注册
         motor->message_num = motor_send_num;
         motor->sender_group = motor_grouping;
 
@@ -127,7 +128,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
     // 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
     measure = &((DJIMotorInstance *)_instance->id)->motor_measure; // measure要多次使用,保存指针减小访存开销
 
-    // 解析数据并对电流和速度进行滤波
+    // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
     measure->last_ecd = measure->ecd;
     measure->ecd = ((uint16_t)rxbuff[0]) << 8 | rxbuff[1];
     measure->angle_single_round = ECD_ANGLE_COEF_DJI * (float)measure->ecd;
@@ -137,7 +138,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
     measure->temperate = rxbuff[6];
 
-    // 多圈角度计算,计算的前提是两次采样间电机转过的角度小于180°
+    // 多圈角度计算,前提是两次采样间电机转过的角度小于180°,高速转动时可能会出现问题,自己画个图就清楚计算过程了
     if (measure->ecd - measure->last_ecd > 4096)
         measure->total_round--;
     else if (measure->ecd - measure->last_ecd < -4096)
@@ -152,8 +153,8 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     memset(instance, 0, sizeof(DJIMotorInstance));
 
     // motor basic setting 电机基本设置
-    instance->motor_type = config->motor_type;
-    instance->motor_settings = config->controller_setting_init_config;
+    instance->motor_type = config->motor_type;                         // 6020 or 2006 or 3508
+    instance->motor_settings = config->controller_setting_init_config; // 正反转,闭环类型等
 
     // motor controller init 电机控制器初始化
     PID_Init(&instance->motor_controller.current_PID, &config->controller_param_init_config.current_PID);
@@ -161,6 +162,7 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     PID_Init(&instance->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
     instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
+    // 后续增加电机前馈控制器(速度和电流)
 
     // 电机分组,因为至多4个电机可以共用一帧CAN控制报文
     MotorSenderGrouping(instance, &config->can_init_config);
@@ -273,8 +275,8 @@ void DJIMotorControl()
         // 分组填入发送数据
         group = motor->sender_group;
         num = motor->message_num;
-        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(set >> 8);
-        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(set & 0x00ff);
+        sender_assignment[group].tx_buff[2 * num] = (uint8_t)(set >> 8);         // 低八位
+        sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(set & 0x00ff); // 高八位
 
         // 电机是否停止运行
         if (motor->stop_flag == MOTOR_STOP)
@@ -288,7 +290,7 @@ void DJIMotorControl()
     {
         if (sender_enable_flag[i])
         {
-            CANTransmit(&sender_assignment[i],1);
+            CANTransmit(&sender_assignment[i], 1);
         }
     }
 }

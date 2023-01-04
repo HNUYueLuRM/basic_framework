@@ -57,6 +57,8 @@ void CANSetDLC(CANInstance *_instance, uint8_t length);
  * @brief transmit mesg through CAN device,通过can实例发送消息
  *        发送前需要向CAN实例的tx_buff写入发送数据
  * 
+ * @attention 超时时间不应该超过调用此函数的任务的周期,否则会导致任务阻塞
+ * 
  * @param timeout 超时时间,单位为ms;后续改为us,获得更精确的控制
  * @param _instance* can instance owned by module
  */

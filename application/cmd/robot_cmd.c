@@ -19,7 +19,7 @@ static CANCommInstance *cmd_can_comm; // 双板通信
 #ifdef ONE_BOARD
 static Publisher_t *chassis_cmd_pub;   // 底盘控制消息发布者
 static Subscriber_t *chassis_feed_sub; // 底盘反馈信息订阅者
-#endif                                 // ONE_BOARD
+#endif  // ONE_BOARD
 
 static Chassis_Ctrl_Cmd_s chassis_cmd_send;      // 发送给底盘应用的信息,包括控制信息和UI绘制相关
 static Chassis_Upload_Data_s chassis_fetch_data; // 从底盘应用接收的反馈信息信息,底盘功率枪口热量与底盘运动状态等

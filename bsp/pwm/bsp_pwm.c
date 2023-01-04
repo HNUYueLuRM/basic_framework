@@ -14,7 +14,6 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
         {
             if (pwm_instance[i]->callback) // 如果有回调函数
                 pwm_instance[i]->callback(pwm_instance[i]);
-
             return; // 一次只能有一个通道的中断,所以直接返回
         }
     }
@@ -34,9 +33,9 @@ PWMInstance *PWMRegister(PWM_Init_Config_s *config)
     pwm->pulse = config->pulse;
     pwm->callback = config->callback;
     pwm->id = config->id;
-
-    HAL_TIM_PWM_Start(pwm->htim, pwm->channel); // 启动PWM
-    __HAL_TIM_SetCompare(pwm->htim, pwm->channel, pwm->pulse); // 设置占空比,初始为0
+    // 启动PWM
+    HAL_TIM_PWM_Start(pwm->htim, pwm->channel);                
+    __HAL_TIM_SetCompare(pwm->htim, pwm->channel, pwm->pulse); // 设置占空比
 
     pwm_instance[idx++] = pwm;
     return pwm;

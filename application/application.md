@@ -10,7 +10,7 @@
 
 在main函数中包含`robot.h`头文件，这是对整车的抽象。将`INStask`，`motortask`，`ledtask`，`monitortask`这四个task加入`freertos.c`中，创建对应的任务，设置合适的任务运行间隔；然后将`robottask`放入freertos.c中，同样以一定的频率运行。 在初始化实时系统之前，在`main()`中调用`RobotInit()`进行整车的初始化。
 
-INStask的运行频率为1kHz，motortask推荐的运行频率为200Hz\~500Hz，对于高实时性要求的电机可以提升到1kHz，不过要注意CAN总线的负载。ledtask的运行频率推荐为1kHz，monitortask的运行频率推荐为50\~100Hz；robottask的运行频率推荐为150Hz以上，应当高于视觉发送的频率，若后续使用插帧，应该保证不低过motortask太多。
+**关于运行的任务**，INStask的运行频率必须为1kHz，motortask推荐的运行频率为200Hz\~500Hz（详情见module/motor/motor_task.c），在MotorTask内部，对于高实时性要求的电机可以提升到1kHz，不过要注意CAN总线的负载。ledtask的运行频率推荐为1kHz，monitortask的运行频率为1kHz；robottask的运行频率推荐为150Hz以上，应当高于视觉发送的频率，若后续使用插帧，同样应该保证不低过motortask太多。
 
 若使用双板，则在`robot_def.h`中给对应的开发板设定宏定义，如底盘板使用`#define CHASSIS_BOARD`，云台板使用`#define GIMBAL_BOARD`；单个开发板控制整车，则定义`#define ONE_BOARD`。在每个应用中，都已经使用编译预处理指令完成条件编译，会自动根据设定的宏切换功能。使用双板的时候，目前板间通信通过CAN完成，因此两个开发板会挂载在一条总线上，在两个开发板对这条总线的其他使用CAN的设备进行配置时注意**不要发生ID冲突**，还要注意**防止负载过大**。
 

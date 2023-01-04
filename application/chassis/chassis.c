@@ -23,8 +23,8 @@
 #include "arm_math.h"
 
 /* 根据robot_def.h中的macro自动计算的参数 */
-#define HALF_WHEEL_BASE (WHEEL_BASE / 2.0f)   // 半轴距
-#define HALF_TRACK_WIDTH (TRACK_WIDTH / 2.0f) // 半轮距
+#define HALF_WHEEL_BASE (WHEEL_BASE / 2.0f)     // 半轴距
+#define HALF_TRACK_WIDTH (TRACK_WIDTH / 2.0f)   // 半轮距
 #define PERIMETER_WHEEL (RADIUS_WHEEL * 2 * PI) // 轮子周长
 
 /* 底盘应用包含的模块和信息存储,底盘是单例模式,因此不需要为底盘建立单独的结构体 */
@@ -35,16 +35,16 @@ static CANCommInstance *chasiss_can_comm; // 双板通信CAN comm
 attitude_t *Chassis_IMU_data;
 #endif // CHASSIS_BOARD
 #ifdef ONE_BOARD
-static Publisher_t *chassis_pub;  // 用于发布底盘的数据
-static Subscriber_t *chassis_sub; // 用于订阅底盘的控制命令
-#endif // ONE_BOARD
+static Publisher_t *chassis_pub;                    // 用于发布底盘的数据
+static Subscriber_t *chassis_sub;                   // 用于订阅底盘的控制命令
+#endif // !ONE_BOARD
 static Chassis_Ctrl_Cmd_s chassis_cmd_recv;         // 底盘接收到的控制命令
 static Chassis_Upload_Data_s chassis_feedback_data; // 底盘回传的反馈数据
 
 static referee_info_t *referee_data; // 裁判系统的数据
 static SuperCapInstance *cap;        // 超级电容
 static DJIMotorInstance *motor_lf;   // left right forward back
-static DJIMotorInstance *motor_rf;  
+static DJIMotorInstance *motor_rf;
 static DJIMotorInstance *motor_lb;
 static DJIMotorInstance *motor_rb;
 
@@ -104,8 +104,8 @@ void ChassisInit()
     SuperCap_Init_Config_s cap_conf = {
         .can_config = {
             .can_handle = &hcan2,
-            .tx_id = 0x302,
-            .rx_id = 0x301,
+            .tx_id = 0x302, // 超级电容默认接收id
+            .rx_id = 0x301, // 超级电容默认发送id,注意tx和rx在其他人看来是反的
         }};
     cap = SuperCapInit(&cap_conf); // 超级电容初始化
 
@@ -207,13 +207,13 @@ void ChassisTask()
     switch (chassis_cmd_recv.chassis_mode)
     {
     case CHASSIS_NO_FOLLOW: // 底盘不旋转,但维持全向机动,一般用于调整云台姿态
-        chassis_cmd_recv.wz = 0; 
+        chassis_cmd_recv.wz = 0;
         break;
     case CHASSIS_FOLLOW_GIMBAL_YAW: // 跟随云台,不单独设置pid,以误差角度平方为速度输出
-        chassis_cmd_recv.wz = 0.05f * powf(chassis_cmd_recv.wz, 2.0f); 
+        chassis_cmd_recv.wz = 0.05f * powf(chassis_cmd_recv.wz, 2.0f);
         break;
     case CHASSIS_ROTATE: // 自旋,同时保持全向机动;当前wz维持定值,后续增加不规则的变速策略
-        // chassis_cmd_recv.wz=sin(t) 
+        // chassis_cmd_recv.wz=sin(t)
         break;
     default:
         break;

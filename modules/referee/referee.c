@@ -98,10 +98,10 @@ static void JudgeReadData(uint8_t *ReadFromUsart)
 				}
 			}
 		}
-		// 首地址加帧长度,指向CRC16下一字节,用来判断是否为0xA5,用来判断一个数据包是否有多帧数据
+		// 首地址加帧长度,指向CRC16下一字节,用来判断是否为0xA5,从而判断一个数据包是否有多帧数据
 		if (*(ReadFromUsart + sizeof(xFrameHeader) + LEN_CMDID + referee_info.FrameHeader.DataLength + LEN_TAIL) == 0xA5)
 		{
-			// 如果一个数据包出现了多帧数据,则再次读取
+			// 如果一个数据包出现了多帧数据,则再次调用解析函数,直到所有数据包解析完毕
 			JudgeReadData(ReadFromUsart + sizeof(xFrameHeader) + LEN_CMDID + referee_info.FrameHeader.DataLength + LEN_TAIL);
 		}
 	}

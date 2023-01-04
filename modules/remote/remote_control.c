@@ -3,13 +3,14 @@
 #include "bsp_usart.h"
 #include "memory.h"
 #include "stdlib.h"
+#include "daemon.h"
 
 #define REMOTE_CONTROL_FRAME_SIZE 18u // 遥控器接收的buffer大小
 // 遥控器数据
 static RC_ctrl_t rc_ctrl[2]; //[0]:当前数据TEMP,[1]:上一次的数据LAST.用于按键持续按下和切换的判断
 // 遥控器拥有的串口实例,因为遥控器是单例,所以这里只有一个,就不封装了
 static USARTInstance *rc_usart_instance;
-
+static DaemonInstance *rc_daemon_instance;
 /**
  * @brief 矫正遥控器摇杆的值,超过660或者小于-660的值都认为是无效值,置0
  *
@@ -79,13 +80,22 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
 }
 
 /**
- * @brief protocol resolve callback
- *        this func would be called when usart3 idle interrupt happens
- *        对sbus_to_rc的简单封装,用于注册到bsp_usart的回调函数中
+ * @brief 对sbus_to_rc的简单封装,用于注册到bsp_usart的回调函数中
+ *        
  */
 static void RemoteControlRxCallback()
 {
-    sbus_to_rc(rc_usart_instance->recv_buff);
+    DaemonReload(rc_daemon_instance);        // 先喂狗
+    sbus_to_rc(rc_usart_instance->recv_buff); // 进行协议解析
+}
+
+/**
+ * @brief 
+ * 
+ */
+static void RCLostCallback()
+{
+    // @todo 遥控器丢失的处理
 }
 
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
@@ -95,5 +105,15 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
     conf.usart_handle = rc_usart_handle;
     conf.recv_buff_size = REMOTE_CONTROL_FRAME_SIZE;
     rc_usart_instance = USARTRegister(&conf);
+
+    // 进行守护进程的注册,用于定时检查遥控器是否正常工作
+    // @todo 当前守护进程直接在这里注册,后续考虑将其封装到遥控器的初始化函数中,即可以让用户决定reload_count的值(是否有必要?)
+    Daemon_Init_Config_s daemon_conf = {
+        .reload_count = 100, // 100ms,遥控器的接收频率实际上是1000/14Hz(大约70)
+        .callback = NULL,    // 后续考虑重新启动遥控器对应串口的传输
+        .owner_id = NULL,    // 只有1个遥控器,不需要owner_id
+    };
+    rc_daemon_instance = DaemonRegister(&daemon_conf);
+
     return (RC_ctrl_t *)&rc_ctrl;
 }

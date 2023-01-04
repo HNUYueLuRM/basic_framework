@@ -209,6 +209,6 @@ typedef struct
     // ...
 } Shoot_Upload_Data_s;
 
-#pragma pack() // 开启字节对齐
+#pragma pack() // 开启字节对齐,结束前面的#pragma pack(1)
 
 #endif // !ROBOT_DEF_H

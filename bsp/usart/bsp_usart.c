@@ -19,7 +19,9 @@ static USARTInstance *usart_instance[DEVICE_USART_CNT] = {NULL};
 
 /**
  * @brief usart service will start automatically, after each module registered
- *        串口服务会在每个实例注册之后自动启用
+ *  
+ * @todo 串口服务会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
+ *       可能还要将此函数修改为extern,使得module可以控制串口的启停
  *
  * @param _instance instance owned by module,模块拥有的串口实例
  */
@@ -53,6 +55,23 @@ USARTInstance *USARTRegister(USART_Init_Config_s *init_config)
 void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size)
 {
     HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
+}
+
+void USARTAbort(USARTInstance *_instance, USART_TRANSFER_MODE mode)
+{
+    switch (mode)
+    {
+    case USART_TRANSFER_TX:
+        // if(_instance.work_mode == USART_TX_DMA)
+        HAL_UART_AbortTransmit_IT(_instance->usart_handle);
+        break;
+    case USART_TRANSFER_RX:
+        // if(_instance.work_mode == USART_RX_DMA)
+        HAL_UART_AbortReceive_IT(_instance->usart_handle);
+        break;
+    case USART_TRANSFER_NONE:
+        break;
+    }
 }
 
 /**
