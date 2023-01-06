@@ -11,8 +11,8 @@ static USARTInstance *referee_usart_instance;
 
 /**************裁判系统数据******************/
 static referee_info_t referee_info;
-static uint8_t Judge_Self_ID;		 // 当前机器人的ID
-static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
+// static uint8_t Judge_Self_ID;		 // 当前机器人的ID
+// static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
 
 /**
  * @brief  读取裁判数据,中断中读取保证速度
@@ -23,9 +23,7 @@ static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
 static void JudgeReadData(uint8_t *ReadFromUsart)
 {
 	uint16_t judge_length; // 统计一帧数据长度
-	//	referee_info.CmdID = 0; //数据命令码解析
-	// 空数据包，则不作任何处理
-	if (ReadFromUsart == NULL)
+	if (ReadFromUsart == NULL) // 空数据包，则不作任何处理
 		return;
 
 	// 写入帧头数据(5-byte),用于判断是否开始存储裁判数据
