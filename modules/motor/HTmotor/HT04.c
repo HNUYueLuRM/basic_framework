@@ -6,7 +6,7 @@ static uint8_t idx;
 HTMotorInstance *ht_motor_instance[HT_MOTOR_CNT];
 
 /**
- * @brief
+ * @brief 
  *
  * @param cmd
  * @param motor
@@ -111,24 +111,28 @@ void HTMotorControl()
                 pid_measure = *motor->other_angle_feedback_ptr;
             else
                 pid_measure = measure->real_current;
+
             pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
-            if (setting->feedforward_flag & SPEED_FEEDFORWARD)
-                pid_ref += *motor->speed_feedforward_ptr;
         }
 
         if ((setting->close_loop_type & SPEED_LOOP) && setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP))
         {
+            if (setting->feedforward_flag & SPEED_FEEDFORWARD)
+                pid_ref += *motor->speed_feedforward_ptr;
+
             if (setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor->other_speed_feedback_ptr;
             else
                 pid_measure = measure->speed_aps;
+                
             pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
-            if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
-                pid_ref += *motor->current_feedforward_ptr;
         }
 
         if (setting->close_loop_type & CURRENT_LOOP)
         {
+            if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
+                pid_ref += *motor->current_feedforward_ptr;
+
             pid_ref = PID_Calculate(&motor->current_PID, measure->real_current, pid_ref);
         }
 

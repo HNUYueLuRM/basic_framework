@@ -126,7 +126,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
     static DJI_Motor_Measure_s *measure;
     rxbuff = _instance->rx_buff;
     // 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
-    measure = &((DJIMotorInstance *)_instance->id)->motor_measure; // measure要多次使用,保存指针减小访存开销
+    measure = &(((DJIMotorInstance *)_instance->id)->motor_measure); // measure要多次使用,保存指针减小访存开销
 
     // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
     measure->last_ecd = measure->ecd;

@@ -31,7 +31,7 @@ typedef enum
     // only for checking
     SPEED_AND_CURRENT_LOOP = 0b0011,
     ANGLE_AND_SPEED_LOOP = 0b0110,
-    ALL_THREE_LOOP = 0b0111
+    ALL_THREE_LOOP = 0b0111,
 } Closeloop_Type_e;
 
 typedef enum

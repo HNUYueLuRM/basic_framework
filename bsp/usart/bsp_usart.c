@@ -18,7 +18,7 @@ static uint8_t idx;
 static USARTInstance *usart_instance[DEVICE_USART_CNT] = {NULL};
 
 /**
- * @brief usart service will start automatically, after each module registered
+ * @brief 启动串口服务,会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
  *  
  * @todo 串口服务会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
  *       可能还要将此函数修改为extern,使得module可以控制串口的启停
@@ -78,17 +78,12 @@ void USARTAbort(USARTInstance *_instance, USART_TRANSFER_MODE mode)
  * @brief 每次dma/idle中断发生时，都会调用此函数.对于每个uart实例会调用对应的回调进行进一步的处理
  *        例如:视觉协议解析/遥控器解析/裁判系统解析
  *
- * @todo  neozng给HAL库的github repo提了issue, ST在最新的一次更新中为此提供了一个HAL_UARTEx_GetRxEventType()函数
- *        这样就可以通过调用这个函数来确认是什么中断导致了回调函数的调用
- *
- * @note  because DMA half transfer iterrupt(DMA_IT_HT) would call this callback function too, so we just
- *        disable it when transfer complete using macro: __HAL_DMA_DISABLE_IT(huart->hdmarx,DMA_IT_HT)
- *        关闭dma half transfer中断防止两次进入HAL_UARTEx_RxEventCallback()
+ * @note  通过__HAL_DMA_DISABLE_IT(huart->hdmarx,DMA_IT_HT)关闭dma half transfer中断防止两次进入HAL_UARTEx_RxEventCallback()
  *        这是HAL库的一个设计失误,发生DMA传输完成/半完成以及串口IDLE中断都会触发HAL_UARTEx_RxEventCallback()
  *        我们只希望处理，因此直接关闭DMA半传输中断第一种和第三种情况
  *
- * @param huart uart handle indicate which uart is being handled 发生中断的串口
- * @param Size not used temporarily,此次接收到的总数居量,暂时没用
+ * @param huart 发生中断的串口
+ * @param Size 此次接收到的总数居量,暂时没用
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
@@ -109,12 +104,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 }
 
 /**
- * @brief when error occurs in the process of send/receive,this function will be called
- *        then just simply restart send/receive.
+ * @brief 当串口发送/接收出现错误时,会调用此函数,此时这个函数要做的就是重新启动接收
  *
- * @note  most frequent error ex: parity/overrrun/frame error
+ * @note  最常见的错误:奇偶校验/溢出/帧错误
  *
- * @param huart uart handle type, indicate where error comes from
+ * @param huart 发生错误的串口
  */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
