@@ -136,20 +136,18 @@ void Append_CRC8_Check_Sum( uint8_t *pchMessage, uint16_t dwLength)
 */
 uint16_t Get_CRC16_Check_Sum(uint8_t *pchMessage,uint32_t dwLength,uint16_t wCRC)
 {
-    uint8_t chData;
-	
-		if (pchMessage == NULL)
-		{
-				return 0xFFFF;
-		}
-		while(dwLength--)
-		{
-				chData = *pchMessage++;
-				(wCRC) = ((uint16_t)(wCRC) >> 8) ^ 
-                 wCRC_Table[((uint16_t)(wCRC) ^ (uint16_t)(chData)) & 0x00ff];
-		}
-		
-		return wCRC;
+    uint8_t chData;	
+	if (pchMessage == NULL)
+	{
+		return 0xFFFF;
+	}
+	while(dwLength--)
+	{
+		chData = *pchMessage++;
+		(wCRC) = ((uint16_t)(wCRC) >> 8) ^ 
+		wCRC_Table[((uint16_t)(wCRC) ^ (uint16_t)(chData)) & 0x00ff];
+	}		
+	return wCRC;
 }
 
 

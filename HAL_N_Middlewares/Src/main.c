@@ -119,11 +119,15 @@ int main(void)
 
 
 //////////////////////////////////////////////////
-	// Graph_Data shoot_line;
+	Graph_Data graph[5];
 	UI_Delete(UI_Data_Del_ALL,0);
-	// //绘制发射基准线
-	// Line_Draw(&shoot_line,"s1",UI_Graph_ADD,7,UI_Color_White,3,710,540,1210,540);
-	// UI_ReFresh(1,shoot_line);
+	Line_Draw(&graph[0],"s0",UI_Graph_ADD,0,UI_Color_White,3,710,540,1210,540);
+	Rectangle_Draw(&graph[1],"s1",UI_Graph_ADD,1,UI_Color_Yellow,4,600,200,800,500);     
+	Circle_Draw(&graph[2],"s2",UI_Graph_ADD,2,UI_Color_Green,5,960,540,100);
+	Elliptical_Draw(&graph[3],"s3",UI_Graph_ADD,3,UI_Color_Orange,3,960,540,100,20);
+	Arc_Draw(&graph[4],"s4",UI_Graph_ADD,4,UI_Color_Purplish_red,30,160,3,1200,550,50,100);
+	UI_ReFresh(5,graph[0],graph[1],graph[2],graph[3],graph[4]);
+
 //////////////////////////////////////////////////
 
 	/* USER CODE END 2 */
