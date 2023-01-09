@@ -12,9 +12,10 @@
 #ifndef REFEREE_H
 #define REFEREE_H
 
-#include "bsp_usart.h"
 #include "usart.h"
 #include "referee_def.h"
+#include "bsp_usart.h"
+
 
 #define FALSE 0
 #define TRUE 1
@@ -184,5 +185,13 @@ typedef struct
  */
 referee_info_t* RefereeInit(UART_HandleTypeDef *referee_usart_handle);
 
+/**
+ * @brief 发送函数
+ * @todo 
+ * @param send 待发送数据
+ */
+void RefereeSend(uint8_t *send,uint16_t tx_len);
+
+extern USARTInstance *referee_usart_instance;  
 
 #endif // !REFEREE_H

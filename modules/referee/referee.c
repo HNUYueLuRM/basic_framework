@@ -2,17 +2,45 @@
 #include "string.h"
 #include "crc.h"
 #include "bsp_usart.h"
-#include "dma.h"
 
-// 参考深圳大学  Infantry_X-master
 #define RE_RX_BUFFER_SIZE 200
 
-static USARTInstance *referee_usart_instance;
+USARTInstance *referee_usart_instance;   //暂时改为非静态变量
 
-/**************裁判系统数据******************/
 static referee_info_t referee_info;
+static void JudgeReadData(uint8_t *ReadFromUsart);
+static void RefereeRxCallback();
+
 // static uint8_t Judge_Self_ID;		 // 当前机器人的ID
 // static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
+
+/* 裁判系统通信初始化 */
+referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
+{
+	USART_Init_Config_s conf;
+	conf.module_callback = RefereeRxCallback;
+	conf.usart_handle = referee_usart_handle;
+	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
+	referee_usart_instance = USARTRegister(&conf);
+	return &referee_info;
+}
+
+
+/**
+ * @brief 发送函数
+ * @param send 待发送数据
+ */
+void RefereeSend(uint8_t *send,uint16_t tx_len)
+{
+    USARTSend(referee_usart_instance,send,tx_len);
+}
+
+
+/*裁判系统串口接收回调函数,解析数据 */
+static void RefereeRxCallback()
+{
+	JudgeReadData(referee_usart_instance->recv_buff);
+}
 
 /**
  * @brief  读取裁判数据,中断中读取保证速度
@@ -103,23 +131,4 @@ static void JudgeReadData(uint8_t *ReadFromUsart)
 			JudgeReadData(ReadFromUsart + sizeof(xFrameHeader) + LEN_CMDID + referee_info.FrameHeader.DataLength + LEN_TAIL);
 		}
 	}
-}
-
-/**
- * @brief 裁判系统串口接收回调函数,解析数据
- * 
- */
-static void RefereeRxCallback()
-{
-	JudgeReadData(referee_usart_instance->recv_buff);
-}
-
-referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
-{
-	USART_Init_Config_s conf;
-	conf.module_callback = RefereeRxCallback;
-	conf.usart_handle = referee_usart_handle;
-	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
-	referee_usart_instance = USARTRegister(&conf);
-	return &referee_info;
 }

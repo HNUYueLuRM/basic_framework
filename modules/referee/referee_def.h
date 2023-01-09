@@ -15,7 +15,7 @@
 
 #pragma pack(1)
 
-// 枚举类型,代替#define声明
+/* 通信协议格式偏移，枚举类型,代替#define声明 */
 typedef enum
 {
 	FRAME_HEADER = 0,
@@ -23,7 +23,7 @@ typedef enum
 	DATA = 7,
 } JudgeFrameOffset;
 
-// 帧头偏移,枚举
+/* 帧头偏移 */
 typedef enum
 {
 	SOF = 0,		 // 起始位
@@ -32,7 +32,7 @@ typedef enum
 	CRC8 = 4		 // CRC8
 } FrameHeaderOffset;
 
-/* 自定义帧头 */
+/* 帧头定义 */
 typedef struct
 {
 	uint8_t SOF;
@@ -41,7 +41,7 @@ typedef struct
 	uint8_t CRC8;
 } xFrameHeader;
 
-// 命令码ID,用来判断接收的是什么数据
+/* 命令码ID,用来判断接收的是什么数据 */
 typedef enum
 {
 	ID_game_state = 0x0001,				   // 比赛状态数据
@@ -60,7 +60,7 @@ typedef enum
 
 } CmdID;
 
-// 命令码数据段长,根据官方协议来定义长度
+/* 命令码数据段长,根据官方协议来定义长度 */
 typedef enum
 {
 	LEN_game_state = 3,				  // 0x0001

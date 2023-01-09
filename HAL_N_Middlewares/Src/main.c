@@ -33,6 +33,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "robot.h"
+//////////////////////////////////////////////////
+#include "referee_UI.h"
+#include "referee.h"
+//////////////////////////////////////////////////
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -112,6 +116,15 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	RobotInit();
+
+
+//////////////////////////////////////////////////
+	// Graph_Data shoot_line;
+	UI_Delete(UI_Data_Del_ALL,0);
+	// //绘制发射基准线
+	// Line_Draw(&shoot_line,"s1",UI_Graph_ADD,7,UI_Color_White,3,710,540,1210,540);
+	// UI_ReFresh(1,shoot_line);
+//////////////////////////////////////////////////
 
 	/* USER CODE END 2 */
 

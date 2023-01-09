@@ -49,7 +49,7 @@ static DJIMotorInstance *motor_lb;
 static DJIMotorInstance *motor_rb;
 
 /* 用于自旋变速策略的时间变量,后续考虑查表加速 */
-static float t;
+// static float t;
 
 /* 私有函数计算的中介变量,设为静态避免参数传递的开销 */
 static float chassis_vx, chassis_vy;     // 将云台系的速度投影到底盘
