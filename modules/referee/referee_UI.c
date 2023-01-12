@@ -5,11 +5,11 @@
 #include "dma.h"
 #include "stdio.h"
 #include "referee.h"
-
+/* syhtodo 根据自身id判断客户端id */
 uint16_t Robot_ID = UI_Data_RobotID_BHero;
 uint16_t Cilent_ID = UI_Data_CilentID_BHero;
 
-unsigned char UI_Seq;                      //包序号
+uint8_t UI_Seq;                      //包序号
 
 /********************************************删除操作*************************************
 **参数：Del_Operate  对应头文件删除操作
@@ -192,7 +192,8 @@ void Elliptical_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,
 **********************************************************************************************************/
         
 void Arc_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y)
+                  uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y, 
+                  uint32_t end_x,uint32_t end_y)
 {
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
@@ -214,8 +215,6 @@ void Arc_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_
    graph->end_y = end_y;
 }
 
-
-
 /************************************************绘制浮点型数据*************************************************
 **参数：*graph Graph_Data类型变量指针，用于存放图形数据
         graphname[3]   图片名称，用于标识更改
@@ -226,26 +225,71 @@ void Arc_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_
         Graph_Digit    小数位数
 		  Graph_Width    图形线宽
         Start_x、Start_y    开始坐标
-        Graph_Float   要显示的浮点数数值*1000
+        radius=a&0x3FF;   a为浮点数乘以1000后的32位整型数
+        end_x=(a>>10)&0x7FF;
+        end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
-/* syhtodo浮点，整形，字符待编写或检查 */  
-/* syhtodo需要解决位分配问腿，更换结构体 */          
-void Float_Draw(Float_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float)
+        
+void Float_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float)
 {
-   int i;   
+   int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
+   {
       graph->graphic_name[2-i]=graphname[i];
+   }
    graph->graphic_tpye = UI_Graph_Float;
    graph->operate_tpye = Graph_Operate;
    graph->layer = Graph_Layer;
    graph->color = Graph_Color;
+
    graph->width = Graph_Width;
    graph->start_x = Start_x;
    graph->start_y = Start_y;
    graph->start_angle = Graph_Size;
    graph->end_angle = Graph_Digit;
-   graph->graph_Float = Graph_Float;
+
+   graph->radius=Graph_Float&0x3FF;   
+   graph->end_x=(Graph_Float>>10)&0x7FF;
+   graph->end_y=(Graph_Float>>21)&0x7FF;
 }
+
+/************************************************绘制整型数据*************************************************
+**参数：*graph Graph_Data类型变量指针，用于存放图形数据
+        graphname[3]   图片名称，用于标识更改
+        Graph_Operate   图片操作，见头文件
+        Graph_Layer    图层0-9
+        Graph_Color    图形颜色
+        Graph_Size     字号
+		  Graph_Width    图形线宽
+        Start_x、Start_y    开始坐标
+        radius=a&0x3FF;   a为32位整型数
+        end_x=(a>>10)&0x7FF;
+        end_y=(a>>21)&0x7FF;
+**********************************************************************************************************/
+void Integer_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer)
+{
+   int i;
+   for(i=0;i<3&&graphname[i]!='\0';i++)
+   {
+      graph->graphic_name[2-i]=graphname[i];
+   }
+   graph->graphic_tpye = UI_Graph_Int;
+   graph->operate_tpye = Graph_Operate;
+   graph->layer = Graph_Layer;
+   graph->color = Graph_Color;
+
+   graph->start_angle = Graph_Size;
+   graph->width = Graph_Width;
+   graph->start_x = Start_x;
+   graph->start_y = Start_y;
+
+   graph->radius=Graph_Integer&0x3FF;   
+   graph->end_x=(Graph_Integer>>10)&0x7FF;
+   graph->end_y=(Graph_Integer>>21)&0x7FF;
+}
+
 
 /************************************************绘制字符型数据*************************************************
 **参数：*graph Graph_Data类型变量指针，用于存放图形数据
@@ -253,42 +297,57 @@ void Float_Draw(Float_Data *graph,char graphname[3],uint32_t Graph_Operate,uint3
         Graph_Operate   图片操作，见头文件
         Graph_Layer    图层0-9
         Graph_Color    图形颜色
-		Graph_Size     字号
+        Graph_Size     字号
         Graph_Width    图形线宽
         Start_x、Start_y    开始坐标
-**********************************************************************************************************/
-           
-void Char_Draw(String_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y)
-{
-   int i;  
+**********************************************************************************************************/        
+void Char_Draw(String_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y)
+{  
+   memset(graph->Graph_Control.graphic_name, 0, 3);
+   int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
-   graph->Graph_Control.graphic_name[2-i]=graphname[i];
+   {
+      graph->Graph_Control.graphic_name[2-i]=graphname[i];
+   }
+   
    graph->Graph_Control.graphic_tpye = UI_Graph_Char;
    graph->Graph_Control.operate_tpye = Graph_Operate;
    graph->Graph_Control.layer = Graph_Layer;
    graph->Graph_Control.color = Graph_Color;
+
    graph->Graph_Control.width = Graph_Width;
    graph->Graph_Control.start_x = Start_x;
    graph->Graph_Control.start_y = Start_y;
    graph->Graph_Control.start_angle = Graph_Size;
+
+   //syhtodo无关的赋值为0
+   graph->Graph_Control.radius=0;
+   graph->Graph_Control.end_x=0;
+   graph->Graph_Control.end_y=0;
 }
 
+/************************************************绘制字符型数据*************************************************
+**参数：*graph Graph_Data类型变量指针，用于存放图形数据
+        fmt需要显示的字符串
+syhtodo 尚未理解该函数的写法
+**********************************************************************************************************/
 void Char_Write(String_Data *graph,char* fmt, ...)
 {
 	uint16_t i = 0;
 	va_list ap;
-	va_start(ap, fmt);
+	va_start(ap,fmt);
 	vsprintf((char*)graph->show_Data, fmt, ap);
 	va_end(ap);
 	i = strlen((const char*)graph->show_Data);
 	graph->Graph_Control.end_angle = i;
 }
 
-/************************************************UI推送函数（使更改生效）*********************************
-**参数： cnt   图形个数
-         ...   图形变量参数
-Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
-**********************************************************************************************************/
+/* UI推送函数（使更改生效）
+   参数： cnt   图形个数
+            ...   图形变量参数
+   Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
+ */
 int UI_ReFresh(int cnt,...)
 {
    int i;
@@ -386,7 +445,6 @@ int Char_ReFresh(String_Data string_Data)
    
    RefereeSend((uint8_t *)&framehead,sizeof(framehead));
    RefereeSend((uint8_t *)&datahead,sizeof(datahead));
-                                         
    RefereeSend((uint8_t *)&graphData,sizeof(graphData));  //发送操作数据  
    RefereeSend((uint8_t *)&frametail,sizeof(frametail)); //发送CRC16校验值
    
@@ -394,14 +452,6 @@ int Char_ReFresh(String_Data string_Data)
    return 0;
 }
 
-
-
-// /**
-//   * @brief  上传自定义数据
-//   * @param  void
-//   * @retval void
-//   * @attention  数据打包,打包完成后通过串口发送到裁判系统
-//   */
 // #define send_max_len     200
 // unsigned char CliendTxBuffer[send_max_len];
 // void JUDGE_Show_Data(void)
@@ -417,7 +467,7 @@ int Char_ReFresh(String_Data string_Data)
 // 	ShowData.txFrameHeader.DataLength = sizeof(ext_student_interactive_header_data_t) + sizeof(client_custom_data_t);
 // 	ShowData.txFrameHeader.Seq = 0;
 // 	memcpy(CliendTxBuffer, &ShowData.txFrameHeader, sizeof(xFrameHeader));//写入帧头数据
-// 	Append_CRC8_Check_Sum(CliendTxBuffer, sizeof(xFrameHeader));//写入帧头CRC8校验码
+//    Append_CRC8_Check_Sum(CliendTxBuffer, sizeof(xFrameHeader));//写入帧头CRC8校验码
 	
 // 	ShowData.CmdID = 0x0301;
 	

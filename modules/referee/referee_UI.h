@@ -55,7 +55,7 @@
 /***************************删除操作***************************/
 #define UI_Data_Del_NoOperate 0
 #define UI_Data_Del_Layer 1
-#define UI_Data_Del_ALL 2
+#define UI_Data_Del_ALL 2   //删除全部图层，后面的参数已经不重要了。
 /***************************图形配置参数__图形操作********************/
 #define UI_Graph_ADD 1
 #define UI_Graph_Change 2
@@ -80,16 +80,6 @@
 #define UI_Color_Black 7
 #define UI_Color_White 8
 
-
-
-typedef unsigned char Uint8_t;
-typedef unsigned char uint8_t;
-
-extern uint16_t Robot_ID;
-extern uint16_t Cilent_ID;
-
-
-
 typedef struct
 {
    uint8_t SOF;                    //起始字节,固定0xA5
@@ -112,7 +102,7 @@ typedef struct
    uint8_t Layer;                  //删除图层
 } UI_Data_Delete;          //删除图层帧
 
-/* 是否有必要专门为浮点数定义？？ */
+/* 图形数据 */
 typedef struct
 { 
    uint8_t graphic_name[3]; 
@@ -125,30 +115,9 @@ typedef struct
    uint32_t width:10; 
    uint32_t start_x:11; 
    uint32_t start_y:11;
-   int32_t graph_Float;              
-   /* syhtodo
-   uint32_t 正好对应
-   radius:10; uint32_t end_x:11; uint32_t end_y:11; 
-   三个变量，考虑位操作赋值，则不需要专门定义结构体
-   */ 
-} Float_Data;
-
-/* 图形数据 */
-typedef struct
-{ 
-uint8_t graphic_name[3]; 
-uint32_t operate_tpye:3; 
-uint32_t graphic_tpye:3; 
-uint32_t layer:4; 
-uint32_t color:4; 
-uint32_t start_angle:9;
-uint32_t end_angle:9;
-uint32_t width:10; 
-uint32_t start_x:11; 
-uint32_t start_y:11;
-uint32_t radius:10; 
-uint32_t end_x:11; 
-uint32_t end_y:11;              
+   uint32_t radius:10; 
+   uint32_t end_x:11; 
+   uint32_t end_y:11;              
 } Graph_Data;
 
 
@@ -161,22 +130,19 @@ typedef struct
 #pragma pack()
 
 void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer);
+
 void Line_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y);
-
-
 void Circle_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t Graph_Radius);
 void Elliptical_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y);
 void Rectangle_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y);
-void Float_Draw(Float_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float);
-void Char_Draw(String_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y);
-
-void Char_Write(String_Data *graph,char* fmt, ...);
 void Arc_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y);
-int Char_ReFresh(String_Data string_Data);
+void Float_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float);
+void Integer_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer);
 int UI_ReFresh(int cnt,...);
 
 
-unsigned char Get_CRC8_Check_Sum_UI(unsigned char *pchMessage,unsigned int dwLength,unsigned char ucCRC8);
-uint16_t Get_CRC16_Check_Sum_UI(uint8_t *pchMessage,uint32_t dwLength,uint16_t wCRC);
+void Char_Draw(String_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y);
+void Char_Write(String_Data *graph,char* fmt, ...);
+int Char_ReFresh(String_Data string_Data);
 
 #endif
