@@ -229,6 +229,7 @@ void DJIMotorControl()
     static Motor_Controller_s *motor_controller;   // 电机控制器
     static DJI_Motor_Measure_s *motor_measure;     // 电机测量值
     static float pid_measure, pid_ref;             // 电机PID测量值和设定值
+
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
     for (size_t i = 0; i < idx; ++i)
     { // 减小访存开销,先保存指针引用

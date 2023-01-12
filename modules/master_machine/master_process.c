@@ -38,6 +38,7 @@ Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
     conf.module_callback = DecodeVision;
     conf.recv_buff_size = VISION_RECV_SIZE;
     conf.usart_handle = _handle;
+    
     vision_usart_instance = USARTRegister(&conf);
     return &recv_data;
 }
