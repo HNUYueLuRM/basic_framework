@@ -11,9 +11,6 @@ static referee_info_t referee_info;
 static void JudgeReadData(uint8_t *ReadFromUsart);
 static void RefereeRxCallback();
 
-// static uint8_t Judge_Self_ID;		 // 当前机器人的ID
-// static uint16_t Judge_SelfClient_ID; // 发送者机器人对应的客户端ID
-
 /* 裁判系统通信初始化 */
 referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 {
@@ -77,50 +74,50 @@ static void JudgeReadData(uint8_t *ReadFromUsart)
 				switch (referee_info.CmdID)
 				{
 				case ID_game_state: // 0x0001
-					memcpy(&referee_info.GameState, (ReadFromUsart + DATA), LEN_game_state);
+					memcpy(&referee_info.GameState, (ReadFromUsart + DATA_Offset), LEN_game_state);
 					break;
 
 				case ID_game_result: // 0x0002
-					memcpy(&referee_info.GameResult, (ReadFromUsart + DATA), LEN_game_result);
+					memcpy(&referee_info.GameResult, (ReadFromUsart + DATA_Offset), LEN_game_result);
 					break;
 
 				case ID_game_robot_survivors: // 0x0003
-					memcpy(&referee_info.GameRobotHP, (ReadFromUsart + DATA), LEN_game_robot_HP);
+					memcpy(&referee_info.GameRobotHP, (ReadFromUsart + DATA_Offset), LEN_game_robot_HP);
 					break;
 
 				case ID_event_data: // 0x0101
-					memcpy(&referee_info.EventData, (ReadFromUsart + DATA), LEN_event_data);
+					memcpy(&referee_info.EventData, (ReadFromUsart + DATA_Offset), LEN_event_data);
 					break;
 
 				case ID_supply_projectile_action: // 0x0102
-					memcpy(&referee_info.SupplyProjectileAction, (ReadFromUsart + DATA), LEN_supply_projectile_action);
+					memcpy(&referee_info.SupplyProjectileAction, (ReadFromUsart + DATA_Offset), LEN_supply_projectile_action);
 					break;
 
 				case ID_game_robot_state: // 0x0201
-					memcpy(&referee_info.GameRobotStat, (ReadFromUsart + DATA), LEN_game_robot_state);
+					memcpy(&referee_info.GameRobotState, (ReadFromUsart + DATA_Offset), LEN_game_robot_state);
 					break;
 				case ID_power_heat_data: // 0x0202
-					memcpy(&referee_info.PowerHeatData, (ReadFromUsart + DATA), LEN_power_heat_data);
+					memcpy(&referee_info.PowerHeatData, (ReadFromUsart + DATA_Offset), LEN_power_heat_data);
 					break;
 
 				case ID_game_robot_pos: // 0x0203
-					memcpy(&referee_info.GameRobotPos, (ReadFromUsart + DATA), LEN_game_robot_pos);
+					memcpy(&referee_info.GameRobotPos, (ReadFromUsart + DATA_Offset), LEN_game_robot_pos);
 					break;
 
 				case ID_buff_musk: // 0x0204
-					memcpy(&referee_info.BuffMusk, (ReadFromUsart + DATA), LEN_buff_musk);
+					memcpy(&referee_info.BuffMusk, (ReadFromUsart + DATA_Offset), LEN_buff_musk);
 					break;
 
 				case ID_aerial_robot_energy: // 0x0205
-					memcpy(&referee_info.AerialRobotEnergy, (ReadFromUsart + DATA), LEN_aerial_robot_energy);
+					memcpy(&referee_info.AerialRobotEnergy, (ReadFromUsart + DATA_Offset), LEN_aerial_robot_energy);
 					break;
 
 				case ID_robot_hurt: // 0x0206
-					memcpy(&referee_info.RobotHurt, (ReadFromUsart + DATA), LEN_robot_hurt);
+					memcpy(&referee_info.RobotHurt, (ReadFromUsart + DATA_Offset), LEN_robot_hurt);
 					break;
 
 				case ID_shoot_data: // 0x0207
-					memcpy(&referee_info.ShootData, (ReadFromUsart + DATA), LEN_shoot_data);
+					memcpy(&referee_info.ShootData, (ReadFromUsart + DATA_Offset), LEN_shoot_data);
 					// JUDGE_ShootNumCount();//发弹量统计
 					break;
 				}
