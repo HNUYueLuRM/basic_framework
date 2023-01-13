@@ -30,15 +30,15 @@ typedef enum
 typedef enum
 {
 	LEN_HEADER = 5, // 帧头长
-	LEN_CMDID = 2,	 // 命令码长度
-	LEN_TAIL = 2,	 // 帧尾CRC16
+	LEN_CMDID = 2,	// 命令码长度
+	LEN_TAIL = 2,	// 帧尾CRC16
 } JudgeFrameLength;
 
 /****************************帧头****************************/
 /****************************帧头****************************/
 
-#define JUDGE_FRAME_HEADER (0xA5)   // 起始字节,协议固定为0xA5
 
+#define REFEREE_SOF 0xA5 // 起始字节,协议固定为0xA5
 /* 帧头偏移 */
 typedef enum
 {
@@ -56,7 +56,6 @@ typedef struct
 	uint8_t Seq;
 	uint8_t CRC8;
 } xFrameHeader;
-
 
 /****************************cmd_id命令码说明****************************/
 /****************************cmd_id命令码说明****************************/
@@ -77,7 +76,7 @@ typedef enum
 	ID_aerial_robot_energy = 0x0205,	   // 空中机器人能量状态数据
 	ID_robot_hurt = 0x0206,				   // 伤害状态数据
 	ID_shoot_data = 0x0207,				   // 实时射击数据
-	ID_student_interactive = 0x0301,       // 机器人间交互数据
+	ID_student_interactive = 0x0301,	   // 机器人间交互数据
 } CmdID;
 
 /* 命令码数据段长,根据官方协议来定义长度 */
@@ -88,13 +87,13 @@ typedef enum
 	LEN_game_robot_HP = 2,			  // 0x0003
 	LEN_event_data = 4,				  // 0x0101
 	LEN_supply_projectile_action = 4, // 0x0102
-	LEN_game_robot_state = 27,	 // 0x0201
-	LEN_power_heat_data = 14,	 // 0x0202
-	LEN_game_robot_pos = 16,	 // 0x0203
-	LEN_buff_musk = 1,			 // 0x0204
-	LEN_aerial_robot_energy = 1, // 0x0205
-	LEN_robot_hurt = 1,			 // 0x0206
-	LEN_shoot_data = 7,			 // 0x0207
+	LEN_game_robot_state = 27,		  // 0x0201
+	LEN_power_heat_data = 14,		  // 0x0202
+	LEN_game_robot_pos = 16,		  // 0x0203
+	LEN_buff_musk = 1,				  // 0x0204
+	LEN_aerial_robot_energy = 1,	  // 0x0205
+	LEN_robot_hurt = 1,				  // 0x0206
+	LEN_shoot_data = 7,				  // 0x0207
 } JudgeDataLength;
 
 /****************************接收数据的详细说明****************************/
@@ -220,8 +219,68 @@ typedef struct
 	float bullet_speed;
 } ext_shoot_data_t;
 
+/****************************机器人间交互数据****************************/
+/****************************机器人间交互数据****************************/
+/* 发送的内容数据段最大为 113 检测是否超出大小限制
+实际上图形段不会超，数据段最多30个，也不会超，检查验证一下
+ syhtodo */
+/* 交互数据头结构 */
+typedef struct
+{
+	uint16_t data_cmd_id;
+	uint16_t sender_ID;
+	uint16_t receiver_ID;
+} ext_student_interactive_header_data_t;
 
+
+
+
+/* 内容ID数据 */
+//己方机器人通信未写，实际上删除几个图形的id可以直接计算得出
+typedef enum 
+{
+	UI_Data_ID_Del = 0x100,
+	UI_Data_ID_Draw1 = 0x101,
+	UI_Data_ID_Draw2 = 0x102,
+	UI_Data_ID_Draw5 = 0x103,
+	UI_Data_ID_Draw7 = 0x104,
+	UI_Data_ID_DrawChar = 0x110,
+} UI_Data_ID;
+
+typedef enum
+{
+	UI_Data_LEN_Del = 6+2,
+	UI_Data_LEN_Draw1 = 6+15,
+	UI_Data_LEN_Draw2 = 6+30,
+	UI_Data_LEN_Draw5 = 6+75,
+	UI_Data_LEN_Draw7 = 6+105,
+	UI_Data_LEN_DrawChar = 6+15+30,//syhtodo  其实没啥用，换成各部分，可以直接带入计算
+} UI_Data_Length;
+
+
+/* 图形数据 */
+typedef struct
+{ 
+   uint8_t graphic_name[3]; 
+   uint32_t operate_tpye:3; 
+   uint32_t graphic_tpye:3; 
+   uint32_t layer:4; 
+   uint32_t color:4; 
+   uint32_t start_angle:9;
+   uint32_t end_angle:9;
+   uint32_t width:10; 
+   uint32_t start_x:11; 
+   uint32_t start_y:11;
+   uint32_t radius:10; 
+   uint32_t end_x:11; 
+   uint32_t end_y:11;              
+} Graph_Data_t;//syhtodo 定义要有-t
+     
+typedef struct
+{
+   Graph_Data_t Graph_Control;
+   uint8_t show_Data[30];
+} String_Data_t;                  //打印字符串数据
 #pragma pack()
 
-#endif 
-
+#endif

@@ -36,6 +36,7 @@
 //////////////////////////////////////////////////syhtodo
 #include "referee_UI.h"
 #include "referee.h"
+#include "referee_def.h"
 //////////////////////////////////////////////////
 /* USER CODE END Includes */
 
@@ -119,10 +120,12 @@ int main(void)
 
 
 //////////////////////////////////////////////////syhtodo
-	Graph_Data graph[5];
-	Graph_Data num[2];
-	String_Data sdata[1];
+	Graph_Data_t graph[5];
+	Graph_Data_t num[2];
+	String_Data_t sdata[1];
 	memset(sdata[0].show_Data, 0, 30); //使用memset方法 syhtodo 数据存在初始化未默认为0的情况
+	memset(&graph[0], 0, 15);
+
 	UI_Delete(UI_Data_Del_ALL,0);
 
 	Line_Draw(&graph[0],"s0",UI_Graph_ADD,0,UI_Color_White,3,710,540,1210,540);
@@ -135,8 +138,9 @@ int main(void)
 	Integer_Draw(&num[1],"s6",UI_Graph_ADD,0,UI_Color_Cyan,50,5,1050,460,12345);
 	UI_ReFresh(7,graph[0],graph[1],graph[2],graph[3],graph[4],num[0],num[1]);
 
+
 	Char_Draw(&sdata[0],"s7",UI_Graph_ADD,0,UI_Color_Green,20,2,620,710);
-	Char_Write(&sdata[0],"number:%d",12345);
+	Char_Write(&sdata[0],"number:%d",12345678);
 	Char_ReFresh(sdata[0]);
 
 //////////////////////////////////////////////////

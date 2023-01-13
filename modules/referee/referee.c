@@ -57,7 +57,7 @@ static void JudgeReadData(uint8_t *ReadFromUsart)
 	memcpy(&referee_info.FrameHeader, ReadFromUsart, LEN_HEADER);
 
 	// 判断帧头数据(0)是否为0xA5
-	if (ReadFromUsart[SOF] == JUDGE_FRAME_HEADER)
+	if (ReadFromUsart[SOF] == REFEREE_SOF)
 	{
 		// 帧头CRC8校验
 		if (Verify_CRC8_Check_Sum(ReadFromUsart, LEN_HEADER) == TRUE)

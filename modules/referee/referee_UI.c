@@ -5,7 +5,10 @@
 #include "dma.h"
 #include "stdio.h"
 #include "referee.h"
-/* syhtodo 根据自身id判断客户端id */
+/* syhtodo 根据自身id判断客户端id 
+涉及到的数字是否可以枚举定义？？？
+*/
+
 uint16_t Robot_ID = UI_Data_RobotID_BHero;
 uint16_t Cilent_ID = UI_Data_CilentID_BHero;
 
@@ -17,40 +20,27 @@ uint8_t UI_Seq;                      //包序号
 *****************************************************************************************/
 void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
 {
-/* syhtodo可化简，去掉读写指针 */
-   unsigned char *framepoint;                      //读写指针
-   uint16_t frametail=0xFFFF;                        //CRC16校验值
-   
-   UI_Packhead framehead; //帧头 
-   UI_Data_Operate datahead; //数据交互帧
-   UI_Data_Delete del;  //删除图层帧
-   
-   framepoint=(unsigned char *)&framehead;
-   
-   framehead.SOF=UI_SOF;
-   framehead.Data_Length=8;
-   framehead.Seq=UI_Seq;
-   framehead.CRC8=Get_CRC8_Check_Sum(framepoint,4,0xFF);
-   framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
-   
-   datahead.Data_ID=UI_Data_ID_Del;
-   datahead.Sender_ID=Robot_ID;
-   datahead.Receiver_ID=Cilent_ID;                          //填充操作数据
-   
-   del.Delete_Operate=Del_Operate;
-   del.Layer=Del_Layer;                                     //控制信息
-   
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(framehead),frametail);
-   framepoint=(unsigned char *)&datahead;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(datahead),frametail);
-   framepoint=(unsigned char *)&del;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(del),frametail);  //CRC16校验值计算
-   
-   RefereeSend((uint8_t *)&framehead,sizeof(framehead));
-   RefereeSend((uint8_t *)&datahead,sizeof(datahead));
-   RefereeSend((uint8_t *)&del,sizeof(del));  //发送所有帧
-   RefereeSend((uint8_t *)&frametail,sizeof(frametail)); //发送CRC16校验值
-  
+   UI_delete_t UI_delete_data;
+
+   UI_delete_data.FrameHeader.SOF = REFEREE_SOF;
+   UI_delete_data.FrameHeader.DataLength = UI_Data_LEN_Del;
+   UI_delete_data.FrameHeader.Seq = UI_Seq;
+   UI_delete_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_delete_data,4,0xFF);
+
+   UI_delete_data.CmdID = ID_student_interactive;
+
+   UI_delete_data.datahead.data_cmd_id = UI_Data_ID_Del;
+   UI_delete_data.datahead.receiver_ID = Cilent_ID;
+   UI_delete_data.datahead.sender_ID = Robot_ID;
+
+   UI_delete_data.Delete_Operate = Del_Operate;         //删除操作
+   UI_delete_data.Layer = Del_Layer; 
+
+   UI_delete_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_delete_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Del,0xFFFF);
+   /* syhtodo为什么填入0xFFFF */
+
+   RefereeSend((uint8_t *)&UI_delete_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Del+LEN_TAIL); //发送 
+ 
    UI_Seq++;                                                         //包序号+1
 }
 /************************************************绘制直线*************************************************
@@ -64,11 +54,11 @@ void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
         End_x、End_y   终点xy坐标
 **********************************************************************************************************/
         
-void Line_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y)
 {
    int i;
-   //??????
+   //??????syhtodo
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
       graph->graphic_name[2-i]=graphname[i];
@@ -96,7 +86,7 @@ void Line_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32
         Start_x、Start_y    起点xy坐标
         End_x、End_y        对角顶点xy坐标
 **********************************************************************************************************/      
-void Rectangle_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y)
 {
    int i;
@@ -128,7 +118,7 @@ void Rectangle_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,u
         Graph_Radius  圆形半径
 **********************************************************************************************************/
         
-void Circle_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t Graph_Radius)
 {
    int i;
@@ -157,7 +147,7 @@ void Circle_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint
         Start_x、Start_y    圆心xy坐标
         End_x、End_y        xy半轴长度
 **********************************************************************************************************/
-void Elliptical_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y)
 {
    int i;
@@ -191,7 +181,7 @@ void Elliptical_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,
         x_Length,y_Length   xy半轴长度
 **********************************************************************************************************/
         
-void Arc_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y, 
                   uint32_t end_x,uint32_t end_y)
 {
@@ -230,7 +220,7 @@ void Arc_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_
         end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
         
-void Float_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float)
 {
    int i;
@@ -267,7 +257,7 @@ void Float_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint3
         end_x=(a>>10)&0x7FF;
         end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
-void Integer_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer)
 {
    int i;
@@ -301,10 +291,10 @@ void Integer_Draw(Graph_Data *graph,char graphname[3],uint32_t Graph_Operate,uin
         Graph_Width    图形线宽
         Start_x、Start_y    开始坐标
 **********************************************************************************************************/        
-void Char_Draw(String_Data *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y)
 {  
-   memset(graph->Graph_Control.graphic_name, 0, 3);
+   memset(graph->Graph_Control.graphic_name, 0, 3);//syhtodo 是否需要手动清零
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -332,7 +322,7 @@ void Char_Draw(String_Data *graph,char graphname[3],uint32_t Graph_Operate,uint3
         fmt需要显示的字符串
 syhtodo 尚未理解该函数的写法
 **********************************************************************************************************/
-void Char_Write(String_Data *graph,char* fmt, ...)
+void Char_Write(String_Data_t *graph,char* fmt, ...)
 {
 	uint16_t i = 0;
 	va_list ap;
@@ -343,6 +333,7 @@ void Char_Write(String_Data *graph,char* fmt, ...)
 	graph->Graph_Control.end_angle = i;
 }
 
+
 /* UI推送函数（使更改生效）
    参数： cnt   图形个数
             ...   图形变量参数
@@ -351,106 +342,87 @@ void Char_Write(String_Data *graph,char* fmt, ...)
 int UI_ReFresh(int cnt,...)
 {
    int i;
-   UI_Packhead framehead;
-   UI_Data_Operate datahead;
-   Graph_Data graphData;
+   UI_GraphReFresh_t UI_GraphReFresh_data;
+   Graph_Data_t graphData;
 
-   unsigned char *framepoint;                      //读写指针
-   uint16_t frametail=0xFFFF;                        //CRC16校验值
-   
    va_list ap;//创建一个 va_list 类型变量
    va_start(ap,cnt);//初始化 va_list 变量为一个参数列表
-   
-   framepoint=(unsigned char *)&framehead;
-   framehead.SOF=UI_SOF;
-   framehead.Data_Length=6+cnt*15;
-   framehead.Seq=UI_Seq;
-   framehead.CRC8=Get_CRC8_Check_Sum(framepoint,4,0xFF);
-   framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
-   
+
+   UI_GraphReFresh_data.FrameHeader.SOF = REFEREE_SOF;
+   UI_GraphReFresh_data.FrameHeader.DataLength = 6+cnt*15;//syhtodo 换成枚举
+   UI_GraphReFresh_data.FrameHeader.Seq = UI_Seq;
+   UI_GraphReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_GraphReFresh_data,4,0xFF);
+
+   UI_GraphReFresh_data.CmdID = ID_student_interactive;
+
    switch(cnt)  //syhtodo可以直接计算式解决
    {
       case 1:
-         datahead.Data_ID=UI_Data_ID_Draw1;
+         UI_GraphReFresh_data.datahead.data_cmd_id=UI_Data_ID_Draw1;
          break;
       case 2:
-         datahead.Data_ID=UI_Data_ID_Draw2;
+         UI_GraphReFresh_data.datahead.data_cmd_id=UI_Data_ID_Draw2;
          break;
       case 5:
-         datahead.Data_ID=UI_Data_ID_Draw5;
+         UI_GraphReFresh_data.datahead.data_cmd_id=UI_Data_ID_Draw5;
          break;
       case 7:
-         datahead.Data_ID=UI_Data_ID_Draw7;
+         UI_GraphReFresh_data.datahead.data_cmd_id=UI_Data_ID_Draw7;
          break;
       default:
          return (-1);
    }
-   datahead.Sender_ID=Robot_ID;
-   datahead.Receiver_ID=Cilent_ID;                          //填充操作数据
-   
-   framepoint=(unsigned char *)&framehead;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(framehead),frametail);
-   framepoint=(unsigned char *)&datahead;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(datahead),frametail);          //CRC16校验值计算（部分）
-   
+   UI_GraphReFresh_data.datahead.receiver_ID = Cilent_ID;
+   UI_GraphReFresh_data.datahead.sender_ID = Robot_ID;
 
-   RefereeSend((uint8_t *)&framehead,sizeof(framehead));
-   RefereeSend((uint8_t *)&datahead,sizeof(datahead));
+   UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+6,0xFFFF);
+   RefereeSend((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+6);
+
+   unsigned char *framepoint;                      //读写指针
 
    for(i=0;i<cnt;i++) //发送图片帧
    {
-      graphData=va_arg(ap,Graph_Data);//访问参数列表中的每个项
-      RefereeSend((uint8_t *)&graphData,sizeof(graphData));
-      framepoint=(unsigned char *)&graphData;
-      frametail=Get_CRC16_Check_Sum(framepoint,sizeof(graphData),frametail);                                          
+      graphData=va_arg(ap,Graph_Data_t);//访问参数列表中的每个项,第二个参数是你要返回的参数的类型,在取值时需要将其强制转化为指定类型的变量
+      RefereeSend((uint8_t *)&graphData,15);//syhtod 15可否计算
+      framepoint=(uint8_t *)&graphData;
+      UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum(framepoint,15,UI_GraphReFresh_data.frametail);                                          
    }
 
-   RefereeSend((uint8_t *)&frametail,sizeof(frametail)); //发送CRC16校验值
+   RefereeSend((uint8_t *)&UI_GraphReFresh_data.frametail,LEN_TAIL); //发送CRC16校验值
 
    va_end(ap);//结束可变参数的获取
-   
    UI_Seq++;     //包序号+1
    return 0;
 }
 
 /************************************************UI推送字符（使更改生效）*********************************/
-int Char_ReFresh(String_Data string_Data)
+int Char_ReFresh(String_Data_t string_Data)
 {
-   String_Data graphData;
-   unsigned char *framepoint;                      //读写指针
-   uint16_t frametail=0xFFFF;                        //CRC16校验值
-   
-   UI_Packhead framehead;
-   UI_Data_Operate datahead;
-   graphData=string_Data;
-   
-   
-   framepoint=(unsigned char *)&framehead;
-   framehead.SOF=UI_SOF;
-   framehead.Data_Length=6+45;
-   framehead.Seq=UI_Seq;
-   framehead.CRC8=Get_CRC8_Check_Sum(framepoint,4,0xFF);
-   framehead.CMD_ID=UI_CMD_Robo_Exchange;                   //填充包头数据
-   
-   datahead.Data_ID=UI_Data_ID_DrawChar;
-   datahead.Sender_ID=Robot_ID;
-   datahead.Receiver_ID=Cilent_ID;                          //填充操作数据
-   
-   framepoint=(unsigned char *)&framehead;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(framehead),frametail);
-   framepoint=(unsigned char *)&datahead;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(datahead),frametail);
-   framepoint=(unsigned char *)&graphData;
-   frametail=Get_CRC16_Check_Sum(framepoint,sizeof(graphData),frametail);             //CRC16校验   //CRC16校验值计算（部分）
-   
-   RefereeSend((uint8_t *)&framehead,sizeof(framehead));
-   RefereeSend((uint8_t *)&datahead,sizeof(datahead));
-   RefereeSend((uint8_t *)&graphData,sizeof(graphData));  //发送操作数据  
-   RefereeSend((uint8_t *)&frametail,sizeof(frametail)); //发送CRC16校验值
-   
+   UI_CharReFresh_t UI_CharReFresh_data;
+
+   UI_CharReFresh_data.FrameHeader.SOF = REFEREE_SOF;
+   UI_CharReFresh_data.FrameHeader.DataLength = UI_Data_LEN_DrawChar;
+   UI_CharReFresh_data.FrameHeader.Seq = UI_Seq;
+   UI_CharReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_CharReFresh_data,4,0xFF);
+
+   UI_CharReFresh_data.CmdID = ID_student_interactive;
+
+   UI_CharReFresh_data.datahead.data_cmd_id = UI_Data_ID_DrawChar;
+   UI_CharReFresh_data.datahead.receiver_ID = Cilent_ID;
+   UI_CharReFresh_data.datahead.sender_ID = Robot_ID;
+
+   UI_CharReFresh_data.String_Data = string_Data;
+
+   UI_CharReFresh_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_DrawChar,0xFFFF);
+
+   RefereeSend((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_DrawChar+LEN_TAIL); //发送 
+
    UI_Seq++;                                                         //包序号+1
    return 0;
 }
+
+
+
 
 // #define send_max_len     200
 // unsigned char CliendTxBuffer[send_max_len];
