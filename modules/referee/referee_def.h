@@ -33,12 +33,11 @@ typedef enum
 	LEN_CMDID = 2,	// 命令码长度
 	LEN_TAIL = 2,	// 帧尾CRC16
 
-	LEN_CRC8 = 4, //帧头CRC8校验长度=帧头+数据长+包序号
+	LEN_CRC8 = 4, // 帧头CRC8校验长度=帧头+数据长+包序号
 } JudgeFrameLength;
 
 /****************************帧头****************************/
 /****************************帧头****************************/
-
 
 #define REFEREE_SOF 0xA5 // 起始字节,协议固定为0xA5
 /* 帧头偏移 */
@@ -234,12 +233,8 @@ typedef struct
 	uint16_t receiver_ID;
 } ext_student_interactive_header_data_t;
 
-
-
-
-/* 内容ID数据 */
-//己方机器人通信未写，实际上删除几个图形的id可以直接计算得出
-typedef enum 
+/* 交互数据ID */
+typedef enum
 {
 	UI_Data_ID_Del = 0x100,
 	UI_Data_ID_Draw1 = 0x101,
@@ -247,41 +242,88 @@ typedef enum
 	UI_Data_ID_Draw5 = 0x103,
 	UI_Data_ID_Draw7 = 0x104,
 	UI_Data_ID_DrawChar = 0x110,
-} UI_Data_ID;
-
+} Interactive_Data_ID;
+/* 交互数据长度 */
 typedef enum
 {
 	UI_Data_LEN_Head = 6,
-	UI_Operate_LEN_Del =2,
+	UI_Operate_LEN_Del = 2,
 	UI_Operate_LEN_PerDraw = 15,
-	UI_Operate_LEN_DrawChar = 15+30,
+	UI_Operate_LEN_DrawChar = 15 + 30,
 } UI_Data_Length;
 
 
+/****************************UI交互数据****************************/
+/****************************UI交互数据****************************/
+
 /* 图形数据 */
 typedef struct
-{ 
-   uint8_t graphic_name[3]; 
-   uint32_t operate_tpye:3; 
-   uint32_t graphic_tpye:3; 
-   uint32_t layer:4; 
-   uint32_t color:4; 
-   uint32_t start_angle:9;
-   uint32_t end_angle:9;
-   uint32_t width:10; 
-   uint32_t start_x:11; 
-   uint32_t start_y:11;
-   uint32_t radius:10; 
-   uint32_t end_x:11; 
-   uint32_t end_y:11;              
-} Graph_Data_t;//syhtodo 定义要有-t
-     
+{
+	uint8_t graphic_name[3];
+	uint32_t operate_tpye : 3;
+	uint32_t graphic_tpye : 3;
+	uint32_t layer : 4;
+	uint32_t color : 4;
+	uint32_t start_angle : 9;
+	uint32_t end_angle : 9;
+	uint32_t width : 10;
+	uint32_t start_x : 11;
+	uint32_t start_y : 11;
+	uint32_t radius : 10;
+	uint32_t end_x : 11;
+	uint32_t end_y : 11;
+} Graph_Data_t; // syhtodo 定义要有-t
+
 typedef struct
 {
-   Graph_Data_t Graph_Control;
-   uint8_t show_Data[30];
-} String_Data_t;                  //打印字符串数据
+	Graph_Data_t Graph_Control;
+	uint8_t show_Data[30];
+} String_Data_t; // 打印字符串数据
 
+/* 删除操作 */
+typedef enum
+{
+	UI_Data_Del_NoOperate = 0,
+	UI_Data_Del_Layer = 1,
+	UI_Data_Del_ALL = 2, // 删除全部图层，后面的参数已经不重要了。
+} UI_Delete_Operate;
+
+/* 图形配置参数__图形操作 */
+typedef enum
+{
+	UI_Graph_ADD = 1,
+	UI_Graph_Change = 2,
+	UI_Graph_Del = 3,
+} UI_Graph_Operate;
+
+/* 图形配置参数__图形类型 */
+typedef enum
+{
+	UI_Graph_Line = 0,		// 直线
+	UI_Graph_Rectangle = 1, // 矩形
+	UI_Graph_Circle = 2,	// 整圆
+	UI_Graph_Ellipse = 3,	// 椭圆
+	UI_Graph_Arc = 4,		// 圆弧
+	UI_Graph_Float = 5,		// 浮点型
+	UI_Graph_Int = 6,		// 整形
+	UI_Graph_Char = 7,		// 字符型
+
+} UI_Graph_Type;
+
+/* 图形配置参数__图形颜色 */
+typedef enum
+{
+	UI_Color_Main = 0, // 红蓝主色
+	UI_Color_Yellow = 1,
+	UI_Color_Green = 2,
+	UI_Color_Orange = 3,
+	UI_Color_Purplish_red = 4, // 紫红色
+	UI_Color_Pink = 5,
+	UI_Color_Cyan = 6, // 青色
+	UI_Color_Black = 7,
+	UI_Color_White = 8,
+
+} UI_Graph_Color;
 
 
 #pragma pack()

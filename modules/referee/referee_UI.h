@@ -42,33 +42,6 @@
 #define UI_Data_CilentID_BStandard2 0x0168
 #define UI_Data_CilentID_BStandard3 0x0169
 #define UI_Data_CilentID_BAerial 0x016A
-/***************************删除操作***************************/
-#define UI_Data_Del_NoOperate 0
-#define UI_Data_Del_Layer 1
-#define UI_Data_Del_ALL 2   //删除全部图层，后面的参数已经不重要了。
-/***************************图形配置参数__图形操作********************/
-#define UI_Graph_ADD 1
-#define UI_Graph_Change 2
-#define UI_Graph_Del 3
-/***************************图形配置参数__图形类型********************/
-#define UI_Graph_Line 0         //直线
-#define UI_Graph_Rectangle 1    //矩形
-#define UI_Graph_Circle 2       //整圆
-#define UI_Graph_Ellipse 3      //椭圆
-#define UI_Graph_Arc 4          //圆弧
-#define UI_Graph_Float 5        //浮点型
-#define UI_Graph_Int 6          //整形
-#define UI_Graph_Char 7         //字符型
-/***************************图形配置参数__图形颜色********************/
-#define UI_Color_Main 0         //红蓝主色
-#define UI_Color_Yellow 1
-#define UI_Color_Green 2
-#define UI_Color_Orange 3
-#define UI_Color_Purplish_red 4 //紫红色
-#define UI_Color_Pink 5
-#define UI_Color_Cyan 6         //青色
-#define UI_Color_Black 7
-#define UI_Color_White 8
 
 typedef struct
 {

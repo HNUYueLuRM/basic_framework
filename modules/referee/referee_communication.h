@@ -16,20 +16,7 @@
 #pragma pack(1)
 
 
-//暂时放在这里
-/***************交互数据********************/
-/*
-	0x0301 机器人间交互数据，发送方触发发送，上限 10Hz
-	己方机器人间通信与UI绘制共用同一个cmd_id
-	根据数据段内容ID的不同区分
-*/
-/* 交互数据接收信息：0x0301  */
-typedef struct
-{
-	uint16_t data_cmd_id;
-	uint16_t send_ID;
-	uint16_t receiver_ID;
-} ext_student_interactive_header_data_t;
+
 
 /*
 	客户端 客户端自定义数据：cmd_id:0x0301。内容 ID:0xD180

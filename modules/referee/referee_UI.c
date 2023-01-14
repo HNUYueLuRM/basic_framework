@@ -345,7 +345,6 @@ int UI_ReFresh(int cnt,...)
    int i;
    UI_GraphReFresh_t UI_GraphReFresh_data;
    Graph_Data_t graphData;
-   // uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
 
    va_list ap;//创建一个 va_list 类型变量
    va_start(ap,cnt);//初始化 va_list 变量为一个参数列表
@@ -381,16 +380,13 @@ int UI_ReFresh(int cnt,...)
    //先发送帧头、命令码、交互数据帧头三部分，并计算CRC16校验值
    UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head,0xFFFF);
    RefereeSend((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head);
-
-   unsigned char *framepoint;    //读写指针       syhtodo是否可以去掉              
-
+          
    for(i=0;i<cnt;i++) //发送交互数据的数据帧，并计算CRC16校验值
    {
       graphData=va_arg(ap,Graph_Data_t);//访问参数列表中的每个项,第二个参数是你要返回的参数的类型,在取值时需要将其强制转化为指定类型的变量
-      //发送
+      //发送并计算CRC16
       RefereeSend((uint8_t *)&graphData,UI_Operate_LEN_PerDraw);
-      framepoint=(uint8_t *)&graphData;
-      UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum(framepoint,UI_Operate_LEN_PerDraw,UI_GraphReFresh_data.frametail);                                          
+      UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&graphData,UI_Operate_LEN_PerDraw,UI_GraphReFresh_data.frametail);                                          
    }
 
    RefereeSend((uint8_t *)&UI_GraphReFresh_data.frametail,LEN_TAIL); //发送CRC16校验值
@@ -432,53 +428,6 @@ int Char_ReFresh(String_Data_t string_Data)
 
 
 
-// #define send_max_len     200
-// unsigned char CliendTxBuffer[send_max_len];
-// void JUDGE_Show_Data(void)
-// {
-// 	static uint8_t datalength,i;
-// 	uint8_t judge_led = 0xff;//初始化led为全绿
-// 	static uint8_t auto_led_time = 0;
-// 	static uint8_t buff_led_time = 0;
-	
-// 	determine_ID();//判断发送者ID和其对应的客户端ID
-	
-// 	ShowData.txFrameHeader.SOF = 0xA5;
-// 	ShowData.txFrameHeader.DataLength = sizeof(ext_student_interactive_header_data_t) + sizeof(client_custom_data_t);
-// 	ShowData.txFrameHeader.Seq = 0;
-// 	memcpy(CliendTxBuffer, &ShowData.txFrameHeader, sizeof(xFrameHeader));//写入帧头数据
-//    Append_CRC8_Check_Sum(CliendTxBuffer, sizeof(xFrameHeader));//写入帧头CRC8校验码
-	
-// 	ShowData.CmdID = 0x0301;
-	
-// 	ShowData.dataFrameHeader.data_cmd_id = 0xD180;//发给客户端的cmd,官方固定
-// 	//ID已经是自动读取的了
-// 	ShowData.dataFrameHeader.send_ID 	 = Judge_Self_ID;//发送者的ID
-// 	ShowData.dataFrameHeader.receiver_ID = Judge_SelfClient_ID;//客户端的ID，只能为发送者机器人对应的客户端
-	
-// 	/*- 自定义内容 -*/
-// 	ShowData.clientData.data1 = (float)Capvoltage_Percent();//电容剩余电量
-// 	ShowData.clientData.data2 = (float)Base_Angle_Measure();//吊射角度测
-// 	ShowData.clientData.data3 = GIMBAL_PITCH_Judge_Angle();//云台抬头角度
-// 	ShowData.clientData.masks = judge_led;//0~5位0红灯,1绿灯
-	
-// 	//打包写入数据段
-// 	memcpy(	
-// 			CliendTxBuffer + 5, 
-// 			(uint8_t*)&ShowData.CmdID, 
-// 			(sizeof(ShowData.CmdID)+ sizeof(ShowData.dataFrameHeader)+ sizeof(ShowData.clientData))
-// 		  );			
-			
-// 	Append_CRC16_Check_Sum(CliendTxBuffer,sizeof(ShowData));//写入数据段CRC16校验码	
-
-// 	datalength = sizeof(ShowData); 
-// 	for(i = 0;i < datalength;i++)
-// 	{
-// 		USART_SendData(UART5,(uint16_t)CliendTxBuffer[i]);
-// 		while(USART_GetFlagStatus(UART5,USART_FLAG_TC)==RESET);
-// 	}	 
-// }
-
 
 
 
@@ -488,7 +437,7 @@ int Char_ReFresh(String_Data_t string_Data)
 //   * @retval RED   BLUE
 //   * @attention  数据打包,打包完成后通过串口发送到裁判系统
 //   */
-// bool Color;
+
 // bool is_red_or_blue(void)
 // {
 // 	Judge_Self_ID = GameRobotStat.robot_id;//读取当前机器人ID
