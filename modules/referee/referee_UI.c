@@ -21,11 +21,12 @@ uint8_t UI_Seq;                      //包序号
 void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
 {
    UI_delete_t UI_delete_data;
+   uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
 
    UI_delete_data.FrameHeader.SOF = REFEREE_SOF;
-   UI_delete_data.FrameHeader.DataLength = UI_Data_LEN_Del;
+   UI_delete_data.FrameHeader.DataLength = temp_datalength;
    UI_delete_data.FrameHeader.Seq = UI_Seq;
-   UI_delete_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_delete_data,4,0xFF);
+   UI_delete_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_delete_data,LEN_CRC8,0xFF);
 
    UI_delete_data.CmdID = ID_student_interactive;
 
@@ -36,10 +37,10 @@ void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
    UI_delete_data.Delete_Operate = Del_Operate;         //删除操作
    UI_delete_data.Layer = Del_Layer; 
 
-   UI_delete_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_delete_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Del,0xFFFF);
+   UI_delete_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_delete_data,LEN_HEADER+LEN_CMDID+temp_datalength,0xFFFF);
    /* syhtodo为什么填入0xFFFF */
 
-   RefereeSend((uint8_t *)&UI_delete_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Del+LEN_TAIL); //发送 
+   RefereeSend((uint8_t *)&UI_delete_data,LEN_HEADER+LEN_CMDID+temp_datalength+LEN_TAIL); //发送 
  
    UI_Seq++;                                                         //包序号+1
 }
@@ -327,7 +328,7 @@ void Char_Write(String_Data_t *graph,char* fmt, ...)
 	uint16_t i = 0;
 	va_list ap;
 	va_start(ap,fmt);
-	vsprintf((char*)graph->show_Data, fmt, ap);
+	vsprintf((char*)graph->show_Data, fmt, ap);//使用参数列表发送格式化输出到字符串
 	va_end(ap);
 	i = strlen((const char*)graph->show_Data);
 	graph->Graph_Control.end_angle = i;
@@ -344,18 +345,19 @@ int UI_ReFresh(int cnt,...)
    int i;
    UI_GraphReFresh_t UI_GraphReFresh_data;
    Graph_Data_t graphData;
+   // uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
 
    va_list ap;//创建一个 va_list 类型变量
    va_start(ap,cnt);//初始化 va_list 变量为一个参数列表
 
    UI_GraphReFresh_data.FrameHeader.SOF = REFEREE_SOF;
-   UI_GraphReFresh_data.FrameHeader.DataLength = 6+cnt*15;//syhtodo 换成枚举
+   UI_GraphReFresh_data.FrameHeader.DataLength = UI_Data_LEN_Head+cnt*UI_Operate_LEN_PerDraw; 
    UI_GraphReFresh_data.FrameHeader.Seq = UI_Seq;
-   UI_GraphReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_GraphReFresh_data,4,0xFF);
+   UI_GraphReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_CRC8,0xFF);
 
    UI_GraphReFresh_data.CmdID = ID_student_interactive;
 
-   switch(cnt)  //syhtodo可以直接计算式解决
+   switch(cnt)
    {
       case 1:
          UI_GraphReFresh_data.datahead.data_cmd_id=UI_Data_ID_Draw1;
@@ -372,26 +374,30 @@ int UI_ReFresh(int cnt,...)
       default:
          return (-1);
    }
+
    UI_GraphReFresh_data.datahead.receiver_ID = Cilent_ID;
    UI_GraphReFresh_data.datahead.sender_ID = Robot_ID;
 
-   UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+6,0xFFFF);
-   RefereeSend((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+6);
+   //先发送帧头、命令码、交互数据帧头三部分，并计算CRC16校验值
+   UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head,0xFFFF);
+   RefereeSend((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head);
 
-   unsigned char *framepoint;                      //读写指针
+   unsigned char *framepoint;    //读写指针       syhtodo是否可以去掉              
 
-   for(i=0;i<cnt;i++) //发送图片帧
+   for(i=0;i<cnt;i++) //发送交互数据的数据帧，并计算CRC16校验值
    {
       graphData=va_arg(ap,Graph_Data_t);//访问参数列表中的每个项,第二个参数是你要返回的参数的类型,在取值时需要将其强制转化为指定类型的变量
-      RefereeSend((uint8_t *)&graphData,15);//syhtod 15可否计算
+      //发送
+      RefereeSend((uint8_t *)&graphData,UI_Operate_LEN_PerDraw);
       framepoint=(uint8_t *)&graphData;
-      UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum(framepoint,15,UI_GraphReFresh_data.frametail);                                          
+      UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum(framepoint,UI_Operate_LEN_PerDraw,UI_GraphReFresh_data.frametail);                                          
    }
 
    RefereeSend((uint8_t *)&UI_GraphReFresh_data.frametail,LEN_TAIL); //发送CRC16校验值
 
    va_end(ap);//结束可变参数的获取
    UI_Seq++;     //包序号+1
+
    return 0;
 }
 
@@ -400,10 +406,12 @@ int Char_ReFresh(String_Data_t string_Data)
 {
    UI_CharReFresh_t UI_CharReFresh_data;
 
+   uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_DrawChar;  //计算交互数据长度
+   
    UI_CharReFresh_data.FrameHeader.SOF = REFEREE_SOF;
-   UI_CharReFresh_data.FrameHeader.DataLength = UI_Data_LEN_DrawChar;
+   UI_CharReFresh_data.FrameHeader.DataLength = temp_datalength;
    UI_CharReFresh_data.FrameHeader.Seq = UI_Seq;
-   UI_CharReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_CharReFresh_data,4,0xFF);
+   UI_CharReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_CharReFresh_data,LEN_CRC8,0xFF);
 
    UI_CharReFresh_data.CmdID = ID_student_interactive;
 
@@ -413,9 +421,9 @@ int Char_ReFresh(String_Data_t string_Data)
 
    UI_CharReFresh_data.String_Data = string_Data;
 
-   UI_CharReFresh_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_DrawChar,0xFFFF);
+   UI_CharReFresh_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+temp_datalength,0xFFFF);
 
-   RefereeSend((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_DrawChar+LEN_TAIL); //发送 
+   RefereeSend((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+temp_datalength+LEN_TAIL); //发送 
 
    UI_Seq++;                                                         //包序号+1
    return 0;
@@ -506,6 +514,7 @@ int Char_ReFresh(String_Data_t string_Data)
 // 	Color = is_red_or_blue();
 // 	if(Color == BLUE)
 // 	{
+   
 // 		Judge_SelfClient_ID = 0x0110 + (Judge_Self_ID-10);//计算客户端ID
 // 	}
 // 	else if(Color == RED)

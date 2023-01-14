@@ -32,6 +32,8 @@ typedef enum
 	LEN_HEADER = 5, // 帧头长
 	LEN_CMDID = 2,	// 命令码长度
 	LEN_TAIL = 2,	// 帧尾CRC16
+
+	LEN_CRC8 = 4, //帧头CRC8校验长度=帧头+数据长+包序号
 } JudgeFrameLength;
 
 /****************************帧头****************************/
@@ -249,12 +251,10 @@ typedef enum
 
 typedef enum
 {
-	UI_Data_LEN_Del = 6+2,
-	UI_Data_LEN_Draw1 = 6+15,
-	UI_Data_LEN_Draw2 = 6+30,
-	UI_Data_LEN_Draw5 = 6+75,
-	UI_Data_LEN_Draw7 = 6+105,
-	UI_Data_LEN_DrawChar = 6+15+30,//syhtodo  其实没啥用，换成各部分，可以直接带入计算
+	UI_Data_LEN_Head = 6,
+	UI_Operate_LEN_Del =2,
+	UI_Operate_LEN_PerDraw = 15,
+	UI_Operate_LEN_DrawChar = 15+30,
 } UI_Data_Length;
 
 
@@ -281,6 +281,9 @@ typedef struct
    Graph_Data_t Graph_Control;
    uint8_t show_Data[30];
 } String_Data_t;                  //打印字符串数据
+
+
+
 #pragma pack()
 
 #endif
