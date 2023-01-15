@@ -2,23 +2,90 @@
 #include "string.h"
 #include "crc.h"
 #include "bsp_usart.h"
-#include "dma.h"
 #include "stdio.h"
 #include "referee.h"
-/* syhtodo 根据自身id判断客户端id 
-涉及到的数字是否可以枚举定义？？？
-*/
 
-uint16_t Robot_ID = UI_Data_RobotID_BHero;
-uint16_t Cilent_ID = UI_Data_CilentID_BHero;
+static void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer);    
+static void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y);
+static void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y);      
+static void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t Graph_Radius);
+static void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y);       
+static void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y, 
+                  uint32_t end_x,uint32_t end_y);
+static void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float);
+static void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer);     
+static void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+                  uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y);
+static void Char_Write(String_Data_t *graph,char* fmt, ...);
+static int UI_ReFresh(referee_id_t *_id,int cnt,...);
+static int Char_ReFresh(referee_id_t *_id,String_Data_t string_Data);
 
-uint8_t UI_Seq;                      //包序号
+static void determine_ID(referee_info_t *_referee_info);
+
+static uint8_t UI_Seq;                      //包序号
+
+void Interactive_init(referee_info_t *_referee_info)
+{
+   determine_ID(_referee_info);
+
+   
+   Graph_Data_t graph[5];
+	Graph_Data_t num[2];
+	String_Data_t sdata[1];
+	memset(sdata[0].show_Data, 0, 30); //使用memset方法 syhtodo 数据存在初始化未默认为0的情况
+	memset(&graph[0], 0, 15);
+
+	UI_Delete(&_referee_info->referee_id,UI_Data_Del_ALL,0);
+
+	Line_Draw(&graph[0],"s0",UI_Graph_ADD,0,UI_Color_White,3,710,540,1210,540);
+	Rectangle_Draw(&graph[1],"s1",UI_Graph_ADD,0,UI_Color_Yellow,4,600,200,800,500);     
+	Circle_Draw(&graph[2],"s2",UI_Graph_ADD,0,UI_Color_Green,5,960,540,100);
+	Elliptical_Draw(&graph[3],"s3",UI_Graph_ADD,0,UI_Color_Orange,3,960,540,100,20);
+	Arc_Draw(&graph[4],"s4",UI_Graph_ADD,0,UI_Color_Purplish_red,30,160,3,1200,550,50,100);
+
+	Float_Draw(&num[0],"s5",UI_Graph_ADD,0,UI_Color_Pink,50,3,5,1050,660,1245545);
+	Integer_Draw(&num[1],"s6",UI_Graph_ADD,0,UI_Color_Cyan,50,5,1050,460,12345);
+	UI_ReFresh(&_referee_info->referee_id,7,graph[0],graph[1],graph[2],graph[3],graph[4],num[0],num[1]);
+
+
+	Char_Draw(&sdata[0],"s7",UI_Graph_ADD,0,UI_Color_Green,20,2,620,710);
+	Char_Write(&sdata[0],"number:%d",123);
+	Char_ReFresh(&_referee_info->referee_id,sdata[0]);
+
+}
+
+/**
+  * @brief  判断各种ID，选择客户端ID
+  * @param  void
+  * @retval referee_info
+  * @attention 
+  */
+static void determine_ID(referee_info_t *_referee_info)
+{
+      //id小于7是红色,大于7是蓝色,0为红色，1为蓝色   #define Robot_Red 0    #define Robot_Blue 1
+   _referee_info->referee_id.Robot_Color = _referee_info->GameRobotState.robot_id >7 ? Robot_Blue : Robot_Red;
+   _referee_info->referee_id.Robot_ID=_referee_info->GameRobotState.robot_id;
+   _referee_info->referee_id.Cilent_ID = 0x0100 + _referee_info->referee_id.Robot_ID;//计算客户端ID
+   _referee_info->referee_id.Receiver_Robot_ID = 0x00;  //机器人车间通信时接收者的ID暂时为0
+}  
+
+
+
+
+
 
 /********************************************删除操作*************************************
 **参数：Del_Operate  对应头文件删除操作
         Del_Layer    要删除的层 取值0-9
 *****************************************************************************************/
-void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
+static void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer)
 {
    UI_delete_t UI_delete_data;
    uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
@@ -31,8 +98,8 @@ void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
    UI_delete_data.CmdID = ID_student_interactive;
 
    UI_delete_data.datahead.data_cmd_id = UI_Data_ID_Del;
-   UI_delete_data.datahead.receiver_ID = Cilent_ID;
-   UI_delete_data.datahead.sender_ID = Robot_ID;
+   UI_delete_data.datahead.receiver_ID = _id->Cilent_ID;
+   UI_delete_data.datahead.sender_ID = _id->Robot_ID;
 
    UI_delete_data.Delete_Operate = Del_Operate;         //删除操作
    UI_delete_data.Layer = Del_Layer; 
@@ -55,7 +122,7 @@ void UI_Delete(uint8_t Del_Operate,uint8_t Del_Layer)
         End_x、End_y   终点xy坐标
 **********************************************************************************************************/
         
-void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y)
 {
    int i;
@@ -87,7 +154,7 @@ void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint
         Start_x、Start_y    起点xy坐标
         End_x、End_y        对角顶点xy坐标
 **********************************************************************************************************/      
-void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y)
 {
    int i;
@@ -119,7 +186,7 @@ void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate
         Graph_Radius  圆形半径
 **********************************************************************************************************/
         
-void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t Graph_Radius)
 {
    int i;
@@ -148,7 +215,7 @@ void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,ui
         Start_x、Start_y    圆心xy坐标
         End_x、End_y        xy半轴长度
 **********************************************************************************************************/
-void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y)
 {
    int i;
@@ -182,7 +249,7 @@ void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operat
         x_Length,y_Length   xy半轴长度
 **********************************************************************************************************/
         
-void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y, 
                   uint32_t end_x,uint32_t end_y)
 {
@@ -221,7 +288,7 @@ void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint3
         end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
         
-void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float)
 {
    int i;
@@ -258,7 +325,7 @@ void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uin
         end_x=(a>>10)&0x7FF;
         end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
-void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer)
 {
    int i;
@@ -292,7 +359,7 @@ void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,u
         Graph_Width    图形线宽
         Start_x、Start_y    开始坐标
 **********************************************************************************************************/        
-void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+static void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y)
 {  
    memset(graph->Graph_Control.graphic_name, 0, 3);//syhtodo 是否需要手动清零
@@ -323,7 +390,7 @@ void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uin
         fmt需要显示的字符串
 syhtodo 尚未理解该函数的写法
 **********************************************************************************************************/
-void Char_Write(String_Data_t *graph,char* fmt, ...)
+static void Char_Write(String_Data_t *graph,char* fmt, ...)
 {
 	uint16_t i = 0;
 	va_list ap;
@@ -340,7 +407,7 @@ void Char_Write(String_Data_t *graph,char* fmt, ...)
             ...   图形变量参数
    Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
  */
-int UI_ReFresh(int cnt,...)
+static int UI_ReFresh(referee_id_t *_id,int cnt,...)
 {
    int i;
    UI_GraphReFresh_t UI_GraphReFresh_data;
@@ -374,8 +441,8 @@ int UI_ReFresh(int cnt,...)
          return (-1);
    }
 
-   UI_GraphReFresh_data.datahead.receiver_ID = Cilent_ID;
-   UI_GraphReFresh_data.datahead.sender_ID = Robot_ID;
+   UI_GraphReFresh_data.datahead.receiver_ID = _id->Cilent_ID;
+   UI_GraphReFresh_data.datahead.sender_ID = _id->Robot_ID;
 
    //先发送帧头、命令码、交互数据帧头三部分，并计算CRC16校验值
    UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head,0xFFFF);
@@ -398,7 +465,7 @@ int UI_ReFresh(int cnt,...)
 }
 
 /************************************************UI推送字符（使更改生效）*********************************/
-int Char_ReFresh(String_Data_t string_Data)
+static int Char_ReFresh(referee_id_t *_id,String_Data_t string_Data)
 {
    UI_CharReFresh_t UI_CharReFresh_data;
 
@@ -412,8 +479,9 @@ int Char_ReFresh(String_Data_t string_Data)
    UI_CharReFresh_data.CmdID = ID_student_interactive;
 
    UI_CharReFresh_data.datahead.data_cmd_id = UI_Data_ID_DrawChar;
-   UI_CharReFresh_data.datahead.receiver_ID = Cilent_ID;
-   UI_CharReFresh_data.datahead.sender_ID = Robot_ID;
+
+   UI_CharReFresh_data.datahead.receiver_ID = _id->Cilent_ID;
+   UI_CharReFresh_data.datahead.sender_ID = _id->Robot_ID;
 
    UI_CharReFresh_data.String_Data = string_Data;
 
@@ -424,50 +492,4 @@ int Char_ReFresh(String_Data_t string_Data)
    UI_Seq++;                                                         //包序号+1
    return 0;
 }
-
-
-
-
-
-
-
-// /**
-//   * @brief  判断自己红蓝方
-//   * @param  void
-//   * @retval RED   BLUE
-//   * @attention  数据打包,打包完成后通过串口发送到裁判系统
-//   */
-
-// bool is_red_or_blue(void)
-// {
-// 	Judge_Self_ID = GameRobotStat.robot_id;//读取当前机器人ID
-	
-// 	if(GameRobotStat.robot_id > 10)
-// 	{
-// 		return BLUE;
-// 	}
-// 	else 
-// 	{
-// 		return RED;
-// 	}
-// }
-
-// /**
-//   * @brief  判断自身ID，选择客户端ID
-//   * @param  void
-//   * @retval RED   BLUE
-//   * @attention  数据打包,打包完成后通过串口发送到裁判系统
-//   */
-// void determine_ID(void)
-// {
-// 	Color = is_red_or_blue();
-// 	if(Color == BLUE)
-// 	{
-   
-// 		Judge_SelfClient_ID = 0x0110 + (Judge_Self_ID-10);//计算客户端ID
-// 	}
-// 	else if(Color == RED)
-// 	{
-// 		Judge_SelfClient_ID = 0x0100 + Judge_Self_ID;//计算客户端ID
-// 	}
-// }          
+        

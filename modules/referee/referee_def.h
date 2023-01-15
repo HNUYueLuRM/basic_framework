@@ -13,6 +13,13 @@
 
 #include "stdint.h"
 
+/****************************宏定义部分****************************/
+/****************************宏定义部分****************************/
+
+#define REFEREE_SOF 0xA5 // 起始字节,协议固定为0xA5
+#define Robot_Red 0
+#define Robot_Blue 1
+
 #pragma pack(1)
 
 /****************************通信协议格式****************************/
@@ -24,7 +31,7 @@ typedef enum
 	FRAME_HEADER_Offset = 0,
 	CMD_ID_Offset = 5,
 	DATA_Offset = 7,
-} JudgeFrameOffset;
+} JudgeFrameOffset_e;
 
 /* 通信协议长度 */
 typedef enum
@@ -34,12 +41,11 @@ typedef enum
 	LEN_TAIL = 2,	// 帧尾CRC16
 
 	LEN_CRC8 = 4, // 帧头CRC8校验长度=帧头+数据长+包序号
-} JudgeFrameLength;
+} JudgeFrameLength_e;
 
 /****************************帧头****************************/
 /****************************帧头****************************/
 
-#define REFEREE_SOF 0xA5 // 起始字节,协议固定为0xA5
 /* 帧头偏移 */
 typedef enum
 {
@@ -47,7 +53,7 @@ typedef enum
 	DATA_LENGTH = 1, // 帧内数据长度,根据这个来获取数据长度
 	SEQ = 3,		 // 包序号
 	CRC8 = 4		 // CRC8
-} FrameHeaderOffset;
+} FrameHeaderOffset_e;
 
 /* 帧头定义 */
 typedef struct
@@ -78,7 +84,7 @@ typedef enum
 	ID_robot_hurt = 0x0206,				   // 伤害状态数据
 	ID_shoot_data = 0x0207,				   // 实时射击数据
 	ID_student_interactive = 0x0301,	   // 机器人间交互数据
-} CmdID;
+} CmdID_e;
 
 /* 命令码数据段长,根据官方协议来定义长度 */
 typedef enum
@@ -95,7 +101,7 @@ typedef enum
 	LEN_aerial_robot_energy = 1,	  // 0x0205
 	LEN_robot_hurt = 1,				  // 0x0206
 	LEN_shoot_data = 7,				  // 0x0207
-} JudgeDataLength;
+} JudgeDataLength_e;
 
 /****************************接收数据的详细说明****************************/
 /****************************接收数据的详细说明****************************/
@@ -242,7 +248,7 @@ typedef enum
 	UI_Data_ID_Draw5 = 0x103,
 	UI_Data_ID_Draw7 = 0x104,
 	UI_Data_ID_DrawChar = 0x110,
-} Interactive_Data_ID;
+} Interactive_Data_ID_e;
 /* 交互数据长度 */
 typedef enum
 {
@@ -250,7 +256,7 @@ typedef enum
 	UI_Operate_LEN_Del = 2,
 	UI_Operate_LEN_PerDraw = 15,
 	UI_Operate_LEN_DrawChar = 15 + 30,
-} UI_Data_Length;
+} UI_Data_Length_e;
 
 
 /****************************UI交互数据****************************/
@@ -286,7 +292,7 @@ typedef enum
 	UI_Data_Del_NoOperate = 0,
 	UI_Data_Del_Layer = 1,
 	UI_Data_Del_ALL = 2, // 删除全部图层，后面的参数已经不重要了。
-} UI_Delete_Operate;
+} UI_Delete_Operate_e;
 
 /* 图形配置参数__图形操作 */
 typedef enum
@@ -294,7 +300,7 @@ typedef enum
 	UI_Graph_ADD = 1,
 	UI_Graph_Change = 2,
 	UI_Graph_Del = 3,
-} UI_Graph_Operate;
+} UI_Graph_Operate_e;
 
 /* 图形配置参数__图形类型 */
 typedef enum
@@ -308,7 +314,7 @@ typedef enum
 	UI_Graph_Int = 6,		// 整形
 	UI_Graph_Char = 7,		// 字符型
 
-} UI_Graph_Type;
+} UI_Graph_Type_e;
 
 /* 图形配置参数__图形颜色 */
 typedef enum
@@ -323,8 +329,7 @@ typedef enum
 	UI_Color_Black = 7,
 	UI_Color_White = 8,
 
-} UI_Graph_Color;
-
+} UI_Graph_Color_e;
 
 #pragma pack()
 

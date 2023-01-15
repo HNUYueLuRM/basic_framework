@@ -22,7 +22,6 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 	return &referee_info;
 }
 
-
 /**
  * @brief 发送函数
  * @param send 待发送数据
@@ -30,10 +29,9 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 void RefereeSend(uint8_t *send,uint16_t tx_len)
 {
     USARTSend(referee_usart_instance,send,tx_len);
-	/* syhtodo DMA请求过快会导致数据发送丢失，考虑数据尽可能打成一阵个包 */
+	/* syhtodo DMA请求过快会导致数据发送丢失，考虑数据尽可能打成一个整包以及队列发送 */
 	HAL_Delay(5);
 }
-
 
 /*裁判系统串口接收回调函数,解析数据 */
 static void RefereeRxCallback()
@@ -76,49 +74,38 @@ static void JudgeReadData(uint8_t *ReadFromUsart)
 				case ID_game_state: // 0x0001
 					memcpy(&referee_info.GameState, (ReadFromUsart + DATA_Offset), LEN_game_state);
 					break;
-
 				case ID_game_result: // 0x0002
 					memcpy(&referee_info.GameResult, (ReadFromUsart + DATA_Offset), LEN_game_result);
 					break;
-
 				case ID_game_robot_survivors: // 0x0003
 					memcpy(&referee_info.GameRobotHP, (ReadFromUsart + DATA_Offset), LEN_game_robot_HP);
 					break;
-
 				case ID_event_data: // 0x0101
 					memcpy(&referee_info.EventData, (ReadFromUsart + DATA_Offset), LEN_event_data);
 					break;
-
 				case ID_supply_projectile_action: // 0x0102
 					memcpy(&referee_info.SupplyProjectileAction, (ReadFromUsart + DATA_Offset), LEN_supply_projectile_action);
 					break;
-
 				case ID_game_robot_state: // 0x0201
 					memcpy(&referee_info.GameRobotState, (ReadFromUsart + DATA_Offset), LEN_game_robot_state);
 					break;
 				case ID_power_heat_data: // 0x0202
 					memcpy(&referee_info.PowerHeatData, (ReadFromUsart + DATA_Offset), LEN_power_heat_data);
 					break;
-
 				case ID_game_robot_pos: // 0x0203
 					memcpy(&referee_info.GameRobotPos, (ReadFromUsart + DATA_Offset), LEN_game_robot_pos);
 					break;
-
 				case ID_buff_musk: // 0x0204
 					memcpy(&referee_info.BuffMusk, (ReadFromUsart + DATA_Offset), LEN_buff_musk);
 					break;
-
 				case ID_aerial_robot_energy: // 0x0205
 					memcpy(&referee_info.AerialRobotEnergy, (ReadFromUsart + DATA_Offset), LEN_aerial_robot_energy);
 					break;
-
 				case ID_robot_hurt: // 0x0206
 					memcpy(&referee_info.RobotHurt, (ReadFromUsart + DATA_Offset), LEN_robot_hurt);
 					break;
-
 				case ID_shoot_data: // 0x0207
 					memcpy(&referee_info.ShootData, (ReadFromUsart + DATA_Offset), LEN_shoot_data);
-					// JUDGE_ShootNumCount();//发弹量统计
 					break;
 				}
 			}

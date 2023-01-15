@@ -33,11 +33,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "robot.h"
-//////////////////////////////////////////////////syhtodo
-#include "referee_UI.h"
-#include "referee.h"
-#include "referee_def.h"
-//////////////////////////////////////////////////
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -117,33 +112,6 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	RobotInit();
-
-
-//////////////////////////////////////////////////syhtodo
-	Graph_Data_t graph[5];
-	Graph_Data_t num[2];
-	String_Data_t sdata[1];
-	memset(sdata[0].show_Data, 0, 30); //使用memset方法 syhtodo 数据存在初始化未默认为0的情况
-	memset(&graph[0], 0, 15);
-
-	UI_Delete(UI_Data_Del_ALL,0);
-
-	Line_Draw(&graph[0],"s0",UI_Graph_ADD,0,UI_Color_White,3,710,540,1210,540);
-	Rectangle_Draw(&graph[1],"s1",UI_Graph_ADD,0,UI_Color_Yellow,4,600,200,800,500);     
-	Circle_Draw(&graph[2],"s2",UI_Graph_ADD,0,UI_Color_Green,5,960,540,100);
-	Elliptical_Draw(&graph[3],"s3",UI_Graph_ADD,0,UI_Color_Orange,3,960,540,100,20);
-	Arc_Draw(&graph[4],"s4",UI_Graph_ADD,0,UI_Color_Purplish_red,30,160,3,1200,550,50,100);
-
-	Float_Draw(&num[0],"s5",UI_Graph_ADD,0,UI_Color_Pink,50,3,5,1050,660,1245545);
-	Integer_Draw(&num[1],"s6",UI_Graph_ADD,0,UI_Color_Cyan,50,5,1050,460,12345);
-	UI_ReFresh(7,graph[0],graph[1],graph[2],graph[3],graph[4],num[0],num[1]);
-
-
-	Char_Draw(&sdata[0],"s7",UI_Graph_ADD,0,UI_Color_Green,20,2,620,710);
-	Char_Write(&sdata[0],"number:%d",123);
-	Char_ReFresh(sdata[0]);
-
-//////////////////////////////////////////////////
 
 	/* USER CODE END 2 */
 

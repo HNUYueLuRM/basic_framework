@@ -19,7 +19,7 @@
 #include "referee.h"
 #include "general_def.h"
 #include "bsp_dwt.h"
-
+#include "referee_UI.h"
 #include "arm_math.h"
 
 /* 根据robot_def.h中的macro自动计算的参数 */
@@ -41,7 +41,7 @@ static Subscriber_t *chassis_sub;                   // 用于订阅底盘的控�
 static Chassis_Ctrl_Cmd_s chassis_cmd_recv;         // 底盘接收到的控制命令
 static Chassis_Upload_Data_s chassis_feedback_data; // 底盘回传的反馈数据
 
-static referee_info_t *referee_data; // 裁判系统的数据
+static referee_info_t *referee_data; // 裁判系统相关数据
 static SuperCapInstance *cap;        // 超级电容
 static DJIMotorInstance *motor_lf;   // left right forward back
 static DJIMotorInstance *motor_rf;
@@ -100,6 +100,10 @@ void ChassisInit()
     motor_rb = DJIMotorInit(&chassis_motor_config);
 
     referee_data = RefereeInit(&huart6); // 裁判系统初始化
+
+    while (referee_data->GameRobotState.robot_id ==0);
+    Interactive_init(referee_data);
+
 
     SuperCap_Init_Config_s cap_conf = {
         .can_config = {
