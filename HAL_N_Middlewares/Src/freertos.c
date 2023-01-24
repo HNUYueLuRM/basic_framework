@@ -198,7 +198,7 @@ void StartROBOTTASK(void const * argument)
   {
     // 200Hz
     RobotTask();
-    osDelay(5);
+    osDelay(10);//syh此处暂时将时间改为10ms，原因在于未使用缓冲区发送，发送时延时5ms
   }
   
 }

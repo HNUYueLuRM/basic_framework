@@ -384,8 +384,8 @@ ROOT:.
     ├─referee
     │      crc.c
     │      crc.h
-    │      referee.c
-    │      referee.h
+    │      rm_referee.c
+    │      rm_referee.h
     │      referee.md
     │      referee_communication.c
     │      referee_UI.c

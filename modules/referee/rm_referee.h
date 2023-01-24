@@ -1,20 +1,10 @@
-/**
- * @file referee.h
- * @author kidneygood (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2022-11-18
- *
- * @copyright Copyright (c) 2022
- *
- */
-
-#ifndef REFEREE_H
-#define REFEREE_H
+#ifndef RM_REFEREE_H
+#define RM_REFEREE_H
 
 #include "usart.h"
 #include "referee_def.h"
 #include "bsp_usart.h"
+#include "robot_def.h"
 
 #pragma pack(1)
 
@@ -26,7 +16,7 @@ typedef struct
 	uint16_t Receiver_Robot_ID; //机器人车间通信时接收者的ID
 } referee_id_t;
 
-// 次结构体包含裁判系统接收数据以及UI绘制与机器人车间通信的相关信息
+// 此结构体包含裁判系统接收数据以及UI绘制与机器人车间通信的相关信息
 typedef struct
 {	
 	referee_id_t referee_id;

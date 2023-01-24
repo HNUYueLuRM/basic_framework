@@ -1,4 +1,15 @@
-#include "referee.h"
+/**
+ * @file rm_referee.C
+ * @author kidneygood (you@domain.com)
+ * @brief
+ * @version 0.1
+ * @date 2022-11-18
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
+#include "rm_referee.h"
 #include "string.h"
 #include "crc.h"
 #include "bsp_usart.h"

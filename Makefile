@@ -131,7 +131,7 @@ modules/motor/step_motor/step_motor.c \
 modules/motor/servo_motor/servo_motor.c \
 modules/motor/motor_task.c \
 modules/referee/crc.c \
-modules/referee/referee.c \
+modules/referee/rm_referee.c \
 modules/referee/referee_UI.c \
 modules/referee/referee_communication.c \
 modules/remote/remote_control.c \
@@ -143,6 +143,7 @@ modules/vofa/vofa.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
+application/referee/referee.c \
 application/cmd/robot_cmd.c \
 application/robot.c 
 
@@ -224,6 +225,7 @@ C_INCLUDES =  \
 -Iapplication/shoot \
 -Iapplication/gimbal \
 -Iapplication/cmd \
+-Iapplication/referee \
 -Iapplication \
 -Ibsp/dwt \
 -Ibsp/can \

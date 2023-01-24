@@ -1,91 +1,16 @@
 #include "referee_UI.h"
 #include "string.h"
 #include "crc.h"
-#include "bsp_usart.h"
 #include "stdio.h"
-#include "referee.h"
-
-static void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer);    
-static void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y);
-static void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y);      
-static void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t Graph_Radius);
-static void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y);       
-static void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y, 
-                  uint32_t end_x,uint32_t end_y);
-static void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float);
-static void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer);     
-static void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
-                  uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y);
-static void Char_Write(String_Data_t *graph,char* fmt, ...);
-static int UI_ReFresh(referee_id_t *_id,int cnt,...);
-static int Char_ReFresh(referee_id_t *_id,String_Data_t string_Data);
-
-static void determine_ID(referee_info_t *_referee_info);
+#include "rm_referee.h"
 
 static uint8_t UI_Seq;                      //包序号
-
-void Interactive_init(referee_info_t *_referee_info)
-{
-   determine_ID(_referee_info);
-
-   
-   Graph_Data_t graph[5];
-	Graph_Data_t num[2];
-	String_Data_t sdata[1];
-	memset(sdata[0].show_Data, 0, 30); //使用memset方法 syhtodo 数据存在初始化未默认为0的情况
-	memset(&graph[0], 0, 15);
-
-	UI_Delete(&_referee_info->referee_id,UI_Data_Del_ALL,0);
-
-	Line_Draw(&graph[0],"s0",UI_Graph_ADD,0,UI_Color_White,3,710,540,1210,540);
-	Rectangle_Draw(&graph[1],"s1",UI_Graph_ADD,0,UI_Color_Yellow,4,600,200,800,500);     
-	Circle_Draw(&graph[2],"s2",UI_Graph_ADD,0,UI_Color_Green,5,960,540,100);
-	Elliptical_Draw(&graph[3],"s3",UI_Graph_ADD,0,UI_Color_Orange,3,960,540,100,20);
-	Arc_Draw(&graph[4],"s4",UI_Graph_ADD,0,UI_Color_Purplish_red,30,160,3,1200,550,50,100);
-
-	Float_Draw(&num[0],"s5",UI_Graph_ADD,0,UI_Color_Pink,50,3,5,1050,660,1245545);
-	Integer_Draw(&num[1],"s6",UI_Graph_ADD,0,UI_Color_Cyan,50,5,1050,460,12345);
-	UI_ReFresh(&_referee_info->referee_id,7,graph[0],graph[1],graph[2],graph[3],graph[4],num[0],num[1]);
-
-
-	Char_Draw(&sdata[0],"s7",UI_Graph_ADD,0,UI_Color_Green,20,2,620,710);
-	Char_Write(&sdata[0],"number:%d",123);
-	Char_ReFresh(&_referee_info->referee_id,sdata[0]);
-
-}
-
-/**
-  * @brief  判断各种ID，选择客户端ID
-  * @param  void
-  * @retval referee_info
-  * @attention 
-  */
-static void determine_ID(referee_info_t *_referee_info)
-{
-      //id小于7是红色,大于7是蓝色,0为红色，1为蓝色   #define Robot_Red 0    #define Robot_Blue 1
-   _referee_info->referee_id.Robot_Color = _referee_info->GameRobotState.robot_id >7 ? Robot_Blue : Robot_Red;
-   _referee_info->referee_id.Robot_ID=_referee_info->GameRobotState.robot_id;
-   _referee_info->referee_id.Cilent_ID = 0x0100 + _referee_info->referee_id.Robot_ID;//计算客户端ID
-   _referee_info->referee_id.Receiver_Robot_ID = 0x00;  //机器人车间通信时接收者的ID暂时为0
-}  
-
-
-
-
-
-
 /********************************************删除操作*************************************
-**参数：Del_Operate  对应头文件删除操作
+**参数：_id 对应的id结构体
+        Del_Operate  对应头文件删除操作
         Del_Layer    要删除的层 取值0-9
 *****************************************************************************************/
-static void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer)
+void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer)
 {
    UI_delete_t UI_delete_data;
    uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
@@ -122,16 +47,16 @@ static void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer)
         End_x、End_y   终点xy坐标
 **********************************************************************************************************/
         
-static void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y)
 {
+   // memset(graph,0,UI_Operate_LEN_PerDraw); //如果定义的是非静态变量，数据存在初始化未默认为0的情况，使用memset方法，以下类似   syhtodo 
    int i;
-   //??????syhtodo
-   for(i=0;i<3&&graphname[i]!='\0';i++)
+   for(i=0;i<3&&graphname[i]!='\0';i++)  //填充至‘0’为止
    {
-      graph->graphic_name[2-i]=graphname[i];
+      graph->graphic_name[2-i]=graphname[i];   //按内存地址增大方向填充，所以会有i与2-i
    }
-
+   
    graph->operate_tpye = Graph_Operate;
    graph->graphic_tpye = UI_Graph_Line;
    graph->layer = Graph_Layer;
@@ -154,9 +79,10 @@ static void Line_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Opera
         Start_x、Start_y    起点xy坐标
         End_x、End_y        对角顶点xy坐标
 **********************************************************************************************************/      
-static void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t End_x,uint32_t End_y)
 {
+   // memset(&graph,0,UI_Operate_LEN_PerDraw);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -186,9 +112,10 @@ static void Rectangle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_
         Graph_Radius  圆形半径
 **********************************************************************************************************/
         
-static void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t Graph_Radius)
 {
+   // memset(&graph,0,UI_Operate_LEN_PerDraw);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -215,9 +142,10 @@ static void Circle_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Ope
         Start_x、Start_y    圆心xy坐标
         End_x、End_y        xy半轴长度
 **********************************************************************************************************/
-static void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,uint32_t end_x,uint32_t end_y)
 {
+   // memset(&graph,0,UI_Operate_LEN_PerDraw);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -249,10 +177,11 @@ static void Elliptical_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph
         x_Length,y_Length   xy半轴长度
 **********************************************************************************************************/
         
-static void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_StartAngle,uint32_t Graph_EndAngle,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y, 
                   uint32_t end_x,uint32_t end_y)
 {
+   //memset(&graph,0,UI_Operate_LEN_PerDraw);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -288,9 +217,10 @@ static void Arc_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operat
         end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
         
-static void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Digit,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Float)
 {
+   //memset(&graph,0,UI_Operate_LEN_PerDraw);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -325,9 +255,10 @@ static void Float_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Oper
         end_x=(a>>10)&0x7FF;
         end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
-static void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y,int32_t Graph_Integer)
 {
+   //memset(&graph,0,UI_Operate_LEN_PerDraw);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -359,10 +290,11 @@ static void Integer_Draw(Graph_Data_t *graph,char graphname[3],uint32_t Graph_Op
         Graph_Width    图形线宽
         Start_x、Start_y    开始坐标
 **********************************************************************************************************/        
-static void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
+void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Operate,uint32_t Graph_Layer,uint32_t Graph_Color,
                   uint32_t Graph_Size,uint32_t Graph_Width,uint32_t Start_x,uint32_t Start_y)
 {  
-   memset(graph->Graph_Control.graphic_name, 0, 3);//syhtodo 是否需要手动清零
+   // //memset(graph->Graph_Control.graphic_name, 0, 3);//syhtodo 是否需要手动清零
+   //memset(&graph,0,UI_Operate_LEN_DrawChar);
    int i;
    for(i=0;i<3&&graphname[i]!='\0';i++)
    {
@@ -388,14 +320,15 @@ static void Char_Draw(String_Data_t *graph,char graphname[3],uint32_t Graph_Oper
 /************************************************绘制字符型数据*************************************************
 **参数：*graph Graph_Data类型变量指针，用于存放图形数据
         fmt需要显示的字符串
+        此函数的实现和具体使用类似于printf函数
 syhtodo 尚未理解该函数的写法
 **********************************************************************************************************/
-static void Char_Write(String_Data_t *graph,char* fmt, ...)
+void Char_Write(String_Data_t *graph,char* fmt, ...)
 {
 	uint16_t i = 0;
 	va_list ap;
 	va_start(ap,fmt);
-	vsprintf((char*)graph->show_Data, fmt, ap);//使用参数列表发送格式化输出到字符串
+	vsprintf((char*)graph->show_Data,fmt,ap);//使用参数列表进行格式化并输出到字符串
 	va_end(ap);
 	i = strlen((const char*)graph->show_Data);
 	graph->Graph_Control.end_angle = i;
@@ -407,7 +340,7 @@ static void Char_Write(String_Data_t *graph,char* fmt, ...)
             ...   图形变量参数
    Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
  */
-static int UI_ReFresh(referee_id_t *_id,int cnt,...)
+void UI_ReFresh(referee_id_t *_id,int cnt,...)
 {
    int i;
    UI_GraphReFresh_t UI_GraphReFresh_data;
@@ -437,8 +370,6 @@ static int UI_ReFresh(referee_id_t *_id,int cnt,...)
       case 7:
          UI_GraphReFresh_data.datahead.data_cmd_id=UI_Data_ID_Draw7;
          break;
-      default:
-         return (-1);
    }
 
    UI_GraphReFresh_data.datahead.receiver_ID = _id->Cilent_ID;
@@ -460,12 +391,10 @@ static int UI_ReFresh(referee_id_t *_id,int cnt,...)
 
    va_end(ap);//结束可变参数的获取
    UI_Seq++;     //包序号+1
-
-   return 0;
 }
 
 /************************************************UI推送字符（使更改生效）*********************************/
-static int Char_ReFresh(referee_id_t *_id,String_Data_t string_Data)
+void Char_ReFresh(referee_id_t *_id,String_Data_t string_Data)
 {
    UI_CharReFresh_t UI_CharReFresh_data;
 
@@ -490,6 +419,5 @@ static int Char_ReFresh(referee_id_t *_id,String_Data_t string_Data)
    RefereeSend((uint8_t *)&UI_CharReFresh_data,LEN_HEADER+LEN_CMDID+temp_datalength+LEN_TAIL); //发送 
 
    UI_Seq++;                                                         //包序号+1
-   return 0;
 }
         
