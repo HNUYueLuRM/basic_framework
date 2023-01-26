@@ -4,23 +4,22 @@
 #include "usart.h"
 #include "referee_def.h"
 #include "bsp_usart.h"
-#include "robot_def.h"
+extern uint8_t UI_Seq; 
 
 #pragma pack(1)
-
 typedef struct
 {
 	uint8_t Robot_Color;   //机器人颜色
 	uint16_t Robot_ID;   //本机器人ID
 	uint16_t Cilent_ID; //本机器人对应的客户端ID
-	uint16_t Receiver_Robot_ID; //机器人车间通信时接收者的ID
+	uint16_t Receiver_Robot_ID; //机器人车间通信时接收者的ID，必须和本机器人同颜色
 } referee_id_t;
 
 // 此结构体包含裁判系统接收数据以及UI绘制与机器人车间通信的相关信息
 typedef struct
 {	
 	referee_id_t referee_id;
-	
+
 	xFrameHeader FrameHeader; // 接收到的帧头信息
 	uint16_t CmdID;
 	ext_game_state_t GameState;							   // 0x0001
@@ -36,7 +35,8 @@ typedef struct
 	ext_robot_hurt_t RobotHurt;							   // 0x0206
 	ext_shoot_data_t ShootData;							   // 0x0207
 
-	// syhtodo  机器人间通信如何获取数据
+	//自定义交互数据的接收
+	Communicate_ReceiveData_t ReceiveData;
 
 } referee_info_t;
 
@@ -56,7 +56,5 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle);
  * @param send 待发送数据
  */
 void RefereeSend(uint8_t *send, uint16_t tx_len);
-
-extern USARTInstance *referee_usart_instance;
 
 #endif // !REFEREE_H

@@ -1,10 +1,20 @@
+/**
+ * @file referee_UI.C
+ * @author kidneygood (you@domain.com)
+ * @brief
+ * @version 0.1
+ * @date 2023-1-18
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
 #include "referee_UI.h"
 #include "string.h"
 #include "crc.h"
 #include "stdio.h"
 #include "rm_referee.h"
 
-static uint8_t UI_Seq;                      //包序号
+                     //包序号
 /********************************************删除操作*************************************
 **参数：_id 对应的id结构体
         Del_Operate  对应头文件删除操作
@@ -13,7 +23,7 @@ static uint8_t UI_Seq;                      //包序号
 void UI_Delete(referee_id_t *_id,uint8_t Del_Operate,uint8_t Del_Layer)
 {
    UI_delete_t UI_delete_data;
-   uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
+   uint8_t temp_datalength = Interactive_Data_LEN_Head + UI_Operate_LEN_Del;  //计算交互数据长度
 
    UI_delete_data.FrameHeader.SOF = REFEREE_SOF;
    UI_delete_data.FrameHeader.DataLength = temp_datalength;
@@ -349,7 +359,7 @@ void UI_ReFresh(referee_id_t *_id,int cnt,...)
    va_start(ap,cnt);//初始化 va_list 变量为一个参数列表
 
    UI_GraphReFresh_data.FrameHeader.SOF = REFEREE_SOF;
-   UI_GraphReFresh_data.FrameHeader.DataLength = UI_Data_LEN_Head+cnt*UI_Operate_LEN_PerDraw; 
+   UI_GraphReFresh_data.FrameHeader.DataLength = Interactive_Data_LEN_Head+cnt*UI_Operate_LEN_PerDraw; 
    UI_GraphReFresh_data.FrameHeader.Seq = UI_Seq;
    UI_GraphReFresh_data.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_CRC8,0xFF);
 
@@ -375,8 +385,8 @@ void UI_ReFresh(referee_id_t *_id,int cnt,...)
    UI_GraphReFresh_data.datahead.sender_ID = _id->Robot_ID;
 
    //先发送帧头、命令码、交互数据帧头三部分，并计算CRC16校验值
-   UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head,0xFFFF);
-   RefereeSend((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+UI_Data_LEN_Head);
+   UI_GraphReFresh_data.frametail=Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+Interactive_Data_LEN_Head,0xFFFF);
+   RefereeSend((uint8_t *)&UI_GraphReFresh_data,LEN_HEADER+LEN_CMDID+Interactive_Data_LEN_Head);
           
    for(i=0;i<cnt;i++) //发送交互数据的数据帧，并计算CRC16校验值
    {
@@ -397,7 +407,7 @@ void Char_ReFresh(referee_id_t *_id,String_Data_t string_Data)
 {
    UI_CharReFresh_t UI_CharReFresh_data;
 
-   uint8_t temp_datalength = UI_Data_LEN_Head + UI_Operate_LEN_DrawChar;  //计算交互数据长度
+   uint8_t temp_datalength = Interactive_Data_LEN_Head + UI_Operate_LEN_DrawChar;  //计算交互数据长度
    
    UI_CharReFresh_data.FrameHeader.SOF = REFEREE_SOF;
    UI_CharReFresh_data.FrameHeader.DataLength = temp_datalength;

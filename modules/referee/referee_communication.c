@@ -1,51 +1,45 @@
+/**
+ * @file referee_communication.h
+ * @author kidneygood (you@domain.com)
+ * @version 0.1
+ * @date 2022-12-02
+ *
+ * @copyright Copyright (c) HNU YueLu EC 2022 all rights reserved
+ *
+ */
 
+#include "referee_communication.h"
+#include "crc.h"
+#include "stdio.h"
+#include "rm_referee.h"
 
+/**
+ * @brief  发送机器人间的交互数据
+ * @param  referee_id_t *_id  sender为本机器人，receiver为接收方机器人，发送前设置Receiver_Robot_ID再调用该函数
+ *         robot_interactive_data_t *data    数据段
+ * @retval none
+ * @attention
+ */
+void Communicate_SendData(referee_id_t *_id,robot_interactive_data_t *_data)
+{
+    Communicate_SendData_t SendData;
+    uint8_t temp_datalength = Interactive_Data_LEN_Head + Communicate_Data_LEN; // 计算交互数据长度  6+n,n为交互数据长度
 
+    SendData.FrameHeader.SOF = REFEREE_SOF;
+    SendData.FrameHeader.DataLength = temp_datalength;
+    SendData.FrameHeader.Seq = UI_Seq;
+    SendData.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&SendData, LEN_CRC8, 0xFF);
 
-// #define send_max_len     200
-// unsigned char CliendTxBuffer[send_max_len];
-// void JUDGE_Show_Data(void)
-// {
-// 	static uint8_t datalength,i;
-// 	uint8_t judge_led = 0xff;//初始化led为全绿
-// 	static uint8_t auto_led_time = 0;
-// 	static uint8_t buff_led_time = 0;
-	
-// 	determine_ID();//判断发送者ID和其对应的客户端ID
-	
-// 	ShowData.txFrameHeader.SOF = 0xA5;
-// 	ShowData.txFrameHeader.DataLength = sizeof(ext_student_interactive_header_data_t) + sizeof(client_custom_data_t);
-// 	ShowData.txFrameHeader.Seq = 0;
-// 	memcpy(CliendTxBuffer, &ShowData.txFrameHeader, sizeof(xFrameHeader));//写入帧头数据
-//    Append_CRC8_Check_Sum(CliendTxBuffer, sizeof(xFrameHeader));//写入帧头CRC8校验码
-	
-// 	ShowData.CmdID = 0x0301;
-	
-// 	ShowData.dataFrameHeader.data_cmd_id = 0xD180;//发给客户端的cmd,官方固定
-// 	//ID已经是自动读取的了
-// 	ShowData.dataFrameHeader.send_ID 	 = Judge_Self_ID;//发送者的ID
-// 	ShowData.dataFrameHeader.receiver_ID = Judge_SelfClient_ID;//客户端的ID，只能为发送者机器人对应的客户端
-	
-// 	/*- 自定义内容 -*/
-// 	ShowData.clientData.data1 = (float)Capvoltage_Percent();//电容剩余电量
-// 	ShowData.clientData.data2 = (float)Base_Angle_Measure();//吊射角度测
-// 	ShowData.clientData.data3 = GIMBAL_PITCH_Judge_Angle();//云台抬头角度
-// 	ShowData.clientData.masks = judge_led;//0~5位0红灯,1绿灯
-	
-// 	//打包写入数据段
-// 	memcpy(	
-// 			CliendTxBuffer + 5, 
-// 			(uint8_t*)&ShowData.CmdID, 
-// 			(sizeof(ShowData.CmdID)+ sizeof(ShowData.dataFrameHeader)+ sizeof(ShowData.clientData))
-// 		  );			
-			
-// 	Append_CRC16_Check_Sum(CliendTxBuffer,sizeof(ShowData));//写入数据段CRC16校验码	
+    SendData.CmdID = ID_student_interactive;
 
-// 	datalength = sizeof(ShowData); 
-// 	for(i = 0;i < datalength;i++)
-// 	{
-// 		USART_SendData(UART5,(uint16_t)CliendTxBuffer[i]);
-// 		while(USART_GetFlagStatus(UART5,USART_FLAG_TC)==RESET);
-// 	}	 
-// }
+    SendData.datahead.data_cmd_id = Communicate_Data_ID;
+    SendData.datahead.sender_ID = _id->Robot_ID;
+    SendData.datahead.receiver_ID = _id->Receiver_Robot_ID;
 
+    SendData.Data = *_data;
+
+    SendData.frametail = Get_CRC16_Check_Sum((uint8_t *)&SendData,LEN_HEADER+LEN_CMDID+temp_datalength,0xFFFF);
+
+    RefereeSend((uint8_t *)&SendData,LEN_HEADER+LEN_CMDID+temp_datalength+LEN_TAIL); //发送
+    UI_Seq++; // 包序号+1
+}

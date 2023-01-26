@@ -19,8 +19,9 @@
 #define REFEREE_SOF 0xA5 // 起始字节,协议固定为0xA5
 #define Robot_Red 0
 #define Robot_Blue 1
+#define Communicate_Data_LEN 5   //自定义交互数据长度，该长度决定了我方发送和他方接收，自定义交互数据协议更改时只需要更改此宏定义即可
 
-#pragma pack(1)
+#pragma pack(1)      
 
 /****************************通信协议格式****************************/
 /****************************通信协议格式****************************/
@@ -86,7 +87,7 @@ typedef enum
 	ID_student_interactive = 0x0301,	   // 机器人间交互数据
 } CmdID_e;
 
-/* 命令码数据段长,根据官方协议来定义长度 */
+/* 命令码数据段长,根据官方协议来定义长度，还有自定义数据长度 */
 typedef enum
 {
 	LEN_game_state = 3,				  // 0x0001
@@ -101,6 +102,8 @@ typedef enum
 	LEN_aerial_robot_energy = 1,	  // 0x0205
 	LEN_robot_hurt = 1,				  // 0x0206
 	LEN_shoot_data = 7,				  // 0x0207
+	LEN_receive_data = 6+Communicate_Data_LEN,  //0x0301
+
 } JudgeDataLength_e;
 
 /****************************接收数据的详细说明****************************/
@@ -226,16 +229,39 @@ typedef struct
 	float bullet_speed;
 } ext_shoot_data_t;
 
-/****************************机器人间交互数据****************************/
-/****************************机器人间交互数据****************************/
-/* 发送的内容数据段最大为 113 检测是否超出大小限制?实际上图形段不会超，数据段最多30个，也不会超下*/
+/****************************机器人交互数据****************************/
+/****************************机器人交互数据****************************/
+/* 发送的内容数据段最大为 113 检测是否超出大小限制?实际上图形段不会超，数据段最多30个，也不会超*/
 /* 交互数据头结构 */
 typedef struct
 {
-	uint16_t data_cmd_id;
+	uint16_t data_cmd_id;    //由于存在多个内容 ID，但整个cmd_id 上行频率最大为 10Hz，请合理安排带宽。syhtodo  注意交互部分的上行频率
 	uint16_t sender_ID;
 	uint16_t receiver_ID;
 } ext_student_interactive_header_data_t;
+
+/* 机器人id */
+typedef enum
+{
+	// 红方机器人ID
+	RobotID_RHero = 1,         
+	RobotID_REngineer = 2,
+	RobotID_RStandard1 = 3,
+	RobotID_RStandard2 = 4,
+	RobotID_RStandard3 = 5,
+	RobotID_RAerial = 6,
+	RobotID_RSentry = 7,
+	RobotID_RRadar = 9,
+	// 蓝方机器人ID
+	RobotID_BHero = 101,
+	RobotID_BEngineer = 102,
+	RobotID_BStandard1 = 103,
+	RobotID_BStandard2 = 104,
+	RobotID_BStandard3 = 105,
+	RobotID_BAerial = 106,
+	RobotID_BSentry = 107,
+	RobotID_BRadar = 109,
+} Robot_ID_e;
 
 /* 交互数据ID */
 typedef enum
@@ -246,15 +272,52 @@ typedef enum
 	UI_Data_ID_Draw5 = 0x103,
 	UI_Data_ID_Draw7 = 0x104,
 	UI_Data_ID_DrawChar = 0x110,
+
+	/* 自定义交互数据部分 */
+	Communicate_Data_ID = 0x0200,
+
 } Interactive_Data_ID_e;
 /* 交互数据长度 */
 typedef enum
 {
-	UI_Data_LEN_Head = 6,
+	Interactive_Data_LEN_Head = 6,
 	UI_Operate_LEN_Del = 2,
 	UI_Operate_LEN_PerDraw = 15,
 	UI_Operate_LEN_DrawChar = 15 + 30,
-} UI_Data_Length_e;
+
+	/* 自定义交互数据部分 */
+	// Communicate_Data_LEN = 5,
+
+} Interactive_Data_Length_e;
+
+/****************************自定义交互数据****************************/
+/****************************自定义交互数据****************************/
+/*
+	学生机器人间通信 cmd_id 0x0301，内容 ID:0x0200~0x02FF
+	自定义交互数据 机器人间通信：0x0301。
+	发送频率：上限 10Hz
+*/
+//自定义交互数据协议，可更改，更改后需要修改最上方宏定义数据长度的值
+typedef struct
+{
+	uint8_t data[Communicate_Data_LEN]; // 数据段,n需要小于113
+} robot_interactive_data_t;
+
+// 机器人交互信息_发送
+typedef struct
+{
+	xFrameHeader FrameHeader;
+	uint16_t CmdID;
+	ext_student_interactive_header_data_t datahead;
+	robot_interactive_data_t Data; // 数据段
+	uint16_t frametail;
+} Communicate_SendData_t;
+// 机器人交互信息_接收
+typedef struct
+{
+	ext_student_interactive_header_data_t datahead;
+	robot_interactive_data_t Data; // 数据段
+} Communicate_ReceiveData_t;
 
 
 /****************************UI交互数据****************************/

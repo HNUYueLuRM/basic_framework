@@ -12,14 +12,20 @@
 #include "robot_def.h"
 #include "rm_referee.h"
 #include "referee_UI.h"
+#include "referee_communication.h"
 
 static Referee_Interactive_info_t Interactive_data; // 非裁判系统数据
-static referee_info_t *referee_data;                // 裁判系统相关数据
+static referee_info_t *referee_data;              // 裁判系统相关数据
+static robot_interactive_data_t *SendData={1,2,3,4,5};
+
 static void determine_ID(referee_info_t *_referee_info);
 static void My_UI_init(referee_info_t *_referee_info);
 static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_info_t *_Interactive_data);
-static void robot_mode_change(Referee_Interactive_info_t *_Interactive_data); // 测试用函数，实现模式自动变化
 static void Mode_Change_Check(Referee_Interactive_info_t *_Interactive_data); // 模式切换检测
+
+//syhtod 正式上车后需删除
+static void robot_mode_change(Referee_Interactive_info_t *_Interactive_data); // 测试用函数，实现模式自动变化
+
 
 void Referee_Interactive_init()
 {
@@ -28,6 +34,8 @@ void Referee_Interactive_init()
         ;
     determine_ID(referee_data);
     My_UI_init(referee_data);
+    referee_data->referee_id.Receiver_Robot_ID = RobotID_BEngineer;   // 机器人车间通信时接收者的ID暂时发给蓝色2
+    Communicate_SendData(&referee_data->referee_id,SendData);
 }
 
 void Referee_Interactive_task()
@@ -345,5 +353,5 @@ static void determine_ID(referee_info_t *_referee_info)
     _referee_info->referee_id.Robot_Color = _referee_info->GameRobotState.robot_id > 7 ? Robot_Blue : Robot_Red;
     _referee_info->referee_id.Robot_ID = _referee_info->GameRobotState.robot_id;
     _referee_info->referee_id.Cilent_ID = 0x0100 + _referee_info->referee_id.Robot_ID; // 计算客户端ID
-    _referee_info->referee_id.Receiver_Robot_ID = 0x00;                                // 机器人车间通信时接收者的ID暂时为0
+    _referee_info->referee_id.Receiver_Robot_ID = 0;   
 }

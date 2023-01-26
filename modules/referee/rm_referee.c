@@ -16,11 +16,13 @@
 
 #define RE_RX_BUFFER_SIZE 200
 
-USARTInstance *referee_usart_instance;   //暂时改为非静态变量
+static USARTInstance *referee_usart_instance; // 暂时改为非静态变量
 
 static referee_info_t referee_info;
 static void JudgeReadData(uint8_t *ReadFromUsart);
 static void RefereeRxCallback();
+
+uint8_t UI_Seq = 0; // 包序号，供整个referee文件使用
 
 /* 裁判系统通信初始化 */
 referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
@@ -37,9 +39,9 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
  * @brief 发送函数
  * @param send 待发送数据
  */
-void RefereeSend(uint8_t *send,uint16_t tx_len)
+void RefereeSend(uint8_t *send, uint16_t tx_len)
 {
-    USARTSend(referee_usart_instance,send,tx_len);
+	USARTSend(referee_usart_instance, send, tx_len);
 	/* syhtodo DMA请求过快会导致数据发送丢失，考虑数据尽可能打成一个整包以及队列发送，并且发送函数添加缓冲区 */
 	HAL_Delay(5);
 }
@@ -58,7 +60,7 @@ static void RefereeRxCallback()
  */
 static void JudgeReadData(uint8_t *ReadFromUsart)
 {
-	uint16_t judge_length; // 统计一帧数据长度
+	uint16_t judge_length;	   // 统计一帧数据长度
 	if (ReadFromUsart == NULL) // 空数据包，则不作任何处理
 		return;
 
@@ -117,6 +119,9 @@ static void JudgeReadData(uint8_t *ReadFromUsart)
 					break;
 				case ID_shoot_data: // 0x0207
 					memcpy(&referee_info.ShootData, (ReadFromUsart + DATA_Offset), LEN_shoot_data);
+					break;
+				case ID_student_interactive: // 0x0301   syhtodo接收代码未测试
+					memcpy(&referee_info.ReceiveData, (ReadFromUsart + DATA_Offset), LEN_receive_data);
 					break;
 				}
 			}
