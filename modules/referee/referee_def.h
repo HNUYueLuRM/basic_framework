@@ -339,7 +339,7 @@ typedef struct
 	uint32_t radius : 10;
 	uint32_t end_x : 11;
 	uint32_t end_y : 11;
-} Graph_Data_t; // syhtodo 定义要有-t
+} Graph_Data_t; 
 
 typedef struct
 {
