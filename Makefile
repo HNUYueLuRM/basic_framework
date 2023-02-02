@@ -106,6 +106,7 @@ bsp/pwm/bsp_pwm.c \
 bsp/bsp_legacy_support/bsp_temperature.c \
 bsp/bsp_legacy_support/bsp_buzzer.c \
 bsp/bsp_legacy_support/bsp_led.c \
+bsp/gpio/bsp_gpio.c \
 bsp/spi/bsp_spi.c \
 bsp/iic/bsp_iic.c \
 bsp/can/bsp_can.c \
@@ -229,6 +230,7 @@ C_INCLUDES =  \
 -Ibsp/dwt \
 -Ibsp/can \
 -Ibsp/usart \
+-Ibsp/gpio \
 -Ibsp/spi \
 -Ibsp/iic \
 -Ibsp/log \
