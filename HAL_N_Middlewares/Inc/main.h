@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -63,8 +63,9 @@ void Error_Handler(void);
 #define MAG_RST_GPIO_Port GPIOG
 #define LED_R_Pin GPIO_PIN_12
 #define LED_R_GPIO_Port GPIOH
-#define MAG_DR_Pin GPIO_PIN_3
-#define MAG_DR_GPIO_Port GPIOG
+#define INT_MAG_Pin GPIO_PIN_3
+#define INT_MAG_GPIO_Port GPIOG
+#define INT_MAG_EXTI_IRQn EXTI3_IRQn
 #define LED_G_Pin GPIO_PIN_11
 #define LED_G_GPIO_Port GPIOH
 #define LED_B_Pin GPIO_PIN_10
@@ -75,6 +76,11 @@ void Error_Handler(void);
 #define KEY_GPIO_Port GPIOA
 #define CS1_ACCEL_Pin GPIO_PIN_4
 #define CS1_ACCEL_GPIO_Port GPIOA
+#define INT_ACCEL_Pin GPIO_PIN_4
+#define INT_ACCEL_GPIO_Port GPIOC
+#define INT_ACCEL_EXTI_IRQn EXTI4_IRQn
+#define INT_GYRO_Pin GPIO_PIN_5
+#define INT_GYRO_GPIO_Port GPIOC
 #define SERVO_Pin GPIO_PIN_9
 #define SERVO_GPIO_Port GPIOE
 #define CS1_GYRO_Pin GPIO_PIN_0

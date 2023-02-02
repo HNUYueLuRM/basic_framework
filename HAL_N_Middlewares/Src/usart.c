@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -173,7 +173,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart1_tx);
 
     /* USART1_RX Init */
-    hdma_usart1_rx.Instance = DMA2_Stream2;
+    hdma_usart1_rx.Instance = DMA2_Stream5;
     hdma_usart1_rx.Init.Channel = DMA_CHANNEL_4;
     hdma_usart1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_usart1_rx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -227,7 +227,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     hdma_usart3_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     hdma_usart3_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
     hdma_usart3_rx.Init.Mode = DMA_NORMAL;
-    hdma_usart3_rx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
+    hdma_usart3_rx.Init.Priority = DMA_PRIORITY_LOW;
     hdma_usart3_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     if (HAL_DMA_Init(&hdma_usart3_rx) != HAL_OK)
     {
@@ -265,7 +265,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 
     /* USART6 DMA Init */
     /* USART6_RX Init */
-    hdma_usart6_rx.Instance = DMA2_Stream1;
+    hdma_usart6_rx.Instance = DMA2_Stream2;
     hdma_usart6_rx.Init.Channel = DMA_CHANNEL_5;
     hdma_usart6_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_usart6_rx.Init.PeriphInc = DMA_PINC_DISABLE;

@@ -1,5 +1,5 @@
 #pragma once
 
-#include "bsp_i2c.h"
+#include "bsp_iic.h"
 #include "stdint.h"
 

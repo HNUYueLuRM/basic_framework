@@ -122,6 +122,7 @@ modules/algorithm/user_lib.c \
 modules/imu/BMI088driver.c \
 modules/imu/BMI088Middleware.c \
 modules/imu/ins_task.c \
+modules/ist8310/ist8310.c \
 modules/led/led_task.c \
 modules/master_machine/master_process.c \
 modules/master_machine/seasky_protocol.c \
@@ -132,7 +133,7 @@ modules/motor/step_motor/step_motor.c \
 modules/motor/servo_motor/servo_motor.c \
 modules/motor/motor_task.c \
 modules/oled/oled.c \
-modules/referee/crc.c \
+modules/referee/crc_ref.c \
 modules/referee/referee.c \
 modules/referee/referee_UI.c \
 modules/referee/referee_communication.c \
@@ -239,6 +240,7 @@ C_INCLUDES =  \
 -Ibsp \
 -Imodules/algorithm \
 -Imodules/imu \
+-Imodules/ist8310 \
 -Imodules/led \
 -Imodules/master_machine \
 -Imodules/motor/DJImotor \

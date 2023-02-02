@@ -1,4 +1,4 @@
-#include "crc.h"
+#include "crc_ref.h"
 #include <stdio.h>
 //裁判系统官方CRC校验
 
