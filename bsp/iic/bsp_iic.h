@@ -102,4 +102,4 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size,IIC_Seq_Mode_e mo
  * @param size 要读取或写入的数据长度
  * @param mode 写入或读取模式: IIC_READ_MEM or IIC_WRITE_MEM
  */
-void IICAcessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mode);
+void IICAccessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mode);

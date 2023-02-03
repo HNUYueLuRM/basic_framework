@@ -31,14 +31,13 @@ GPIOInstance *GPIORegister(GPIO_Init_Config_s *GPIO_config)
 {
     GPIOInstance *ins=(GPIOInstance*)malloc(sizeof(GPIOInstance));
     memset(ins,0,sizeof(GPIOInstance));
-
+    
     ins->GPIOx=GPIO_config->GPIOx;
     ins->GPIO_Pin=GPIO_config->GPIO_Pin;
     ins->pin_state=GPIO_config->pin_state;
     ins->exti_mode=GPIO_config->exti_mode;
     ins->id=GPIO_config->id;
     ins->gpio_model_callback=GPIO_config->gpio_model_callback;
-
     gpio_instance[idx++]=ins;
     return ins;
 }
@@ -65,3 +64,4 @@ GPIO_PinState GPIORead(GPIOInstance *_instance)
 {
     return HAL_GPIO_ReadPin(_instance->GPIOx,_instance->GPIO_Pin);
 }
+

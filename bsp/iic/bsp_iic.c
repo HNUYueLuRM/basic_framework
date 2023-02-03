@@ -15,7 +15,7 @@ IICInstance *IICRegister(IIC_Init_Config_s *conf)
     instance = (IICInstance *)malloc(sizeof(IICInstance));
     memset(instance, 0, sizeof(IICInstance));
 
-    instance->dev_address = conf->dev_address;
+    instance->dev_address = conf->dev_address << 1;
     instance->callback = conf->callback;
     instance->work_mode = conf->work_mode;
     instance->handle = conf->handle;
@@ -81,7 +81,7 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e s
     case IIC_BLOCK_MODE:
         if (seq_mode != IIC_RELEASE)
             while (1)
-                ; // 阻塞模式下不支持HOLD ON模式!!!
+                ;                                                               // 阻塞模式下不支持HOLD ON模式!!!
         HAL_I2C_Master_Receive(iic->handle, iic->dev_address, data, size, 100); // 默认超时时间100ms
         break;
     case IIC_IT_MODE:
@@ -103,7 +103,7 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e s
     }
 }
 
-void IICAcessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mem_mode)
+void IICAccessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mem_mode)
 {
     if (mem_mode == IIC_WRITE_MEM)
     {
@@ -129,7 +129,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
     // 如果是当前i2c硬件发出的complete,且dev_address和之前发起接收的地址相同,同时回到函数不为空, 则调用回调函数
     for (uint8_t i = 0; i < idx; i++)
-    {   
+    {
         if (iic_instance[i]->handle == hi2c && hi2c->Devaddress == iic_instance[i]->dev_address)
         {
             if (iic_instance[i]->callback != NULL) // 回调函数不为空

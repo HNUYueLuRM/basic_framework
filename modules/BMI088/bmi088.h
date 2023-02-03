@@ -2,6 +2,7 @@
 #define __BMI088_H__
 
 #include "bsp_spi.h"
+#include "bsp_gpio.h"
 #include "controller.h"
 #include "bsp_pwm.h"
 #include "stdint.h"
@@ -16,8 +17,13 @@ typedef enum
 typedef struct
 {
     // 传输模式和工作模式控制
-    SPIInstance *spi_gyro;
-    SPIInstance *spi_acc;
+    BMI088_Work_Mode_e mode; 
+    // SPI接口
+    SPIInstance *spi_gyro; // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
+    SPIInstance *spi_acc;  // 注意,SPIInstnace内部也有一个GPIOInstance,用于控制片选CS
+    // EXTI GPIO,如果BMI088工作在中断模式,则需要配置中断引脚(有数据产生时触发解算)
+    GPIOInstance *gyro_int;
+    GPIOInstance *acc_int;
     // 温度控制
     PIDInstance *heat_pid; // 恒温PID
     PWMInstance *heat_pwm; // 加热PWM
@@ -38,6 +44,8 @@ typedef struct
 {
     SPI_Init_Config_s spi_gyro_config;
     SPI_Init_Config_s spi_acc_config;
+    GPIO_Init_Config_s gyro_int_config;
+    GPIO_Init_Config_s acc_int_config;
     BMI088_Work_Mode_e mode;
     PID_Init_Config_s heat_pid_config;
     PWM_Init_Config_s heat_pwm_config;

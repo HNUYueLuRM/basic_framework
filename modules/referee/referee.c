@@ -1,6 +1,6 @@
 #include "referee.h"
 #include "string.h"
-#include "crc.h"
+#include "crc_ref.h"
 #include "bsp_usart.h"
 #include "dma.h"
 

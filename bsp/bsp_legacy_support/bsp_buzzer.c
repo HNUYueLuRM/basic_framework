@@ -18,6 +18,7 @@ void BuzzerOn(uint16_t psc, uint16_t pwm, uint8_t level)
         __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_3, pwm);
     }
 }
+
 void BuzzerOff(void)
 {
     __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_3, 0);

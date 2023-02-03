@@ -34,7 +34,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "robot.h"
-#include "oled.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,6 +114,7 @@ int main(void)
 	MX_I2C3_Init();
 	/* USER CODE BEGIN 2 */
 	RobotInit();
+	
 	/* USER CODE END 2 */
 
 	/* Call init function for freertos objects (in freertos.c) */

@@ -1,1 +1,90 @@
+#include "bsp_dwt.h"
 #include "ist8310.h"
+#include "memory.h"
+#include "stdlib.h"
+
+static IST8310Instance *ist8310_instance = NULL;
+
+// -------------------初始化写入数组,只使用一次,详见datasheet-------------------------
+// the first column:the registers of IST8310. 第一列:IST8310的寄存器
+// the second column: the value to be writed to the registers.第二列:需要写入的寄存器值
+// the third column: return error value.第三列:返回的错误码
+#define IST8310_WRITE_REG_NUM 4
+#define IST8310_DATA_REG 0x03       // 数据寄存器
+#define IST8310_WHO_AM_I 0x00       // ist8310 id 寄存器值
+#define IST8310_WHO_AM_I_VALUE 0x10 // ist8310 id 寄存器值,用于检测是否连接成功
+static uint8_t ist8310_write_reg_data_error[IST8310_WRITE_REG_NUM][3] = {
+    {0x0B, 0x08, 0x01},  // enalbe interrupt  and low pin polarity.开启中断，并且设置低电平
+    {0x41, 0x09, 0x02},  // average 2 times.平均采样两次
+    {0x42, 0xC0, 0x03},  // must be 0xC0. 必须是0xC0
+    {0x0A, 0x0B, 0x04}}; // 200Hz output rate.200Hz输出频率
+
+/**
+ * @brief IST8310解码函数,EXTI中断来临时被调用,将数据放到ist.mag中
+ * @note 如果使用IT或DMA方式传输IIC,则传输完成后也会进入此函数
+ *
+ * @param ist 发生中断的IST8310实例
+ */
+static void IST8310Decode(IICInstance *iic)
+{
+    static int16_t temp[3];
+    static IST8310Instance *ist;
+    ist = (IST8310Instance *)(iic->id);
+
+    memcpy(temp, ist->iic_buffer, 6 * sizeof(uint8_t));
+    for (uint8_t i = 0; i < 3; i++)
+        ist->mag[i] = (float)temp[i] * MAG_SEN;
+}
+
+// EXTI中断回调函数,说明DRDY拉低.主机启动传输并在结束后调用IST8310Decode进行数据解析
+// 注意IICAccessMem是阻塞的
+static void IST8310StartTransfer(GPIOInstance *gpio)
+{
+    IST8310Instance *ist_for_transfer = (IST8310Instance *)gpio->id;
+    IICAccessMem(ist_for_transfer->iic, IST8310_DATA_REG, ist_for_transfer->iic_buffer, 6, IIC_READ_MEM);
+    IST8310Decode(ist_for_transfer->iic);
+}
+
+IST8310Instance *IST8310Init(IST8310_Init_Config_s *config)
+{
+    static const uint8_t sleepTime = 50;
+    uint8_t check_who_i_am = 0;
+
+    // 分配空间,清除flash
+    IST8310Instance *ist = (IST8310Instance *)malloc(sizeof(IST8310Instance));
+    memset(ist, 0, sizeof(IST8310Instance));
+
+    // c语言赋值从右到左
+    config->iic_config.id = config->gpio_conf_exti.id = config->gpio_conf_rst.id = ist;
+    // 传入回调函数
+    config->iic_config.callback = IST8310Decode;
+    config->gpio_conf_exti.gpio_model_callback = IST8310StartTransfer;
+    // 注册两个GPIO和IIC
+    ist->iic = IICRegister(&config->iic_config);
+    ist->gpio_exti = GPIORegister(&config->gpio_conf_exti);
+    ist->gpio_rst = GPIORegister(&config->gpio_conf_rst);
+
+    // 重置IST8310,需要HAL_Delay等待完成Reset
+    GPIOReset(ist->gpio_rst);
+    HAL_Delay(sleepTime);
+    GPIOSet(ist->gpio_rst);
+    HAL_Delay(sleepTime);
+
+    // 读取IST8310的ID,如果不是0x10,则返回错误
+    IICAccessMem(ist->iic, IST8310_WHO_AM_I, &check_who_i_am, 1, IIC_READ_MEM);
+    if (check_who_i_am != IST8310_WHO_AM_I_VALUE)
+        return NULL; // while(1)
+
+    // 进行初始化配置写入并检查是否写入成功
+    for (uint8_t i = 0; i < IST8310_WRITE_REG_NUM; i++)
+    { // 写入配置
+        IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &ist8310_write_reg_data_error[i][1], 1, IIC_WRITE_MEM);
+        IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &check_who_i_am, 1, IIC_READ_MEM); // 读回自身id
+        if (check_who_i_am != ist8310_write_reg_data_error[i][1])
+            while (1)
+                ist8310_write_reg_data_error[i][2]; // 掉线/写入失败/未知错误,返回对应的错误码
+    }
+
+    ist8310_instance = ist;
+    return ist;
+}

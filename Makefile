@@ -119,6 +119,7 @@ modules/algorithm/QuaternionEKF.c \
 modules/algorithm/crc8.c \
 modules/algorithm/crc16.c \
 modules/algorithm/user_lib.c \
+modules/BMI088/bmi088.c \
 modules/imu/BMI088driver.c \
 modules/imu/BMI088Middleware.c \
 modules/imu/ins_task.c \
@@ -239,6 +240,7 @@ C_INCLUDES =  \
 -Ibsp/bsp_legacy_support \
 -Ibsp \
 -Imodules/algorithm \
+-Imodules/BMI088 \
 -Imodules/imu \
 -Imodules/ist8310 \
 -Imodules/led \
