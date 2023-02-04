@@ -39,10 +39,13 @@ BUILD_DIR = build
 C_SOURCES =  \
 HAL_N_Middlewares/Src/main.c \
 HAL_N_Middlewares/Src/gpio.c \
-HAL_N_Middlewares/Src/i2c.c \
+HAL_N_Middlewares/Src/freertos.c \
 HAL_N_Middlewares/Src/adc.c \
 HAL_N_Middlewares/Src/can.c \
+HAL_N_Middlewares/Src/crc.c \
+HAL_N_Middlewares/Src/dac.c \
 HAL_N_Middlewares/Src/dma.c \
+HAL_N_Middlewares/Src/i2c.c \
 HAL_N_Middlewares/Src/rng.c \
 HAL_N_Middlewares/Src/rtc.c \
 HAL_N_Middlewares/Src/spi.c \
@@ -54,8 +57,10 @@ HAL_N_Middlewares/Src/usbd_desc.c \
 HAL_N_Middlewares/Src/usbd_cdc_if.c \
 HAL_N_Middlewares/Src/stm32f4xx_it.c \
 HAL_N_Middlewares/Src/stm32f4xx_hal_msp.c \
+HAL_N_Middlewares/Src/stm32f4xx_hal_timebase_tim.c \
 HAL_N_Middlewares/Src/system_stm32f4xx.c \
-HAL_N_Middlewares/Src/freertos.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c \
+HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c \
 HAL_N_Middlewares/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c \

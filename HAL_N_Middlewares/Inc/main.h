@@ -57,10 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define IMU_TEMP_Pin GPIO_PIN_8
-#define IMU_TEMP_GPIO_Port GPIOB
 #define MAG_RST_Pin GPIO_PIN_6
 #define MAG_RST_GPIO_Port GPIOG
+#define IMU_TEMP_Pin GPIO_PIN_6
+#define IMU_TEMP_GPIO_Port GPIOF
 #define LED_R_Pin GPIO_PIN_12
 #define LED_R_GPIO_Port GPIOH
 #define INT_MAG_Pin GPIO_PIN_3
@@ -76,11 +76,12 @@ void Error_Handler(void);
 #define KEY_GPIO_Port GPIOA
 #define CS1_ACCEL_Pin GPIO_PIN_4
 #define CS1_ACCEL_GPIO_Port GPIOA
-#define INT_ACCEL_Pin GPIO_PIN_4
-#define INT_ACCEL_GPIO_Port GPIOC
-#define INT_ACCEL_EXTI_IRQn EXTI4_IRQn
+#define INT_ACC_Pin GPIO_PIN_4
+#define INT_ACC_GPIO_Port GPIOC
+#define INT_ACC_EXTI_IRQn EXTI4_IRQn
 #define INT_GYRO_Pin GPIO_PIN_5
 #define INT_GYRO_GPIO_Port GPIOC
+#define INT_GYRO_EXTI_IRQn EXTI9_5_IRQn
 #define SERVO_Pin GPIO_PIN_9
 #define SERVO_GPIO_Port GPIOE
 #define CS1_GYRO_Pin GPIO_PIN_0

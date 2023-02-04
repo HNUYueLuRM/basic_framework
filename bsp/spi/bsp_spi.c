@@ -128,10 +128,11 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
         if (spi_instance[i]->spi_handle == hspi && // 显然同一时间一条总线只能有一个从机在接收数据
             HAL_GPIO_ReadPin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin) == GPIO_PIN_RESET)
         {
+            // 先拉高片选,结束传输,在判断是否有回调函数,如果有则调用回调函数
+            HAL_GPIO_WritePin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin, GPIO_PIN_SET);
             if (spi_instance[i]->callback != NULL) // 回调函数不为空, 则调用回调函数
             {
-                // 先拉高片选,结束传输
-                HAL_GPIO_WritePin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin, GPIO_PIN_SET);
+                
                 spi_instance[i]->callback(spi_instance[i]);
             }
             return;

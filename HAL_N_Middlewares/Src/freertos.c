@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -118,7 +118,6 @@ void MX_FREERTOS_Init(void) {
   /* definition and creation of defaultTask */
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
   osThreadDef(instask, StartINSTASK, osPriorityNormal, 0, 1024);
   defaultTaskHandle = osThreadCreate(osThread(instask), NULL);
 
@@ -130,7 +129,6 @@ void MX_FREERTOS_Init(void) {
 
   osThreadDef(robottask, StartROBOTTASK, osPriorityNormal, 0, 1024);
   defaultTaskHandle = osThreadCreate(osThread(robottask), NULL);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -152,8 +150,6 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    //1kHz
-    led_RGB_flow_task();
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
@@ -161,6 +157,7 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
 void StartINSTASK(void const * argument)
 {
   while (1)
@@ -202,6 +199,4 @@ void StartROBOTTASK(void const * argument)
   }
   
 }
-
-
 /* USER CODE END Application */
