@@ -58,7 +58,7 @@ typedef struct
     float gNorm;          // 重力加速度模长,从标定获取
     float acc_coef;       // 加速度计原始数据转换系数
     // 传感器灵敏度,用于计算实际值(regNdef.h中定义)
-    float BMI088_ACCELL_SEN;
+    float BMI088_ACCEL_SEN;
     float BMI088_GYRO_SEN;
     // 用于计算两次采样的时间间隔
     uint32_t bias_dwt_cnt;

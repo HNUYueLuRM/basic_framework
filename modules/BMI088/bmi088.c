@@ -154,10 +154,10 @@ static uint8_t BMI088GyroInit(BMI088Instance *bmi088)
         //{i--;} 可以设置retry次数,如果retry次数用完了,则返回error
     }
 
-    bmi088->acc_coef = 1.0;                          // 尚未初始化时设定为1,使得BMI088Acquire可以正常使用
-    bmi088->BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN;  // 后续改为从initTable中获取
-    bmi088->BMI088_ACCELL_SEN = BMI088_ACCEL_6G_SEN; // 用宏字符串拼接
-
+    bmi088->acc_coef = 1.0;                         // 尚未初始化时设定为1,使得BMI088Acquire可以正常使用
+    bmi088->BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN; // 后续改为从initTable中获取
+    bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_6G_SEN; // 用宏字符串拼接
+    bmi088->gNorm
     return error;
 }
 // -------------------------以上为私有函数,用于初始化BMI088acc和gyro的硬件和配置--------------------------------//
@@ -174,15 +174,15 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
     static uint8_t first_read_flag; // 判断是否时第一次进入此函数(第一次读取)
     // 用于初始化DWT的计数,暂时没想到更好的方法
     if (!first_read_flag)
-        DWT_GetDeltaT(& bmi088->bias_dwt_cnt); // 初始化delta
+        DWT_GetDeltaT(&bmi088->bias_dwt_cnt); // 初始化delta
     else
         dt_imu = DWT_GetDeltaT(&bmi088->bias_dwt_cnt);
 
-    // 读取accel的x轴数据首地址,bmi088内部自增读取地址
-    BMI088AccelRead(bmi088, BMI088_ACCEL_XOUT_L, buf, 6); // 3* sizeof(int16_t)
-    static float calc_coef_acc;                           // 防止重复计算
-    if (!first_read_flag) // 初始化的时候赋值
-        calc_coef_acc = bmi088->BMI088_ACCELL_SEN * bmi088->acc_coef;
+    // 读取accel的x轴数据首地址,bmi088内部自增读取地址 // 3* sizeof(int16_t)
+    BMI088AccelRead(bmi088, BMI088_ACCEL_XOUT_L, buf, 6);
+    static float calc_coef_acc; // 防止重复计算
+    if (!first_read_flag)       // 初始化的时候赋值
+        calc_coef_acc = bmi088->BMI088_ACCEL_SEN * bmi088->acc_coef;
     bmi088->acc[0] = calc_coef_acc * (float)(int16_t)(((buf[1]) << 8) | buf[0]);
     bmi088->acc[1] = calc_coef_acc * (float)(int16_t)(((buf[3]) << 8) | buf[2]);
     bmi088->acc[3] = calc_coef_acc * (float)(int16_t)(((buf[5]) << 8) | buf[4]);
@@ -190,20 +190,20 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
     BMI088GyroRead(bmi088, BMI088_GYRO_X_L, buf, 6); // 连续读取3个(3*2=6)轴的角速度
     static float gyrosen, bias1, bias2, bias3;
     if (!first_read_flag)
-    {   // 先保存,减少访问内存的开销,直接访问栈上变量
+    { // 先保存,减少访问内存的开销,直接访问栈上变量
         gyrosen = bmi088->BMI088_GYRO_SEN;
         bias1 = bmi088->gyro_offset[0];
         bias2 = bmi088->gyro_offset[1];
         bias3 = bmi088->gyro_offset[2];
 
         first_read_flag = 1; // 最后在这里,完成一次读取,标志第一次读取完成
-    } // 别担心,初始化调用的时候offset(即零飘bias)是0
+    }                        // 别担心,初始化调用的时候offset(即零飘bias)是0
     bmi088->gyro[0] = (float)(int16_t)(((buf[1]) << 8) | buf[0]) * gyrosen - bias1 * dt_imu;
     bmi088->gyro[0] = (float)(int16_t)(((buf[3]) << 8) | buf[2]) * gyrosen - bias2 * dt_imu;
     bmi088->gyro[0] = (float)(int16_t)(((buf[5]) << 8) | buf[4]) * gyrosen - bias3 * dt_imu;
 
-    BMI088AccelRead(bmi088,BMI088_TEMP_M,buf,2); // 读温度,温度传感器在accel上
-    bmi088->temperature= (float)(int16_t)(((buf[0] << 3) | (buf[1] >> 5))) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
+    BMI088AccelRead(bmi088, BMI088_TEMP_M, buf, 2); // 读温度,温度传感器在accel上
+    bmi088->temperature = (float)(int16_t)(((buf[0] << 3) | (buf[1] >> 5))) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
 
     return data_store;
 
@@ -220,13 +220,16 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
 #warning REMEMBER TO SET PRE CALIBRATE PARAMETER IF YOU CHOOSE NOT TO CALIBRATE
 #define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
 #define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f
-// macro to go here... 预设标定参数
+// macro to go here... 预设标定参数 gNorm
 
 /**
  * @brief BMI088 acc gyro 标定
  * @note 标定后的数据存储在bmi088->bias和gNorm中,用于后续数据消噪和单位转换归一化
  * @attention 不管工作模式是blocking还是IT,标定时都是blocking模式,所以不用担心中断关闭后无法标定(RobotInit关闭了全局中断)
  * @attention 标定精度和等待时间有关,目前使用线性回归.后续考虑引入非线性回归
+ * @todo 将标定次数(等待时间)变为参数供设定
+ * @section 整体流程为1.累加加速度数据计算gNrom() 2.累加陀螺仪数据计算零飘
+ *          3. 如果标定过程运动幅度过大,重新标定  4.保存标定参数
  *
  * @param _bmi088 待标定的BMI088实例
  */
@@ -234,11 +237,118 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
 {
     if (_bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
     {
+        // 一次性参数用完就丢,不用static
+        float startTime;                     // 开始标定时间,用于确定是否超时
+        uint16_t CaliTimes = 6000;           // 标定次数(6s)
+        int16_t bmi088_raw_temp;             // 临时变量,暂存数据移位拼接后的值
+        uint8_t buf[6] = {0, 0, 0, 0, 0, 0}; // buffer
+        float gyroMax[3], gyroMin[3];        // 保存标定过程中读取到的数据最大值判断是否满足标定环境
+        float gNormTemp, gNormMax, gNormMin; // 同上,计算矢量范数(模长)
+        float gyroDiff[3], gNormDiff;        // 每个轴的最大角速度跨度及其模长
+
+        startTime = DWT_GetTimeline_s();
+        // 循环继续的条件为标定环境不满足
+        do // 用do while至少执行一次,省得对上面的参数进行初始化
+        {  // 标定超时,直接使用预标定参数(如果有)
+            if (DWT_GetTimeline_s() - startTime > 10)
+            { // 切换标定模式,丢给下一个if处理
+                _bmi088->cali_mode = BMI088_LOAD_PRE_CALI_MODE;
+                break;
+            }
+
+            DWT_Delay(0.005);
+            _bmi088->gNorm = 0;
+            _bmi088->gyro_offset[0] = 0;
+            _bmi088->gyro_offset[1] = 0;
+            _bmi088->gyro_offset[2] = 0;
+
+            for (uint16_t i = 0; i < CaliTimes; ++i) // 提前计算,优化
+            {
+                BMI088AccelRead(_bmi088, BMI088_ACCEL_XOUT_L, buf, 6);         // 读取
+                bmi088_raw_temp = (int16_t)((buf[1]) << 8) | buf[0];           // 拼接
+                _bmi088->acc[0] = bmi088_raw_temp * _bmi088->BMI088_ACCEL_SEN; // 计算真实值
+                bmi088_raw_temp = (int16_t)((buf[3]) << 8) | buf[2];
+                _bmi088->acc[1] = bmi088_raw_temp * _bmi088->BMI088_ACCEL_SEN;
+                bmi088_raw_temp = (int16_t)((buf[5]) << 8) | buf[4];
+                _bmi088->acc[2] = bmi088_raw_temp * _bmi088->BMI088_ACCEL_SEN;
+                gNormTemp = sqrtf(_bmi088->acc[0] * _bmi088->acc[0] +
+                                  _bmi088->acc[1] * _bmi088->acc[1] +
+                                  _bmi088->acc[2] * _bmi088->acc[2]);
+                _bmi088->gNorm += gNormTemp; // 计算范数并累加,最后除以calib times获取单次值
+
+                BMI088GyroRead(_bmi088, BMI088_GYRO_X_L, buf, 6); // 可保存提前计算,优化
+                bmi088_raw_temp = (int16_t)((buf[3]) << 8) | buf[2];
+                _bmi088->gyro[0] = bmi088_raw_temp * _bmi088->BMI088_ACCEL_SEN;
+                _bmi088->gyro_offset[0] += _bmi088->gyro[0];
+                bmi088_raw_temp = (int16_t)((buf[5]) << 8) | buf[4];
+                _bmi088->gyro[1] = bmi088_raw_temp * _bmi088->BMI088_ACCEL_SEN;
+                _bmi088->gyro_offset[1] += _bmi088->gyro[1];
+                bmi088_raw_temp = (int16_t)((buf[7]) << 8) | buf[6];
+                _bmi088->gyro[2] = bmi088_raw_temp * _bmi088->BMI088_ACCEL_SEN;
+                _bmi088->gyro_offset[2] += _bmi088->gyro[2]; // 累加当前值,最后除以calib times获得零飘
+                // 因为标定时传感器静止,所以采集到的值就是漂移
+
+                if (i == 0)
+                {
+                    gNormMax = gNormTemp; // 初始化成当前的重力加速度模长
+                    gNormMin = gNormTemp;
+                    for (uint8_t j = 0; j < 3; ++j)
+                    {
+                        gyroMax[j] = _bmi088->gyro[j];
+                        gyroMin[j] = _bmi088->gyro[j];
+                    }
+                }
+                else // 更新gNorm的Min Max和gyro的minmax
+                {
+                    if (gNormTemp > gNormMax)
+                        gNormMax = gNormTemp;
+                    if (gNormTemp < gNormMin)
+                        gNormMin = gNormTemp;
+                    for (uint8_t j = 0; j < 3; ++j)
+                    {
+                        if (_bmi088->gyro[j] > gyroMax[j]) // 可以写的更简短,宏? :?
+                            gyroMax[j] = _bmi088->gyro[j];
+                        if (_bmi088->gyro[j] < gyroMin[j])
+                            gyroMin[j] = _bmi088->gyro[j];
+                    }
+                }
+
+                gNormDiff = gNormMax - gNormMin; // 最大值和最小值的差
+                for (uint8_t j = 0; j < 3; ++j)
+                    gyroDiff[j] = gyroMax[j] - gyroMin[j]; // 分别计算三轴
+                if (gNormDiff > 0.5f ||
+                    gyroDiff[0] > 0.15f ||
+                    gyroDiff[1] > 0.15f ||
+                    gyroDiff[2] > 0.15f)
+                    break;         // 超出范围了,重开! remake到while循环,外面还有一层
+                DWT_Delay(0.0005); // 休息一会再开始下一轮数据获取,IMU准备数据需要时间
+            }
+
+            _bmi088->gNorm /= (float)CaliTimes; // 加速度范数重力
+            for (uint8_t i = 0; i < 3; ++i)
+                _bmi088->gyro_offset[i] /= (float)CaliTimes; // 三轴零飘
+            BMI088AccelRead(_bmi088, BMI088_TEMP_M, buf, 2);
+            bmi088_raw_temp = (int16_t)((buf[0] << 3) | (buf[1] >> 5)); // 保存标定时的温度,如果已知温度和零飘的关系
+            // 这里直接存到temperature,可以另外增加BMI088Instance的成员变量TempWhenCalib
+            _bmi088->temperature = bmi088_raw_temp * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;
+
+            // caliTryOutCount++; 保存已经尝试的标定次数?由你.
+        } while (gNormDiff > 0.5f ||
+                 fabsf(_bmi088->gNorm - 9.8f) > 0.5f ||
+                 gyroDiff[0] > 0.15f ||
+                 gyroDiff[1] > 0.15f ||
+                 gyroDiff[2] > 0.15f ||
+                 fabsf(_bmi088->gyro_offset[0]) > 0.01f ||
+                 fabsf(_bmi088->gyro_offset[1]) > 0.01f ||
+                 fabsf(_bmi088->gyro_offset[2]) > 0.01f); // 条件
     }
-    else
+    if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE) // 如果标定失败也会进来
     {
         // 读取标定数据
         // code to go here ...
+        _bmi088->gyro_offset[0] = BMI088_PRE_CALI_ACC_X_OFFSET;
+        // ...
+        // acc_coef,gNorm ...
     }
 }
 
@@ -275,6 +385,7 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config)
 
     // 还有其他方案可用,比如阻塞等待传输完成,但是比较笨.
 
+    // 注册实例
     bmi088_instance->spi_acc = SPIRegister(&config->spi_acc_config);
     bmi088_instance->spi_gyro = SPIRegister(&config->spi_gyro_config);
     bmi088_instance->acc_int = GPIORegister(&config->acc_int_config);
