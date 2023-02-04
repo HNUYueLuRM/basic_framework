@@ -87,6 +87,13 @@ extern uint8_t GlobalDebugMode;
 #define VAL_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define VAL_MAX(a, b) ((a) > (b) ? (a) : (b))
 
+/**
+ * @brief 返回一块干净的内存,不过仍然需要强制转换为你需要的类型
+ * 
+ * @param size 分配大小
+ * @return void* 
+ */
+void* zero_malloc(size_t size);
 
 //���ٿ���
 float Sqrt(float x);

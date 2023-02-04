@@ -2,6 +2,7 @@
  ******************************************************************************
  * @file	bsp_dwt.c
  * @author  Wang Hongxi
+ * @author modified by Neo with annotation
  * @version V1.1.0
  * @date    2022/3/8
  * @brief
@@ -17,7 +18,21 @@ static uint32_t CPU_FREQ_Hz, CPU_FREQ_Hz_ms, CPU_FREQ_Hz_us;
 static uint32_t CYCCNT_RountCount;
 static uint32_t CYCCNT_LAST;
 uint64_t CYCCNT64;
-static void DWT_CNT_Update(void);
+
+/**
+ * @brief 私有函数,用于检查DWT CYCCNT寄存器是否溢出,并更新CYCCNT_RountCount
+ * @attention 此函数假设两次调用之间的时间间隔不超过一次溢出
+ * 
+ */
+static void DWT_CNT_Update(void)
+{
+    volatile uint32_t cnt_now = DWT->CYCCNT;
+
+    if (cnt_now < CYCCNT_LAST)
+        CYCCNT_RountCount++;
+
+    CYCCNT_LAST = cnt_now;
+}
 
 void DWT_Init(uint32_t CPU_Freq_mHz)
 {
@@ -101,15 +116,6 @@ uint64_t DWT_GetTimeline_us(void)
     return DWT_Timelinef32;
 }
 
-static void DWT_CNT_Update(void)
-{
-    volatile uint32_t cnt_now = DWT->CYCCNT;
-
-    if (cnt_now < CYCCNT_LAST)
-        CYCCNT_RountCount++;
-
-    CYCCNT_LAST = cnt_now;
-}
 
 void DWT_Delay(float Delay)
 {

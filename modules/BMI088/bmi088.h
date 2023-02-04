@@ -7,10 +7,6 @@
 #include "bsp_pwm.h"
 #include "stdint.h"
 
-#define BMI088_PRE_CALI_ACC_X_OFFSET 0.0f
-#define BMI088_PRE_CALI_ACC_Y_OFFSET 0.0f
-// macro to go here... 预设标定参数
-
 // bmi088工作模式枚举
 typedef enum
 {
@@ -21,9 +17,22 @@ typedef enum
 // bmi088标定方式枚举,若使用预设标定参数,注意修改预设参数
 typedef enum
 {
-    BMI088_CALIBRATE_MODE = 0, // 初始化时进行标定
-    BMI088_LOAD_PRE_CALI_MODE, // 使用预设标定参数,
+    BMI088_CALIBRATE_ONLINE_MODE = 0, // 初始化时进行标定
+    BMI088_LOAD_PRE_CALI_MODE,        // 使用预设标定参数,
 } BMI088_Calibrate_Mode_e;
+
+#pragma pack(1) // 1字节对齐
+/* BMI088数据*/
+typedef struct
+{
+    float gyro[3];     // 陀螺仪数据,xyz
+    float acc[3];      // 加速度计数据,xyz
+    float temperature; // 温度
+
+    // uint32_t timestamp; // 时间戳
+    // uint32_t count;
+} BMI088_Data_t;
+#pragma pack() // 恢复默认对齐,需要传输的结构体务必开启1字节对齐
 
 /* BMI088实例结构体定义 */
 typedef struct
@@ -53,6 +62,18 @@ typedef struct
     float BMI088_GYRO_SEN;
     // 用于计算两次采样的时间间隔
     uint32_t bias_dwt_cnt;
+    // 数据更新标志位
+    struct // 位域,节省空间提高可读性
+    {
+        uint8_t gyro : 1; // 1:有新数据,0:无新数据
+        uint8_t acc : 1;
+        uint8_t temp : 1;
+        uint8_t gyro_overrun : 1; // 1:数据溢出,0:无溢出
+        uint8_t acc_overrun : 1;
+        uint8_t temp_overrun : 1;
+        uint8_t imu_ready : 1; // 1:IMU数据准备好,0:IMU数据未准备好(gyro+acc)
+        // 后续可添加其他标志位
+    } update_flag;
 } BMI088Instance;
 
 /* BMI088初始化配置 */
@@ -68,7 +89,6 @@ typedef struct
     PWM_Init_Config_s heat_pwm_config;
 } BMI088_Init_Config_s;
 
-
 /**
  * @brief 初始化BMI088,返回BMI088实例指针
  * @note  一般一个开发板只有一个BMI088,所以这里就叫BMI088Init而不是Register
@@ -78,4 +98,11 @@ typedef struct
  */
 BMI088Instance *BMI088Register(BMI088_Init_Config_s *config);
 
+/**
+ * @brief 读取BMI088数据
+ * @todo  7个float数据开销较大,后续考虑使用DMA或双缓冲区直接传递指针
+ * @param bmi088 BMI088实例指针
+ * @return BMI088_Data_t 读取到的数据
+ */
+BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088);
 #endif // !__BMI088_H__

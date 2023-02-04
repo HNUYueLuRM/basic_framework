@@ -25,6 +25,13 @@
 
 uint8_t GlobalDebugMode = 7;
 
+void* zero_malloc(size_t size)
+{
+    void* ptr=malloc(size);
+    memset(ptr,0,size);
+    return ptr;
+}
+
 // 快速开方
 float Sqrt(float x)
 {
