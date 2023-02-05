@@ -148,29 +148,65 @@ static uint8_t BMI088GyroInit(BMI088Instance *bmi088)
         reg = BMI088_Gyro_Init_Table[i][REG];
         data = BMI088_Gyro_Init_Table[i][DATA];
         BMI088GyroWrite(bmi088, reg, data);    // 写入寄存器
-        BMI088GyroRead(bmi088, reg, &data, 1); // 写完之后立刻读回检查
+        BMI088GyroRead(bmi088, reg, &data, 1); // 写完之后立刻读回对应寄存器检查是否写入成功
         if (data != BMI088_Gyro_Init_Table[i][DATA])
             error |= BMI088_Gyro_Init_Table[i][ERROR];
-        //{i--;} 可以设置retry次数,如果retry次数用完了,则返回error
+        //{i--;} 可以设置retry次数,尝试重新写入.如果retry次数用完了,则返回error
     }
-
-    bmi088->acc_coef = 1.0;                         // 尚未初始化时设定为1,使得BMI088Acquire可以正常使用
-    bmi088->BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN; // 后续改为从initTable中获取
-    bmi088->BMI088_ACCEL_SEN = BMI088_ACCEL_6G_SEN; // 用宏字符串拼接
-    bmi088->gNorm
+   
     return error;
 }
 // -------------------------以上为私有函数,用于初始化BMI088acc和gyro的硬件和配置--------------------------------//
 
+// -------------------------以下为私有函数,private用于IT模式下的中断处理---------------------------------//
+
+/**
+ * @brief 待编写,很快!
+ *
+ */
+static void BMI088AccSPIFinishCallback(SPIInstance *spi)
+{
+    static BMI088Instance *bmi088;
+    bmi088 = (BMI088Instance *)(spi->id);
+    // code to go here ...
+}
+
+static void BMI088GyroSPIFinishCallback(SPIInstance *spi)
+{
+    static BMI088Instance *bmi088;
+    bmi088 = (BMI088Instance *)(spi->id);
+}
+
+static void BMI088AccINTCallback(GPIOInstance *gpio)
+{
+    static BMI088Instance *bmi088;
+    bmi088 = (BMI088Instance *)(gpio->id);
+}
+
+static void BMI088GyroINTCallback(GPIOInstance *gpio)
+{
+    static BMI088Instance *bmi088;
+    bmi088 = (BMI088Instance *)(gpio->id);
+}
+
+// -------------------------以上为私有函数,private用于IT模式下的中断处理---------------------------------//
+
 // -------------------------以下为公有函数,用于注册BMI088,标定和数据读取--------------------------------//
 
+/**
+ * @brief 
+ * @todo 现在要考虑一下数据返回的方式,指针还是结构体? 7个float数据有点费时,不然用DMA? or memcpy
+ * 
+ * @param bmi088 
+ * @return BMI088_Data_t 
+ */
 BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
 {
     // 分配空间保存返回的数据,指针传递
     static BMI088_Data_t data_store;
     static float dt_imu = 1.0; // 初始化为1,这样也可以不用first_read_flag,各有优劣
     // 如果是blocking模式,则主动触发一次读取并返回数据
-    static uint8_t buf[6] = {0};    // 最多读取6个byte(gyro)
+    static uint8_t buf[6] = {0};    // 最多读取6个byte(gyro/acc,temp是2)
     static uint8_t first_read_flag; // 判断是否时第一次进入此函数(第一次读取)
     // 用于初始化DWT的计数,暂时没想到更好的方法
     if (!first_read_flag)
@@ -182,7 +218,7 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
     BMI088AccelRead(bmi088, BMI088_ACCEL_XOUT_L, buf, 6);
     static float calc_coef_acc; // 防止重复计算
     if (!first_read_flag)       // 初始化的时候赋值
-        calc_coef_acc = bmi088->BMI088_ACCEL_SEN * bmi088->acc_coef;
+        calc_coef_acc = bmi088->BMI088_ACCEL_SEN * bmi088->acc_coef; // 你要是不爽可以用宏或者全局变量,但我认为你现在很爽
     bmi088->acc[0] = calc_coef_acc * (float)(int16_t)(((buf[1]) << 8) | buf[0]);
     bmi088->acc[1] = calc_coef_acc * (float)(int16_t)(((buf[3]) << 8) | buf[2]);
     bmi088->acc[3] = calc_coef_acc * (float)(int16_t)(((buf[5]) << 8) | buf[4]);
@@ -235,7 +271,7 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
  */
 void BMI088CalibrateIMU(BMI088Instance *_bmi088)
 {
-    if (_bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE)
+    if (_bmi088->cali_mode == BMI088_CALIBRATE_ONLINE_MODE) // 性感bmi088在线标定,耗时6s
     {
         // 一次性参数用完就丢,不用static
         float startTime;                     // 开始标定时间,用于确定是否超时
@@ -288,7 +324,7 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
                 _bmi088->gyro_offset[2] += _bmi088->gyro[2]; // 累加当前值,最后除以calib times获得零飘
                 // 因为标定时传感器静止,所以采集到的值就是漂移
 
-                if (i == 0)
+                if (i == 0) // 避免未定义的行为(else中)
                 {
                     gNormMax = gNormTemp; // 初始化成当前的重力加速度模长
                     gNormMin = gNormTemp;
@@ -340,9 +376,10 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
                  gyroDiff[2] > 0.15f ||
                  fabsf(_bmi088->gyro_offset[0]) > 0.01f ||
                  fabsf(_bmi088->gyro_offset[1]) > 0.01f ||
-                 fabsf(_bmi088->gyro_offset[2]) > 0.01f); // 条件
+                 fabsf(_bmi088->gyro_offset[2]) > 0.01f); // 满足条件说明标定环境不好
     }
-    if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE) // 如果标定失败也会进来
+
+    if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE) // 如果标定失败也会进来,直接使用离线数据
     {
         // 读取标定数据
         // code to go here ...
@@ -385,7 +422,23 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config)
 
     // 还有其他方案可用,比如阻塞等待传输完成,但是比较笨.
 
-    // 注册实例
+    // 根据参数选择工作模式
+    if (config->work_mode == BMI088_BLOCK_PERIODIC_MODE)
+    {
+        config->spi_acc_config.spi_work_mode = SPI_BLOCK_MODE;
+        config->spi_gyro_config.spi_work_mode = SPI_BLOCK_MODE;
+        // callbacks are all NULL
+    }
+    else if (config->work_mode == BMI088_BLOCK_TRIGGER_MODE)
+    {
+        config->spi_gyro_config.spi_work_mode = SPI_DMA_MODE; // 如果DMA资源不够,可以用SPI_IT_MODE
+        config->spi_gyro_config.spi_work_mode = SPI_DMA_MODE;
+        // 设置回调函数
+        config->spi_acc_config.callback = BMI088AccSPIFinishCallback;
+        config->spi_gyro_config.callback = BMI088GyroSPIFinishCallback;
+        config->acc_int_config.gpio_model_callback = BMI088AccINTCallback;
+        config->gyro_int_config.gpio_model_callback = BMI088GyroINTCallback;
+    } // 注册实例
     bmi088_instance->spi_acc = SPIRegister(&config->spi_acc_config);
     bmi088_instance->spi_gyro = SPIRegister(&config->spi_gyro_config);
     bmi088_instance->acc_int = GPIORegister(&config->acc_int_config);
@@ -395,6 +448,12 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config)
     // 初始化acc和gyro
     error |= BMI088AccelInit(bmi088_instance);
     error |= BMI088GyroInit(bmi088_instance);
+
+    // 尚未标定时先设置为默认值,使得数据拼接和缩放可以正常进行
+    bmi088_instance->acc_coef = 1.0;                         // 尚未初始化时设定为1,使得BMI088Acquire可以正常使用
+    bmi088_instance->BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN; // 后续改为从initTable中获取
+    bmi088_instance->BMI088_ACCEL_SEN = BMI088_ACCEL_6G_SEN; // 用宏字符串拼接
+    // bmi088->gNorm =
 
     // 标定acc和gyro
     BMI088CalibrateIMU(bmi088_instance);

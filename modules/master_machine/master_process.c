@@ -15,7 +15,7 @@
 
 static Vision_Recv_s recv_data;
 // @todo:由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务,或由IMU采集完成产生的中断唤醒的任务,
-// 使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
+// 后者显然更nice,使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
 // static Vision_Send_s send_data;
 static USARTInstance *vision_usart_instance;
 

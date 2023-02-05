@@ -116,6 +116,7 @@ bsp/spi/bsp_spi.c \
 bsp/iic/bsp_iic.c \
 bsp/can/bsp_can.c \
 bsp/usart/bsp_usart.c \
+bsp/usb/bsp_usb.c \
 bsp/log/bsp_log.c \
 bsp/bsp_init.c \
 modules/algorithm/controller.c \
@@ -237,6 +238,7 @@ C_INCLUDES =  \
 -Ibsp/dwt \
 -Ibsp/can \
 -Ibsp/usart \
+-Ibsp/usb \
 -Ibsp/gpio \
 -Ibsp/spi \
 -Ibsp/iic \

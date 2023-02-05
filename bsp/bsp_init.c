@@ -1,6 +1,7 @@
 #include "bsp_init.h"
 #include "bsp_log.h"
 #include "bsp_dwt.h"
+#include "bsp_usb.h"
 #include "bsp_buzzer.h"
 #include "bsp_led.h"
 #include "bsp_temperature.h"
@@ -10,6 +11,7 @@ void BSPInit()
 {
     DWT_Init(168);
     BSPLogInit();
+    USBInit(); // 务必在进入操作系统之前执行USB初始化
 
     // legacy support，待删除,将在实现了led/tempctrl/buzzer的module之后移动到app层
     LEDInit();

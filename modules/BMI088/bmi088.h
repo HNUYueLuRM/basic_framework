@@ -72,19 +72,19 @@ typedef struct
         uint8_t acc_overrun : 1;
         uint8_t temp_overrun : 1;
         uint8_t imu_ready : 1; // 1:IMU数据准备好,0:IMU数据未准备好(gyro+acc)
-        // 后续可添加其他标志位
+        // 后续可添加其他标志位,不够用可以扩充16or32,太多可以删
     } update_flag;
 } BMI088Instance;
 
 /* BMI088初始化配置 */
 typedef struct
 {
+    BMI088_Work_Mode_e work_mode;
+    BMI088_Calibrate_Mode_e cali_mode;
     SPI_Init_Config_s spi_gyro_config;
     SPI_Init_Config_s spi_acc_config;
     GPIO_Init_Config_s gyro_int_config;
     GPIO_Init_Config_s acc_int_config;
-    BMI088_Work_Mode_e work_mode;
-    BMI088_Calibrate_Mode_e cali_mode;
     PID_Init_Config_s heat_pid_config;
     PWM_Init_Config_s heat_pwm_config;
 } BMI088_Init_Config_s;
@@ -105,4 +105,12 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config);
  * @return BMI088_Data_t 读取到的数据
  */
 BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088);
+
+/**
+ * @brief 标定传感器
+ * 
+ * @param _bmi088 待标定的实例
+ */
+void BMI088CalibrateIMU(BMI088Instance *_bmi088);
+
 #endif // !__BMI088_H__
