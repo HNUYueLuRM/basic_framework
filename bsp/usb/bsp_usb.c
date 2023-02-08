@@ -12,7 +12,7 @@ __weak void USBTransmitCpltCallback(uint32_t len)
 
 uint8_t *USBInit()
 {
-    USB_ResetPort(USB_OTG_FS);                                              // 上电后重新枚举usb设备
+                                             // 上电后重新枚举usb设备
     USBTransmit((uint8_t *)"USB DEVICE READY", sizeof("USB DEVICE READY")); // 发送初始化完成信息
     bsp_usb_rx_buffer = CDCInitRxbufferNcallback(USBTransmitCpltCallback);                         // 获取接收数据指针
 

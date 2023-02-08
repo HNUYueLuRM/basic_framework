@@ -10,9 +10,9 @@
 
 - **开发方式**：
 
-  本框架使用stm32cubemx生成，基于makefile，使用arm gnu工具链开发，利用arm-none-eabi-gcc编译（make命令,命令行为mingw32-make）。
+  本框架使用stm32cubemx生成，基于makefile编译系统（后期拟修改为cmake+nijna+makefile以提高编译速度，对于目前的版本您可以考虑自行安装ccache以提高编译速度），使用arm gnu工具链开发，利用arm-none-eabi-gcc编译（make命令,命令行为mingw32-make）。
 
-  > ！deprecated：若需使用keil5开发，请在stm32cubemx的`project manager`标签页下将工具链改为MDK，然后在keil中自行添加所需包含的.c文件和头文件。关于如何在keil下添加dsplib，请参考文档。在vscode中也有**KEIL assistant**和**Embedded IDE**插件可供使用。
+  > ***==！deprecated==***：若需使用keil5开发，请在stm32cubemx的`project manager`标签页下将工具链改为MDK，然后在keil中自行添加所需包含的.c文件和头文件。关于如何在keil下添加dsplib，请参考文档。在vscode中也有**KEIL assistant**和**Embedded IDE**插件可供使用。
   >
   > ***强烈推荐使用VSCode进行开发，Ozone进行调试。***
 
