@@ -147,7 +147,6 @@ void StartDefaultTask(void const * argument)
 {
   /* init code for USB_DEVICE */
   USB_ResetPort(USB_OTG_FS);
-  USBD_FS_SPEED
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */

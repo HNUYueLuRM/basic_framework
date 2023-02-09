@@ -50,6 +50,8 @@
 
 /* USER CODE BEGIN PRIVATE_TYPES */
 void (*transmitcpltcallback)(uint32_t);
+
+void (*receivecpltcallback)(uint32_t);
 /* USER CODE END PRIVATE_TYPES */
 
 /**
@@ -261,6 +263,10 @@ static int8_t CDC_Receive_FS(uint8_t *Buf, uint32_t *Len)
     /* USER CODE BEGIN 6 */
     USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
     USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+    if(receivecpltcallback != NULL)
+    {
+        receivecpltcallback(*Len);
+    }
     return (USBD_OK);
     /* USER CODE END 6 */
 }
@@ -291,9 +297,10 @@ uint8_t CDC_Transmit_FS(uint8_t *Buf, uint16_t Len)
     return result;
 }
 
-uint8_t *CDCInitRxbufferNcallback(void (*callback)(uint32_t))
+uint8_t *CDCInitRxbufferNcallback(void (*callback)(uint32_t),void (*callback2)(uint32_t))
 {
     transmitcpltcallback=callback;
+    receivecpltcallback=callback2;
     return (uint8_t *)UserRxBufferFS;
 }
 
