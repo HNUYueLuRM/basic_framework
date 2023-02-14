@@ -18,9 +18,9 @@
 #define T_MAX 18.0f
 
 typedef struct // HT04
-{              // 角度为多圈角度,范围是-95.5~95.5,单位为rad
-    float last_angle;
-    float total_angle;
+{              
+    float last_angle; 
+    float total_angle; // 角度为多圈角度,范围是-95.5~95.5,单位为rad
     float speed_aps;
     float real_current;
 } HTMotor_Measure_t;

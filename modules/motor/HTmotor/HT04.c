@@ -6,17 +6,17 @@ static uint8_t idx;
 HTMotorInstance *ht_motor_instance[HT_MOTOR_CNT];
 
 /**
- * @brief 
+ * @brief 设置电机模式,报文内容[0xff,0xff,0xff,0xff,0xff,0xff,0xff,cmd]
  *
  * @param cmd
  * @param motor
  */
 static void HTMotorSetMode(HTMotor_Mode_t cmd, HTMotorInstance *motor)
-{
-    static uint8_t buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
-    buf[7] = (uint8_t)cmd;
-    memcpy(motor->motor_can_instace->tx_buff, buf, sizeof(buf));
-    CANTransmit(motor->motor_can_instace,1);
+{                                                        
+    memset(motor->motor_can_instace->tx_buff, 0xff, 7);  // 发送电机指令的时候前面7bytes都是0xff
+    motor->motor_can_instace->tx_buff[7] = (uint8_t)cmd; // 最后一位是命令id
+    CANTransmit(motor->motor_can_instace, 1);
+    memset(motor->motor_can_instace->tx_buff, 0, 6); // 发送控制指令的时候前面6bytes都是0
 }
 
 /* 两个用于将uint值和float值进行映射的函数,在设定发送值和解析反馈值时使用 */
@@ -53,7 +53,7 @@ static void HTMotorDecode(CANInstance *motor_can)
     measure->total_angle = RAD_2_ANGLE * uint_to_float(tmp, P_MIN, P_MAX, 16);
 
     tmp = (uint16_t)((rxbuff[3] << 4) | (rxbuff[4] >> 4));
-    measure->speed_aps = RAD_2_ANGLE * SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MIN, V_MAX, 12) +
+    measure->speed_aps = SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MIN, V_MAX, 12) +
                          (1 - SPEED_SMOOTH_COEF) * measure->speed_aps;
 
     tmp = (uint16_t)(((rxbuff[4] & 0x0f) << 8) | rxbuff[5]);
@@ -102,7 +102,7 @@ void HTMotorControl()
         motor = ht_motor_instance[i];
         measure = &motor->motor_measure;
         setting = &motor->motor_settings;
-        motor_can = motor_can;
+        motor_can = motor->motor_can_instace;
         pid_ref = motor->pid_ref;
 
         if ((setting->close_loop_type & ANGLE_LOOP) && setting->outer_loop_type == ANGLE_LOOP)
@@ -111,8 +111,8 @@ void HTMotorControl()
                 pid_measure = *motor->other_angle_feedback_ptr;
             else
                 pid_measure = measure->real_current;
-
-            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
+            // measure单位是rad,ref是角度,统一到angle下计算,方便建模
+            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure*RAD_2_ANGLE, pid_ref);
         }
 
         if ((setting->close_loop_type & SPEED_LOOP) && setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP))
@@ -124,8 +124,8 @@ void HTMotorControl()
                 pid_measure = *motor->other_speed_feedback_ptr;
             else
                 pid_measure = measure->speed_aps;
-                
-            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
+            // measure单位是rad / s ,ref是angle per sec,统一到angle下计算
+            pid_ref = PID_Calculate(&motor->speed_PID, pid_measure*RAD_2_ANGLE, pid_ref);
         }
 
         if (setting->close_loop_type & CURRENT_LOOP)
@@ -140,26 +140,29 @@ void HTMotorControl()
         if (setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
             set *= -1;
 
-        tmp = float_to_uint(set, T_MIN, T_MAX, 12);
-        motor_can->tx_buff[6] = tmp >> 8;
+        LIMIT_MIN_MAX(set, T_MIN, T_MAX); // 限幅,实际上这似乎和pid输出限幅重复了
+        tmp = float_to_uint(set, T_MIN, T_MAX, 12);  // 数值最后在 -12~+12之间
+        motor_can->tx_buff[6] = (tmp >> 8);
         motor_can->tx_buff[7] = tmp & 0xff;
 
         if (motor->stop_flag == MOTOR_STOP)
         { // 若该电机处于停止状态,直接将发送buff置零
             memset(motor_can->tx_buff + 6, 0, sizeof(uint16_t));
         }
-        CANTransmit(motor_can,1);
+        CANTransmit(motor_can, 1);
     }
 }
 
 void HTMotorStop(HTMotorInstance *motor)
 {
     HTMotorSetMode(CMD_RESET_MODE, motor);
+    motor->stop_flag = MOTOR_STOP;
 }
 
 void HTMotorEnable(HTMotorInstance *motor)
 {
     HTMotorSetMode(CMD_MOTOR_MODE, motor);
+    motor->stop_flag = MOTOR_ENALBED;
 }
 
 void HTMotorCalibEncoder(HTMotorInstance *motor)

@@ -1,3 +1,5 @@
+# 推荐安装powershell7 以获得更好的shell体验!
+
 JLinkGDBServer:  
 
         $(Q)JLinkGDBServer -select USB -device $(CHIP) \  

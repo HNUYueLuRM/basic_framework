@@ -80,7 +80,7 @@ void Servo_Motor_Type_Select(ServoInstance *Servo_Motor, int16_t mode)
  * @brief 舵机输出控制
  *
  */
-void Servo_Motor_Control()
+void ServeoMotorControl()
 {
     static ServoInstance *Servo_Motor;
 

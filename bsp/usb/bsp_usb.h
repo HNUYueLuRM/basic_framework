@@ -10,7 +10,7 @@
  * @copyright Copyright (c) 2023
  * 
  */
-
+#pragma once
 #include "usb_device.h"
 #include "usbd_cdc.h"
 #include "usbd_conf.h"

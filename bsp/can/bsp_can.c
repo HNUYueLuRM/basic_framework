@@ -92,9 +92,13 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
 uint8_t CANTransmit(CANInstance *_instance,uint8_t timeout)
 {
     float dwt_start = DWT_GetTimeline_ms();
-    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
+    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0);// 等待邮箱空闲
+    {    
         if (DWT_GetTimeline_ms() - dwt_start > timeout) // 超时
+        {
             return 0;
+        }
+    }
     // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
     HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
     return 1; // 发送成功

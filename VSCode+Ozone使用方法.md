@@ -267,7 +267,7 @@ typedef struct
 
   > **如果你使用basic_framework，不需要重新生成代码。**
 
-  
+- **建议将ozone和jlink的目录一同加入环境变量，方便我们后续的一键下载和一键调试配置**
 
 ## VSCode编译和调试配置
 
@@ -483,17 +483,19 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
 2. Hex Editor，在查看汇编代码和机器代码的时候，提供2、10、16进制转换，并且可以以16进制或2进制的格式编辑文件。
 
-3. GitLens，提供强大的可视化Git支持
+3. GitLens和git graph，提供强大的可视化commit记录和UI支持
 
-4. Blockman - Highlight Nested Code Blocks 此插件会高亮嵌套的代码块（即花括号包围的部分或for/while/ifelse代码块）
+4. Blockman - Highlight Nested Code Blocks 此插件会高亮嵌套的代码块（即花括号包围的部分或for/while/ifelse代码块），对于多层条件和循环嵌套效果非常炸裂
 
-5. bookmark提供代码中插入书签的功能，从而快速在页面间跳转。
+5. bookmark 提供代码中插入书签的功能，从而快速在页面间跳转。
 
 6. Code Issue Manager，为团队提供issues和todo管理，方便协同开发
 
-7. github copilot：超强，超快，需要一些小钱
+7. github copilot：超强，超快，需要一些小钱（10块用一年！你也可以在github上申请student pack，需要学信网认证和学生卡，但有一定概率无法通过） 在插件中你也可以找到一些免费的copilot替代品。
 
 8. `ctrl+k ctrl+s`配置属于你的快捷键，提高效率！
+
+9. live share，和你的小伙伴一起结对编程
 
    
 
@@ -575,7 +577,7 @@ Project.SetOSPlugin(“plugin_name”)
 
 ![image-20221119174445067](assets/image-20221119174445067.png)
 
-我们的项目是F4的板子，内核时Cortex-M4（CM4），因此选用`FreeRTOSPlugin_CM4.js`（输入的时候js后缀不用输）。
+我们的项目是F4的板子，内核时Cortex-M4（CM4），因此选用`FreeRTOSPlugin_CM4.js`（输入的时候js后缀不用输）。 ozone默认输入的命令似乎有误，需要手动修改（这好像和ozone的版本有关，请留意）
 
 ### 常用调试窗口和功能
 
@@ -671,6 +673,14 @@ CPU选项卡可以查看CPU的寄存器。
 | shift+f11            | 单步跳出                                             |
 | 右键+break on change | 当变量发生变化的时候进入此断点                       |
 | ctrl+H               | 展示调用图，会列出该函数调用的所有函数（内部调用栈） |
+
+如果你使用拥有多个按键的鼠标,推荐将侧键前设置为ctrl+点击以查看声明/定义,侧键后设置为添加到watch(debug),侧滚轮设置为前进后退(历史)
+
+你还可以按ctrl+K ctrl+S进入快捷键设置页面,将tab设置为下一个提示,用enter接受intelliSense建议,这样不需要将手移出主键盘区域. 将ctrl+;设置为移动到行尾,同时打开c/c++的函数括号不全,这样不需要手动敲击括号.
+
+将alt+k设置为左移,alt+l设置为右移,这样不需要方向键.
+
+选择最适合自己的配置!
 
 ### 保存调试项目
 
@@ -883,6 +893,7 @@ $(BUILD_DIR): # 如果makefile所处的文件目录下没有build文件夹,这�
 #######################################
 clean:
 	rm -r $(BUILD_DIR)
+# 你的makefile可能会使用cmd而不是powershell来调用内核,而cmd不支持rm命令,因此可能要修改为rd (remove directory),cmd传入参数的方式为 /x  ,x为要传入的参数
 
   
 #######################################
