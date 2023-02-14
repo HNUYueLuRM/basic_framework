@@ -26,7 +26,7 @@ typedef struct
     uint32_t channel;                        // 通道
     uint32_t period;                         // 周期
     uint32_t pulse;                          // 脉宽
-    void (*callback)(struct pwm_ins_temp *); // DMA传输完成回调函数
+    void (*callback)(PWMInstance*); // DMA传输完成回调函数
     void *id;                                // 实例ID
 } PWM_Init_Config_s;
 
