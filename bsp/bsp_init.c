@@ -11,9 +11,10 @@ void BSPInit()
 {
     DWT_Init(168);
     BSPLogInit();
-    USBInit(); // 务必在进入操作系统之前执行USB初始化
+    USBInit(); // 务必在进入操作系统之前执行USBInit
 
-    // legacy support，待删除,将在实现了led/tempctrl/buzzer的module之后移动到app层
+
+    // legacy support，待删除,将在实现了led/tempctrl/buzzer的module之后移动到app层进行XXXRegister()
     LEDInit();
     IMUTempInit();
     BuzzerInit();

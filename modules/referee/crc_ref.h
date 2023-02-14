@@ -1,6 +1,8 @@
 #ifndef __CRC_H_
 #define __CRC_H_
 
+//裁判系统官方CRC校验,LUT和module/algorithms中的不同,后续需要统一实现crc,提供8/16/32的支持
+
 #include <stdint.h>
 
 #define TRUE 1

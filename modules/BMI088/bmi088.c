@@ -379,6 +379,7 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
                  fabsf(_bmi088->gyro_offset[2]) > 0.01f); // 满足条件说明标定环境不好
     }
 
+    // 离线标定
     if (_bmi088->cali_mode == BMI088_LOAD_PRE_CALI_MODE) // 如果标定失败也会进来,直接使用离线数据
     {
         // 读取标定数据
@@ -408,6 +409,7 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config)
                 config->spi_gyro_config.id =
                     config->heat_pwm_config.id = bmi088_instance;
 
+    // @todo:
     // 目前只实现了!!!阻塞读取模式!!!.如果需要使用IT模式,则需要修改这里的代码,为spi和gpio注册callback(默认为NULL)
     // 还需要设置SPI的传输模式为DMA模式或IT模式(默认为blocking)
     // 可以通过conditional compilation或者runtime参数判断

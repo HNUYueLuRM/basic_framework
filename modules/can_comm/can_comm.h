@@ -71,7 +71,7 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data);
  * @return void* 返回的数据指针
  * @attention 注意如果希望直接通过转换指针访问数据,如果数据是union或struct,要检查是否使用了pack(n)
  *            CANComm接收到的数据可以看作是pack(1)之后的,是连续存放的.
- *            如果使用了pack(n)可能会导致数据错乱,并且无法使用强制类型转换直接访问,而需要手动解包.
+ *            如果使用了pack(n)可能会导致数据错乱,并且无法使用强制类型转换通过memcpy直接访问,转而需要手动解包.
  *            强烈建议通过CANComm传输的数据使用pack(1)
  */
 void *CANCommGet(CANCommInstance *instance);

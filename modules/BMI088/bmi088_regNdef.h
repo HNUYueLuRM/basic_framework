@@ -1,7 +1,7 @@
 #ifndef BMI088REG_H
 #define BMI088REG_H
 
-/*------- BMI088寄存器地址和内容-------*/
+/*------- BMI088寄存器地址及其存放的内容-------*/
 
 #define BMI088_ACC_CHIP_ID 0x00 // the register is  " Who am I "
 #define BMI088_ACC_CHIP_ID_VALUE 0x1E
@@ -125,7 +125,7 @@
 #define BMI088_GYRO_125 (0x4 << BMI088_GYRO_RANGE_SHFITS)
 
 #define BMI088_GYRO_BANDWIDTH 0x10
-// the first num means Output data  rate, the second num means bandwidth
+// the first num means Output data rate, the second num means bandwidth
 #define BMI088_GYRO_BANDWIDTH_MUST_Set 0x80
 #define BMI088_GYRO_2000_532_HZ 0x00
 #define BMI088_GYRO_2000_230_HZ 0x01

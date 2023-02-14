@@ -140,7 +140,7 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
 
 /**
  * @brief 注意,STM32的两个CAN设备共享两个FIFO
- * 下面两个函数是HAL库中的回调函数,他们声明为__weak,这里对他们进行重载(重写)
+ * 下面两个函数是HAL库中的回调函数,他们被HAL声明为__weak,这里对他们进行重载(重写)
  * 当FIFO0或FIFO1溢出时会调用这两个函数
  */
 // 下面的函数会调用CANFIFOxCallback()来进一步处理来自特定CAN设备的消息

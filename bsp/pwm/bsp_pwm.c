@@ -6,6 +6,11 @@
 static uint8_t idx;
 static PWMInstance *pwm_instance[PWM_DEVICE_CNT] = {NULL}; // 所有的pwm instance保存于此,用于callback时判断中断来源
 
+/**
+ * @brief pwm dma传输完成回调函数
+ * 
+ * @param htim 发生中断的定时器句柄
+ */
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
     for (uint8_t i = 0; i < idx; i++)

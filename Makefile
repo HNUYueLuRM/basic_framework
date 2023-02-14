@@ -14,6 +14,7 @@
 # target
 ######################################
 TARGET = basic_framework
+SHELL = cmd.exe
 
 
 ######################################
@@ -328,7 +329,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 	
 $(BUILD_DIR):
-	@mkdir $@	
+	@mkdir $@
 
 #######################################
 # clean up

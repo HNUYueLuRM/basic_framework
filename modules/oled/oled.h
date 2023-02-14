@@ -1,3 +1,15 @@
+/**
+ * @file oled.h
+ * @author your name (you@domain.com)
+ * @brief 待重构实现
+ * @version 0.1
+ * @date 2023-02-14
+ * @todo 请重构show string/init/clean/update buffer等的实现
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #ifndef OLED_H
 #define OLED_H
 #include <stdint.h>

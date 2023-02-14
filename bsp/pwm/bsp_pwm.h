@@ -1,3 +1,15 @@
+/**
+ * @file bsp_pwm.h
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-02-14
+ * @todo 目前的实现有比较大的问题,是否允许module修改tim的分频器和自动重装载寄存器?
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #ifndef BSP_PWM_H
 #define BSP_PWM_H
 
@@ -52,7 +64,8 @@ void PWMStart(PWMInstance *pwm);
  */
 void PWMStop(PWMInstance *pwm);
 
-// @todo 这三个函数还需要进一步封装,协调好三者之间的关系
+
+// @todo 这三个函数还需要进一步封装,务必协调好三者之间的关系
 /**
  * @brief 设置pwm脉宽
  *

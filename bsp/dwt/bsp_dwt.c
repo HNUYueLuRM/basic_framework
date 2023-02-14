@@ -6,18 +6,15 @@
  * @version V1.1.0
  * @date    2022/3/8
  * @brief
- ******************************************************************************
- * @attention
- *
- ******************************************************************************
  */
+
 #include "bsp_dwt.h"
 
-DWT_Time_t SysTime;
+static DWT_Time_t SysTime;
 static uint32_t CPU_FREQ_Hz, CPU_FREQ_Hz_ms, CPU_FREQ_Hz_us;
 static uint32_t CYCCNT_RountCount;
 static uint32_t CYCCNT_LAST;
-uint64_t CYCCNT64;
+static uint64_t CYCCNT64;
 
 /**
  * @brief 私有函数,用于检查DWT CYCCNT寄存器是否溢出,并更新CYCCNT_RountCount

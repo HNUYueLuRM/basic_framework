@@ -29,8 +29,8 @@ typedef struct
     float acc[3];      // 加速度计数据,xyz
     float temperature; // 温度
 
-    // uint32_t timestamp; // 时间戳
-    // uint32_t count;
+    // float timestamp; // 时间戳,单位为ms,用于计算两次采样的时间间隔,同时给视觉提供timeline
+    // uint32_t count;  // 第count次采样,用于对齐时间戳
 } BMI088_Data_t;
 #pragma pack() // 恢复默认对齐,需要传输的结构体务必开启1字节对齐
 
@@ -107,7 +107,8 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config);
 BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088);
 
 /**
- * @brief 标定传感器
+ * @brief 标定传感器.BMI088在初始化的时候会调用此函数. 提供接口方便标定离线数据
+ * @attention @todo 注意,当操作系统开始运行后,此函数会和INS_Task冲突.目前不允许在运行时调用此函数,后续加入标志位判断以提供运行时重新的标定功能
  * 
  * @param _bmi088 待标定的实例
  */

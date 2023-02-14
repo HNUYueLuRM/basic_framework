@@ -32,6 +32,7 @@ typedef struct spi_ins_temp
 /* 接收回调函数定义,包含SPI的module按照此格式构建回调函数 */
 typedef void (*spi_rx_callback)(SPIInstance *);
 
+// @todo: 这里可以将GPIO_TypeDef *GPIO_cs; uint16_t cs_pin合并为bsp_gpio以简化代码实现
 /* SPI初始化配置,其实基本和SPIIstance一模一样,为了代码风格统一因此再次定义 */
 typedef struct
 {

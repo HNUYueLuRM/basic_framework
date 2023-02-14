@@ -9,7 +9,7 @@
 #include "memory.h"
 #include "stdlib.h"
 
-static SuperCapInstance *super_cap_instance = NULL;
+static SuperCapInstance *super_cap_instance = NULL; // 可以由app保存此指针
 
 static void SuperCapRxCallback(CANInstance *_instance)
 {

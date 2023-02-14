@@ -8,7 +8,7 @@
  * @copyright Copyright (c) HNU YueLu EC 2022 all rights reserved
  *
  */
-#pragma once
+#pragma once // 可以用#pragma once代替#ifndef ROBOT_DEF_H(header guard)
 #ifndef ROBOT_DEF_H
 #define ROBOT_DEF_H
 
@@ -16,6 +16,7 @@
 #include "master_process.h"
 #include "stdint.h"
 
+// 编译warning,提醒开发者修改机器人参数
 #ifndef ROBOT_DEF_PARAM_WARNING
 #define ROBOT_DEF_PARAM_WARNING
 #warning BE SURED THAT YOU HAVE ALREADY MODIFIED THESE PARAMETER TO FIT THE ROBOT
@@ -27,6 +28,7 @@
 // #define GIMBAL_BOARD  //云台板
 
 // @todo: 增加机器人类型定义,后续是否要兼容所有机器人?(只兼容步兵英雄哨兵似乎就够了)
+// 通过该宏,你可以直接将所有机器人的参数保存在一处,然后每次只需要修改这个宏就可以替换所有参数
 /* 机器人类型定义 */
 // #define ROBOT_HERO 1     // 英雄机器人
 // #define ROBOT_ENINEER 2  // 工程机器人
@@ -52,7 +54,7 @@
 #define RADIUS_WHEEL 60             // 轮子半径
 #define REDUCTION_RATIO_WHEEL 19.0f // 电机减速比,因为编码器量测的是转子的速度而不是输出轴的速度故需进行转换
 
-// 检查是否出现定义冲突,只允许一个开发板定义存在,否则编译会自动报错
+// 检查是否出现主控板定义冲突,只允许一个开发板定义存在,否则编译会自动报错
 #if (defined(ONE_BOARD) && defined(CHASSIS_BOARD)) || \
     (defined(ONE_BOARD) && defined(GIMBAL_BOARD)) ||  \
     (defined(CHASSIS_BOARD) && defined(GIMBAL_BOARD))

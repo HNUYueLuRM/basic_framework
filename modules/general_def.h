@@ -1,6 +1,9 @@
 #ifndef GENERAL_DEF_H
 #define GENERAL_DEF_H
 
+// 一些module的通用数值型定义,注意条件macro兼容,一些宏可能在math.h中已经定义过了
+
+
 #ifndef PI
 #define PI 3.1415926535f
 #endif                  // !PI

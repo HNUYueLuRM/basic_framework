@@ -70,7 +70,7 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e s
 {
     if (seq_mode != IIC_RELEASE && seq_mode != IIC_HOLD_ON)
         while (1)
-            ; // 未知传输模式, 程序停止
+            ; // 未知传输模式, 程序停止,请检查指针越界
 
     // 初始化接收缓冲区地址以及接受长度, 用于中断回调函数
     iic->rx_buffer = data;
@@ -140,7 +140,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 }
 
 /**
- * @brief 仅做形式上的封装,仍然使用HAL_I2C_MasterRxCpltCallback
+ * @brief 内存访问回调函数,仅做形式上的封装,仍然使用HAL_I2C_MasterRxCpltCallback
  *
  * @param hi2c handle
  */

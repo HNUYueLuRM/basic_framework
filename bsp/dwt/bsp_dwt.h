@@ -23,7 +23,6 @@ typedef struct
     uint16_t us;
 } DWT_Time_t;
 
-extern DWT_Time_t SysTime;
 
 /**
  * @brief 初始化DWT,传入参数为CPU频率,单位MHz

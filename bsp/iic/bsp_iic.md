@@ -5,3 +5,6 @@
 https://blog.csdn.net/NeoZng/article/details/128496694
 
 https://blog.csdn.net/NeoZng/article/details/128486366
+
+
+使用序列通信则在单次通信后不会释放总线,继续占用直到调用传输函数时传入`IIC_RELEASE`参数. 这个功能只在一条总线上挂载多个主机的时候有用.

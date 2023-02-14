@@ -8,6 +8,7 @@
 #define CAN_MX_REGISTER_CNT 16     // 这个数量取决于CAN总线的负载
 #define MX_CAN_FILTER_CNT (2 * 14) // 最多可以使用的CAN过滤器数量,目前远不会用到这么多
 #define DEVICE_CAN_CNT 2           // 根据板子设定,F407IG有CAN1,CAN2,因此为2;F334只有一个,则设为1
+// 如果只有1个CAN,还需要把bsp_can.c中所有的hcan2变量改为hcan1(别担心,主要是总线和FIFO的负载均衡,不影响功能)
 
 /* can instance typedef, every module registered to CAN should have this variable */
 #pragma pack(1)

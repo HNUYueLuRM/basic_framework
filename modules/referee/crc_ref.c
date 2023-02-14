@@ -1,6 +1,6 @@
 #include "crc_ref.h"
 #include <stdio.h>
-//裁判系统官方CRC校验
+
 
 const uint8_t CRC8_INIT = 0xff;
 const uint8_t CRC8_TAB[256] =
