@@ -131,7 +131,8 @@ modules/imu/BMI088driver.c \
 modules/imu/BMI088Middleware.c \
 modules/imu/ins_task.c \
 modules/ist8310/ist8310.c \
-modules/led/led_task.c \
+modules/led_task/led_task.c \
+modules/led/led.c \
 modules/master_machine/master_process.c \
 modules/master_machine/seasky_protocol.c \
 modules/motor/DJImotor/dji_motor.c \
@@ -252,6 +253,7 @@ C_INCLUDES =  \
 -Imodules/imu \
 -Imodules/ist8310 \
 -Imodules/led \
+-Imodules/led_task \
 -Imodules/master_machine \
 -Imodules/motor/DJImotor \
 -Imodules/motor/LKmotor \
