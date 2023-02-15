@@ -2,9 +2,13 @@
 
 > **代码参考了哈工深南宫小樱战队的框架设计，在此鸣谢。**
 
-当前版本更新日期：2023.01.11
+当前版本更新日期：2023.02.15
 
 **==由于当前仍然处在测试开发阶段，请定期拉取（`git pull`）获取最新更新。==**
+
+
+
+[TOC]
 
 ## 基本信息和开发规范
 
@@ -112,7 +116,7 @@
 
 **编写和使用指南**
 
-- 补充与修改：某款主控对应的BSP层应保持相同，当认为该层可能缺少部分功能或有错误时，请联系组长确认后解决并更新整个框架，**请勿自行修改提交**。
+- 补充与修改：某款主控对应的BSP层应保持相同，当认为该层可能缺少部分功能或有错误时，请联系组长确认后解决并更新整个框架，**请勿自行修改提交**。 请在你修改/增加的bsp_XXX.md中提供测试用例和使用示范以及任何其他需要注意的事项，并在代码必要的地方添加注释。
 - 代码移植：BSP层也是在不同系列、型号的stm32间执行代码移植时主要需要关注的代码层。向功能更强系列移植一般只需要重配cube并重新组织BSP层的映射关系，而向功能较少的系列移植还需要去掉其不支持的功能。如果仅是对同一型号的开发板进行HAL初始化配置的修改，则BSP层**不需要**变动。
 - 子文件与文件夹：
   - bsp.c/h：该层用于bsp基础功能初始化的文件，其中.h被include至main.c中，以实现整个代码层的初始化。include了该层所有模块的.h并调用各模块的初始化函数。**注意**，有些外设如串口和CAN不需要在bsp.c中进行模块层的初始化，他们会在module层生成实例（即C语言中的结构体）并注册到bsp层时自动进行初始化。以此达到提高运行速度避免未使用的模块被加载的问题。
@@ -154,11 +158,14 @@
 
 Module层主要存放的是类型定义和实例指针数组，在该层没有进行实例化（定义或通过malloc分配空间），若在APP层没有实例化，则该模块的存在与否基本不会影响编译后的可执行文件，只会占用初始化和代码区所需的少量内存。module只会保存每个实例对象的指针，在没有初始化的时候仅仅占用一个指针数组的空间。因此，基于本框架的其他工程没有必要删除APP层未使用的module文件。
 
+务必为模块添加说明文档和使用范例，以及其他需要注意的事项（如果有）。
+
 > **待优化：**
 >
 > 由于C语言没有对象的概念，对于需要使用通信的module，在其.c文件下都需要保存每个实例的指针，在收到消息时遍历所有实例指针，找到收到消息的实例。这种处理方式可能会导致实时性下降，CAN接收时要遍历所有注册了CAN的实例，进入module层还需要一次遍历。用C++则可以将对象的this指针和模块的回调函数进行绑定，生成一个可调用对象然后再进行CAN的注册，使得其不需要module层的遍历。
 >
 > 后续考虑在CAN instance中加入一个额外的`void*`域成员（成员变量），其内容为module层实例的地址。这样CAN收到消息时只需要遍历所有CAN instance，对于相同的模块，可以在其回调函数内部获取CAN instance的`void*`指针并通过强制类型转换cast成模块的实例结构体指针类型，从而访问特定的模块。
+> 这实际上是保存“对象”的parent pointer，使得实例可以访问拥有自己的实例（访问自己的父亲）。和回调函数配合，就可以防止交叉包含并为底层访问上层内容提供支持。
 
 ## APP层(application)
 
@@ -181,213 +188,31 @@ ROOT:.
 │  .gitignore # git版本管理忽略文件
 │  .mxproject # CubeMX项目文件
 │  basic_framework.ioc # CubeMX初始化配置文件
+|  debug_ozone.jdebug # ozone debug调试配置和缓存文件
 │  LICENSE # 开源协议文件
 │  Makefile # 编译管理文件,为make(mingw32-make)命令的目标
 │  openocd_dap.cfg # 用于OpenOCD调试使用的配置文件,dap用
 │  openocd_jlink.cfg # 用于OpenOCD调试使用的配置文件,jlink用
 │  README.md # 本说明文档
 │  startup_stm32f407xx.s  # F407汇编启动文件
-│  stm32.jflash # 烧录的配置文件,一键下载用
+│  stm32.jflash # jlink的烧录的配置文件,一键下载用
 │  STM32F407.svd # F407外设地址映射文件,用于调试
-│  STM32F407IGHx_FLASH.ld # 包含了F407IGH(C板使用的MCU)的文件目标FLASH地址,用于编译(作为链接阶段的链接器),烧录和调试
+│  STM32F407IGHx_FLASH.ld # F407IGH(C板MCU)目标FLASH地址和链接规则,用于编译(作为链接阶段的链接器)
+|  task.ps1 # powershell脚本,一键编译并进入ozone调试/reset开发板用
 │  TODO.md # 项目待完成的任务
 │  VSCode+Ozone使用方法.md # 开发环境配置和前置知识介绍
 │  修改HAL配置时文件目录的更改.md # 重新配置CubeMX时的步骤和注意事项
-│
+│  必须做&禁止做.md # 开发必看,规范和要求
+|
 ├─.vscode
 │      launch.json # 调试的配置文件
 │      settings.json # 工作区配置文件,根据自己的需要配置
 │      tasks.json # 任务配置文件,包括一键编译下载调试等
 │
-├─application
-│  │  application.md
-│  │  APP层应用编写指引.md
-│  │  robot.c
-│  │  robot.h
-│  │  robot_def.h
-│  │
-│  ├─chassis
-│  │      chassis.c
-│  │      chassis.h
-│  │      chassis.md
-│  │
-│  ├─cmd
-│  │      robot_cmd.c
-│  │      robot_cmd.h
-│  │      robot_cmd.md
-│  │
-│  ├─gimbal
-│  │      gimbal.c
-│  │      gimbal.h
-│  │      gimbal.md
-│  │
-│  └─shoot
-│          shoot.c
-│          shoot.h
-│          shoot.md
-│
 ├─assets # 说明文档的图片
-│
-├─bsp
-│  │  bsp.md
-│  │  bsp_buzzer.c
-│  │  bsp_buzzer.h
-│  │  bsp_init.c
-│  │  bsp_init.h
-│  │  bsp_led.c
-│  │  bsp_led.h
-│  │  bsp_spi.md
-│  │  bsp_temperature.c
-│  │  bsp_temperature.h
-│  │
-│  ├─adc
-│  │      bsp_adc.c
-│  │      bsp_adc.h
-│  │      bsp_adc.md
-│  │
-│  ├─can
-│  │      bsp_can.c
-│  │      bsp_can.h
-│  │      bsp_can.md
-│  │
-│  ├─dwt
-│  │      bsp_dwt.c
-│  │      bsp_dwt.h
-│  │      bsp_dwt.md
-│  │
-│  ├─gpio
-│  │      bsp_gpio.c
-│  │      bsp_gpio.h
-│  │      bsp_gpio.md
-│  │
-│  ├─iic
-│  │      bsp_iic.c
-│  │      bsp_iic.h
-│  │      bsp_iic.md
-│  │
-│  ├─log
-│  │      bsp_log.c
-│  │      bsp_log.h
-│  │      bsp_log.md
-│  │
-│  ├─pwm
-│  │      bsp_pwm.c
-│  │      bsp_pwm.h
-│  │      bsp_pwm.md
-│  │
-│  ├─spi
-│  │      bsp_spi.c
-│  │      bsp_spi.h
-│  │
-│  ├─usart
-│  │      bsp_usart.c
-│  │      bsp_usart.h
-│  │      bsp_usart.md
-│  │
-│  └─usb
-└─modules
-    │  general_def.h
-    │  module.md
-    │
-    ├─algorithm
-    │      algorithm.md
-    │      controller.c
-    │      controller.h
-    │      crc16.c
-    │      crc16.h
-    │      crc8.c
-    │      crc8.h
-    │      kalman_filter.c
-    │      kalman_filter.h
-    │      LQR.c
-    │      LQR.h
-    │      QuaternionEKF.c
-    │      QuaternionEKF.h
-    │      user_lib.c
-    │      user_lib.h
-    │
-    ├─BMI088
-    │      bmi088.c
-    │      bmi088.h
-    │      bmi088_regNdef.h
-    │
-    ├─can_comm
-    │      can_comm.c
-    │      can_comm.h
-    │      can_comm.md
-    │
-    ├─daemon
-    │      daemon.c
-    │      daemon.h
-    │      daemon.md
-    │
-    ├─imu
-    │      BMI088driver.c
-    │      BMI088driver.h
-    │      BMI088Middleware.c
-    │      BMI088Middleware.h
-    │      BMI088reg.h
-    │      ins_task.c
-    │      ins_task.h
-    │      ins_task.md
-    │
-    ├─led_light
-    │      led.md
-    │      led_task.c
-    │      led_task.h
-    │
-    ├─master_machine
-    │      master_process.c
-    │      master_process.h
-    │      master_process.md
-    │      seasky_protocol.c
-    │      seasky_protocol.h
-    │      湖南大学RoboMaster电控组通信协议.md
-    │
-    ├─message_center
-    │      message_center.c
-    │      message_center.h
-    │      message_center.md
-    │
-    ├─motor
-    │      dji_motor.c
-    │      dji_motor.h
-    │      dji_motor.md
-    │      HT04.c
-    │      HT04.h
-    │      LK9025.c
-    │      LK9025.h
-    │      motor_def.h
-    │      motor_task.c
-    │      motor_task.h
-    │      servo_motor.c
-    │      servo_motor.h
-    │      servo_motor.md
-    │      step_motor.c
-    │      step_motor.h
-    │
-    ├─referee
-    │      crc.c
-    │      crc.h
-    │      referee.c
-    │      referee.h
-    │      referee.md
-    │      referee_communication.c
-    │      referee_UI.c
-    │
-    ├─remote
-    │      remote.md
-    │      remote_control.c
-    │      remote_control.h
-    │
-    ├─super_cap
-    │      super_cap.c
-    │      super_cap.h
-    │      super_cap.md
-    │
-    └─vofa
-            vofa.c
-            vofa.h
+├─application # 应用层
+├─bsp # 板级支持包
+└─modules # 模块层
 ```
 
 ## BSP/Module/Application介绍
@@ -416,3 +241,15 @@ HAL库初始化 --> BSP初始化 --> Application初始化 --> app调用其拥有
 APP会调用其所有的模块的初始化函数（注册函数），这是因为本框架的设计思想是任何模块在被注册（构造/初始化）之前，都是不存在的，当且仅当定义了一个模块结构体（也称实例）的时候，才有一个实体的概念。
 
 main函数唯一需要的函数是app层的`robot.c`中的`RobotInit()`函数，它首先会调用BSP初始化，然后进行所有应用的初始化；每个应用会调用对应模块的初始化；一些依赖通信外设的模块会将通信支持相关的bsp进行初始化。初始化结束之后实时系统启动。
+
+
+
+### 程序运行流程
+
+![运行](assets\总程序流程.png)
+
+
+
+### 程序数据流
+
+![数据流](assets\数据流.png)

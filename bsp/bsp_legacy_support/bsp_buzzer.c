@@ -1,6 +1,8 @@
 #include "bsp_buzzer.h"
 #include "main.h"
 
+#warning this is a legacy support file, please use the new version
+
 extern TIM_HandleTypeDef htim4;
 static uint8_t tmp_warning_level = 0;
 

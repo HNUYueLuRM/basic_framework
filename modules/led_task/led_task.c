@@ -10,10 +10,10 @@
  *
  */
 
+#warning this is a legacy support file, please build the new 'led' module as soon as possible
+
 #include "led_task.h"
-
 #include <stdint.h>
-
 #include "bsp_led.h"
 #include "main.h"
 

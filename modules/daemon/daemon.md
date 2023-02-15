@@ -19,7 +19,7 @@ typedef struct
 } Daemon_Init_Config_s;
 ```
 
-`reload_count`是”喂狗“时的重载值，一般根据你希望的离线容许时间和模块接收数据/访问数据的频率确定。
+`reload_count`是”喂狗“时的重载值，一般根据你希望的离线容许时间和模块接收数据/访问数据的频率确定。daemonTask递减计数器的频率是100hz(在HAL_N_Middlewares/Src/freertos.c中查看任务),你可以据此以及模块收到数据/操作的频率设置reload_count。
 
 `daemon_task()`会在实时系统中以1kHz的频率运行，每次运行该任务，都会将所有daemon实例当前的count进行自减操作，当count减为零，则说明模块已经很久没有上线（处于deactivated状态，即没有收到数据，也没有进行其他读写操作）。
 

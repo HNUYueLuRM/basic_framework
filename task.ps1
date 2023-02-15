@@ -1,4 +1,5 @@
 # 推荐安装powershell7 以获得更好的shell体验!
+# 可以添加task.json,或在makefile中增加伪构建目标然后运行make xxx
 
 JLinkGDBServer:  
 

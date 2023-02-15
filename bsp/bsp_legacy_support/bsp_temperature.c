@@ -1,5 +1,7 @@
 #include "bsp_temperature.h"
 
+#warning this is a legacy support file, please use the new version
+
 extern TIM_HandleTypeDef htim10;
 
 void IMUTempInit()

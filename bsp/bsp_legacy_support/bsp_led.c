@@ -1,6 +1,8 @@
 #include "bsp_led.h"
 #include "main.h"
 
+#warning this is a legacy support file, please use the new version
+
 extern TIM_HandleTypeDef htim5;
 static uint8_t tmp_output_level = 0;
 

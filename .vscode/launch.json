@@ -1,4 +1,5 @@
 {
+    // 启动调试的快捷键是F5
     "version": "0.2.0",
     "configurations": [
         // 使用dap-link(如无线调试器时的参考配置)

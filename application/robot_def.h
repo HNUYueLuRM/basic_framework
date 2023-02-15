@@ -16,11 +16,6 @@
 #include "master_process.h"
 #include "stdint.h"
 
-// 编译warning,提醒开发者修改机器人参数
-#ifndef ROBOT_DEF_PARAM_WARNING
-#define ROBOT_DEF_PARAM_WARNING
-#warning BE SURED THAT YOU HAVE ALREADY MODIFIED THESE PARAMETER TO FIT THE ROBOT
-#endif // !ROBOT_DEF_PARAM_WARNING
 
 /* 开发板类型定义,烧录时注意不要弄错对应功能;修改定义后需要重新编译,只能存在一个定义! */
 #define ONE_BOARD // 单板控制整车
