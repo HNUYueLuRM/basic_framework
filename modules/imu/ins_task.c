@@ -39,7 +39,7 @@ static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[
  */
 static void IMU_Temperature_Ctrl(void)
 {
-    PID_Calculate(&TempCtrl, BMI088.Temperature, RefTemp);
+    PIDCalculate(&TempCtrl, BMI088.Temperature, RefTemp);
     IMUPWMSet(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
@@ -58,17 +58,17 @@ attitude_t *INS_Init(void)
     IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0);
     // imu heat init
     PID_Init_Config_s config = {.MaxOut = 2000,
-                                .IntegralLimit = 300,
-                                .DeadBand = 0,
-                                .Kp = 1000,
-                                .Ki = 20,
-                                .Kd = 0,
-                                .Improve = 0x01}; // enable integratiaon limit
-    PID_Init(&TempCtrl, &config);
+                               .IntegralLimit = 300,
+                               .DeadBand = 0,
+                               .Kp = 1000,
+                               .Ki = 20,
+                               .Kd = 0,
+                               .Improve = 0x01}; // enable integratiaon limit
+    PIDInit(&TempCtrl, &config);
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
-    return (attitude_t*)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
+    return (attitude_t *)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
 }
 
 /* 注意以1kHz的频率运行此任务 */
@@ -76,7 +76,7 @@ void INS_Task(void)
 {
     static uint32_t count = 0;
     const float gravity[3] = {0, 0, 9.81f};
-    
+
     dt = DWT_GetDeltaT(&INS_DWT_Count);
     t += dt;
 

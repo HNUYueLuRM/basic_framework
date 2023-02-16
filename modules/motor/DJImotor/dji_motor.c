@@ -157,9 +157,9 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     instance->motor_settings = config->controller_setting_init_config; // 正反转,闭环类型等
 
     // motor controller init 电机控制器初始化
-    PID_Init(&instance->motor_controller.current_PID, &config->controller_param_init_config.current_PID);
-    PID_Init(&instance->motor_controller.speed_PID, &config->controller_param_init_config.speed_PID);
-    PID_Init(&instance->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
+    PIDInit(&instance->motor_controller.current_PID, &config->controller_param_init_config.current_PID);
+    PIDInit(&instance->motor_controller.speed_PID, &config->controller_param_init_config.speed_PID);
+    PIDInit(&instance->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
     instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
     // 后续增加电机前馈控制器(速度和电流)
@@ -248,7 +248,7 @@ void DJIMotorControl()
             else
                 pid_measure = motor_measure->total_angle; // MOTOR_FEED,对total angle闭环,防止在边界处出现突跃
             // 更新pid_ref进入下一个环
-            pid_ref = PID_Calculate(&motor_controller->angle_PID, pid_measure, pid_ref);
+            pid_ref = PIDCalculate(&motor_controller->angle_PID, pid_measure, pid_ref);
         }
 
         // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
@@ -259,13 +259,13 @@ void DJIMotorControl()
             else // MOTOR_FEED
                 pid_measure = motor_measure->speed_aps;
             // 更新pid_ref进入下一个环
-            pid_ref = PID_Calculate(&motor_controller->speed_PID, pid_measure, pid_ref);
+            pid_ref = PIDCalculate(&motor_controller->speed_PID, pid_measure, pid_ref);
         }
 
         // 计算电流环,目前只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
         if (motor_setting->close_loop_type & CURRENT_LOOP)
         {
-            pid_ref = PID_Calculate(&motor_controller->current_PID, motor_measure->real_current, pid_ref);
+            pid_ref = PIDCalculate(&motor_controller->current_PID, motor_measure->real_current, pid_ref);
         }
 
         // 获取最终输出

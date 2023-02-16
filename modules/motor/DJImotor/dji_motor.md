@@ -57,8 +57,8 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
     CURRENT_LOOP 
     SPEED_LOOP 
     ANGLE_LOOP 
-    CURRENT_LOOP | SPEED_LOOP  			  // 同时对电流和速度闭环
-    SPEED_LOOP   | ANGLE_LOOP  			  // 同时对速度和位置闭环
+    CURRENT_LOOP | SPEED_LOOP       // 同时对电流和速度闭环
+    SPEED_LOOP   | ANGLE_LOOP       // 同时对速度和位置闭环
     CURRENT_LOOP | SPEED_LOOP |ANGLE_LOOP // 三环全开
     ```
 
@@ -87,7 +87,7 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
         float Kp;
         float Ki;
         float Kd;
-    	
+     
         float MaxOut;        // 输出限幅
         // 以下是优化参数
         float IntegralLimit; // 积分限幅
@@ -98,22 +98,22 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
         float Derivative_LPF_RC;
         
         PID_Improvement_e Improve; // 优化环节，定义在下一个代码块
-    } PID_Init_config_s;
+    } PIDInit_config_s;
     // 只有当你设启用了对应的优化环节，优化参数才会生效
     ```
 
     ```c
     typedef enum
     {
-        NONE						= 0b00000000,                     
-        Integral_Limit 				= 0b00000001,           
+        NONE      = 0b00000000,                     
+        Integral_Limit     = 0b00000001,           
         Derivative_On_Measurement   = 0b00000010,   
-        Trapezoid_Intergral 	    = 0b00000100,       
+        Trapezoid_Intergral      = 0b00000100,       
         Proportional_On_Measurement = 0b00001000, 
-        OutputFilter 				= 0b00010000,               
-        ChangingIntegrationRate 	= 0b00100000,    
-        DerivativeFilter 			= 0b01000000,            
-        ErrorHandle 				= 0b10000000,         
+        OutputFilter     = 0b00010000,               
+        ChangingIntegrationRate  = 0b00100000,    
+        DerivativeFilter    = 0b01000000,            
+        ErrorHandle     = 0b10000000,         
     } PID_Improvement_e;
     // 若希望使用多个环节的优化，这样就行：Integral_Limit |Trapezoid_Intergral|...|...
     ```
@@ -123,35 +123,31 @@ dji_motor模块对DJI智能电机，包括M2006，M3508以及GM6020进行了详�
     float *other_speed_feedback_ptr
     ```
 
-
-
 ---
-
-
 
 推荐的初始化参数编写格式如下：
 
 ```c
 Motor_Init_Config_s config = {
-		.motor_type = M3508,  // 要注册的电机为3508电机
-		.can_init_config = {.can_handle = &hcan1, // 挂载在CAN1
-							.tx_id = 1},          // C620每隔一段时间闪动1次,设置为1
-		// 采用电机编码器角度与速度反馈,启用速度环和电流环,不反转,最外层闭环为速度环
+  .motor_type = M3508,  // 要注册的电机为3508电机
+  .can_init_config = {.can_handle = &hcan1, // 挂载在CAN1
+       .tx_id = 1},          // C620每隔一段时间闪动1次,设置为1
+  // 采用电机编码器角度与速度反馈,启用速度环和电流环,不反转,最外层闭环为速度环
         .controller_setting_init_config = {.angle_feedback_source = MOTOR_FEED, 
-										   
+             
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP, 
-										   .speed_feedback_source = MOTOR_FEED, 
-										   .reverse_flag = MOTOR_DIRECTION_NORMAL},
-    	// 电流环和速度环PID参数的设置,不采用计算优化则不需要传入Improve参数
+             .speed_feedback_source = MOTOR_FEED, 
+             .reverse_flag = MOTOR_DIRECTION_NORMAL},
+     // 电流环和速度环PID参数的设置,不采用计算优化则不需要传入Improve参数
         // 不使用其他数据来源(如IMU),不需要传入反馈数据变量指针
-		.controller_param_init_config = {.current_PID = {.Improve = 0,
+  .controller_param_init_config = {.current_PID = {.Improve = 0,
                                                          .Kp = 1,
                                                          .Ki = 0,
                                                          .Kd = 0,
                                                          .DeadBand = 0,
                                                          .MaxOut = 4000},
-										 .speed_PID = {.Improve = 0,
+           .speed_PID = {.Improve = 0,
                                                        .Kp = 1,
                                                        .Ki = 0,
                                                        .Kd = 0,
@@ -161,11 +157,7 @@ Motor_Init_Config_s config = {
 dji_motor_instance *djimotor = DJIMotorInit(config); // 设置好参数后进行初始化并保留返回的指针
 ```
 
-
-
 ---
-
-
 
 要控制一个DJI电机，我们提供了2个接口：
 
@@ -189,15 +181,9 @@ float speed=LeftForwardMotor->motor_measure->speed_rpm;
 ...
 ```
 
-
-
 ***现在，忘记PID的计算和发送、接收以及协议解析，专注于模块之间的逻辑交互吧。***
 
-
-
 ---
-
-
 
 ## 代码结构
 
@@ -236,8 +222,8 @@ typedef struct
     /* sender assigment*/
     uint8_t sender_group;
     uint8_t message_num;
-	
-  	uint8_t stop_flag;
+ 
+   uint8_t stop_flag;
     
     Motor_Type_e motor_type;
 } dji_motor_instance;
@@ -372,8 +358,6 @@ void DJIMotorOuterLoop(dji_motor_instance *motor);
 
 - `DJIMotorOuterLoop()`用于修改电机的外部闭环类型，即电机的真实闭环目标。
 
-  
-
 ## 私有函数和变量
 
 在.c文件内设为static的函数和变量
@@ -401,7 +385,7 @@ static dji_motor_instance *dji_motor_info[DJI_MOTOR_CNT] = {NULL};
 static can_instance sender_assignment[6] =
 {
         [0] = {.can_handle = &hcan1, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-		...
+  ...
         ...
 };
 
@@ -439,19 +423,19 @@ static void DecodeDJIMotor(can_instance *_instance)
 ```c
 //初始化设置
 Motor_Init_Config_s config = {
-		.motor_type = GM6020,
-		.can_init_config = {
-			.can_handle = &hcan1,
-			.tx_id = 6
+  .motor_type = GM6020,
+  .can_init_config = {
+   .can_handle = &hcan1,
+   .tx_id = 6
         },
-		.controller_setting_init_config = {
+  .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED, 
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | ANGLE_LOOP, 
             .speed_feedback_source = MOTOR_FEED, 
             .reverse_flag = MOTOR_DIRECTION_NORMAL
         },
-		.controller_param_init_config = {
+  .controller_param_init_config = {
             .angle_PID = {
                 .Improve = 0, 
                 .Kp = 1, 

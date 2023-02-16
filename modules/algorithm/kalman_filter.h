@@ -37,6 +37,7 @@
 #endif
 #endif
 
+// 若运算速度不够,可以使用q31代替f32,但是精度会降低
 #define mat arm_matrix_instance_f32
 #define Matrix_Init arm_mat_init_f32
 #define Matrix_Add arm_mat_add_f32

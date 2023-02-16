@@ -12,7 +12,7 @@
  ******************************************************************************
  */
 #include "stdlib.h"
-#include "string.h"
+#include "memory.h"
 #include "user_lib.h"
 #include "math.h"
 #include "main.h"
@@ -25,10 +25,10 @@
 
 uint8_t GlobalDebugMode = 7;
 
-void* zero_malloc(size_t size)
+void *zero_malloc(size_t size)
 {
-    void* ptr=malloc(size);
-    memset(ptr,0,size);
+    void *ptr = malloc(size);
+    memset(ptr, 0, size);
     return ptr;
 }
 
@@ -95,7 +95,6 @@ float float_deadband(float Value, float minValue, float maxValue)
     }
     return Value;
 }
-
 
 // 限幅函数
 float float_constrain(float Value, float minValue, float maxValue)

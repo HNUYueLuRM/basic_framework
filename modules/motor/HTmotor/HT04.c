@@ -12,7 +12,7 @@ HTMotorInstance *ht_motor_instance[HT_MOTOR_CNT];
  * @param motor
  */
 static void HTMotorSetMode(HTMotor_Mode_t cmd, HTMotorInstance *motor)
-{                                                        
+{
     memset(motor->motor_can_instace->tx_buff, 0xff, 7);  // 发送电机指令的时候前面7bytes都是0xff
     motor->motor_can_instace->tx_buff[7] = (uint8_t)cmd; // 最后一位是命令id
     CANTransmit(motor->motor_can_instace, 1);
@@ -67,9 +67,9 @@ HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config)
     memset(motor, 0, sizeof(HTMotorInstance));
 
     motor->motor_settings = config->controller_setting_init_config;
-    PID_Init(&motor->current_PID, &config->controller_param_init_config.current_PID);
-    PID_Init(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
-    PID_Init(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
+    PIDInit(&motor->current_PID, &config->controller_param_init_config.current_PID);
+    PIDInit(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
+    PIDInit(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
     motor->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     motor->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
@@ -112,7 +112,7 @@ void HTMotorControl()
             else
                 pid_measure = measure->real_current;
             // measure单位是rad,ref是角度,统一到angle下计算,方便建模
-            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure*RAD_2_ANGLE, pid_ref);
+            pid_ref = PIDCalculate(&motor->angle_PID, pid_measure * RAD_2_ANGLE, pid_ref);
         }
 
         if ((setting->close_loop_type & SPEED_LOOP) && setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP))
@@ -125,7 +125,7 @@ void HTMotorControl()
             else
                 pid_measure = measure->speed_aps;
             // measure单位是rad / s ,ref是angle per sec,统一到angle下计算
-            pid_ref = PID_Calculate(&motor->speed_PID, pid_measure*RAD_2_ANGLE, pid_ref);
+            pid_ref = PIDCalculate(&motor->speed_PID, pid_measure * RAD_2_ANGLE, pid_ref);
         }
 
         if (setting->close_loop_type & CURRENT_LOOP)
@@ -133,15 +133,15 @@ void HTMotorControl()
             if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
                 pid_ref += *motor->current_feedforward_ptr;
 
-            pid_ref = PID_Calculate(&motor->current_PID, measure->real_current, pid_ref);
+            pid_ref = PIDCalculate(&motor->current_PID, measure->real_current, pid_ref);
         }
 
         set = pid_ref;
         if (setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
             set *= -1;
 
-        LIMIT_MIN_MAX(set, T_MIN, T_MAX); // 限幅,实际上这似乎和pid输出限幅重复了
-        tmp = float_to_uint(set, T_MIN, T_MAX, 12);  // 数值最后在 -12~+12之间
+        LIMIT_MIN_MAX(set, T_MIN, T_MAX);           // 限幅,实际上这似乎和pid输出限幅重复了
+        tmp = float_to_uint(set, T_MIN, T_MAX, 12); // 数值最后在 -12~+12之间
         motor_can->tx_buff[6] = (tmp >> 8);
         motor_can->tx_buff[7] = tmp & 0xff;
 

@@ -92,7 +92,7 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
 uint8_t CANTransmit(CANInstance *_instance,uint8_t timeout)
 {
     float dwt_start = DWT_GetTimeline_ms();
-    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0);// 等待邮箱空闲
+    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
     {    
         if (DWT_GetTimeline_ms() - dwt_start > timeout) // 超时
         {

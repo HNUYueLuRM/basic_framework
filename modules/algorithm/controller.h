@@ -15,7 +15,7 @@
 
 #include "main.h"
 #include "stdint.h"
-#include "string.h"
+#include "memory.h"
 #include "stdlib.h"
 #include "bsp_dwt.h"
 #include "arm_math.h"
@@ -25,18 +25,18 @@
 #define abs(x) ((x > 0) ? x : -x)
 #endif
 
-// PID 优化环节使能标志位
+// PID 优化环节使能标志位,通过位与可以判断启用的优化环节;也可以改成位域的形式
 typedef enum
 {
-    PID_IMPROVE_NONE = 0b00000000,            // 0000 0000
-    Integral_Limit = 0b00000001,              // 0000 0001
-    Derivative_On_Measurement = 0b00000010,   // 0000 0010
-    Trapezoid_Intergral = 0b00000100,         // 0000 0100
-    Proportional_On_Measurement = 0b00001000, // 0000 1000
-    OutputFilter = 0b00010000,                // 0001 0000
-    ChangingIntegrationRate = 0b00100000,     // 0010 0000
-    DerivativeFilter = 0b01000000,            // 0100 0000
-    ErrorHandle = 0b10000000,                 // 1000 0000
+    PID_IMPROVE_NONE = 0b00000000,                // 0000 0000
+    PID_Integral_Limit = 0b00000001,              // 0000 0001
+    PID_Derivative_On_Measurement = 0b00000010,   // 0000 0010
+    PID_Trapezoid_Intergral = 0b00000100,         // 0000 0100
+    PID_Proportional_On_Measurement = 0b00001000, // 0000 1000
+    PID_OutputFilter = 0b00010000,                // 0001 0000
+    PID_ChangingIntegrationRate = 0b00100000,     // 0010 0000
+    PID_DerivativeFilter = 0b01000000,            // 0100 0000
+    PID_ErrorHandle = 0b10000000,                 // 1000 0000
 } PID_Improvement_e;
 
 /* PID 报错类型枚举*/
@@ -60,16 +60,16 @@ typedef struct
     float Kp;
     float Ki;
     float Kd;
-
     float MaxOut;
-    float IntegralLimit;
     float DeadBand;
+
+    PID_Improvement_e Improve;
+    float IntegralLimit;
     float CoefA;         // For Changing Integral
     float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
 
-    PID_Improvement_e Improve;
     //-----------------------------------
     // for calculating
     float Measure;
@@ -96,31 +96,31 @@ typedef struct
 } PIDInstance;
 
 /* 用于PID初始化的结构体*/
-typedef struct
+typedef struct // config parameter
 {
-    // config parameter
+    // basic parameter
     float Kp;
     float Ki;
     float Kd;
+    float MaxOut;   // 输出限幅
+    float DeadBand; // 死区
 
-    float MaxOut;        // 输出限幅
+    // improve parameter
+    PID_Improvement_e Improve;
     float IntegralLimit; // 积分限幅
-    float DeadBand;      // 死区
     float CoefA;         // For Changing Integral
     float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
-
-    PID_Improvement_e Improve;
 } PID_Init_Config_s;
 
 /**
  * @brief 初始化PID实例
- *
+ * @todo 待修改为统一的PIDRegister风格
  * @param pid    PID实例指针
  * @param config PID初始化配置
  */
-void PID_Init(PIDInstance *pid, PID_Init_Config_s *config);
+void PIDInit(PIDInstance *pid, PID_Init_Config_s *config);
 
 /**
  * @brief 计算PID输出
@@ -130,6 +130,6 @@ void PID_Init(PIDInstance *pid, PID_Init_Config_s *config);
  * @param ref     设定值
  * @return float  PID计算输出
  */
-float PID_Calculate(PIDInstance *pid, float measure, float ref);
+float PIDCalculate(PIDInstance *pid, float measure, float ref);
 
 #endif

@@ -6,6 +6,11 @@ static LKMotorInstance *lkmotor_instance[LK_MOTOR_MX_CNT] = {NULL};
 static CANInstance *sender_instance; // 多电机发送时使用的caninstance(当前保存的是注册的第一个电机的caninstance)
 // 后续考虑兼容单电机和多电机指令.
 
+/**
+ * @brief 电机反馈报文解析
+ *
+ * @param _instance 发生中断的caninstance
+ */
 static void LKMotorDecode(CANInstance *_instance)
 {
     static LKMotor_Measure_t *measure;
@@ -34,30 +39,31 @@ static void LKMotorDecode(CANInstance *_instance)
     measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
 }
 
-LKMotorInstance *LKMotroInit(Motor_Init_Config_s *config)
+LKMotorInstance *LKMotorInit(Motor_Init_Config_s *config)
 {
     LKMotorInstance *motor = (LKMotorInstance *)malloc(sizeof(LKMotorInstance));
     motor = (LKMotorInstance *)malloc(sizeof(LKMotorInstance));
     memset(motor, 0, sizeof(LKMotorInstance));
 
     motor->motor_settings = config->controller_setting_init_config;
-    PID_Init(&motor->current_PID, &config->controller_param_init_config.current_PID);
-    PID_Init(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
-    PID_Init(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
+    PIDInit(&motor->current_PID, &config->controller_param_init_config.current_PID);
+    PIDInit(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
+    PIDInit(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
     motor->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     motor->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
     config->can_init_config.id = motor;
     config->can_init_config.can_module_callback = LKMotorDecode;
     config->can_init_config.rx_id = 0x140 + config->can_init_config.tx_id;
-    config->can_init_config.tx_id = config->can_init_config.tx_id + 0x280;
+    config->can_init_config.tx_id = config->can_init_config.tx_id + 0x280 - 1; // 这样在发送写入buffer的时候更方便,因为下标从0开始,LK多电机发送id为0x280
     motor->motor_can_ins = CANRegister(&config->can_init_config);
 
-    if (idx == 0)
+    if (idx == 0) // 用第一个电机的can instance发送数据
         sender_instance = motor->motor_can_ins;
 
     LKMotorEnable(motor);
-    return lkmotor_instance[idx++];
+    lkmotor_instance[idx++] = motor;
+    return motor;
 }
 
 /* 第一个电机的can instance用于发送数据,向其tx_buff填充数据 */
@@ -82,7 +88,7 @@ void LKMotorControl()
                 pid_measure = *motor->other_angle_feedback_ptr;
             else
                 pid_measure = measure->real_current;
-            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
+            pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
             if (setting->feedforward_flag & SPEED_FEEDFORWARD)
                 pid_ref += *motor->speed_feedforward_ptr;
         }
@@ -93,31 +99,31 @@ void LKMotorControl()
                 pid_measure = *motor->other_speed_feedback_ptr;
             else
                 pid_measure = measure->speed_aps;
-            pid_ref = PID_Calculate(&motor->angle_PID, pid_measure, pid_ref);
+            pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
             if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
                 pid_ref += *motor->current_feedforward_ptr;
         }
 
         if (setting->close_loop_type & CURRENT_LOOP)
         {
-            pid_ref = PID_Calculate(&motor->current_PID, measure->real_current, pid_ref);
+            pid_ref = PIDCalculate(&motor->current_PID, measure->real_current, pid_ref);
         }
 
         set = pid_ref;
         if (setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
             set *= -1;
         // 这里随便写的,为了兼容多电机命令.后续应该将tx_id以更好的方式表达电机id,单独使用一个CANInstance,而不是用第一个电机的CANInstance
-        memcpy(sender_instance->tx_buff + (motor->motor_can_ins->tx_id - 0x280 - 1) * 2, &set, sizeof(uint16_t));
+        memcpy(sender_instance->tx_buff + (motor->motor_can_ins->tx_id - 0x280) * 2, &set, sizeof(uint16_t));
 
         if (motor->stop_flag == MOTOR_STOP)
         { // 若该电机处于停止状态,直接将发送buff置零
-            memset(sender_instance->tx_buff + (motor->motor_can_ins->tx_id - 0x280 - 1) * 2, 0, sizeof(uint16_t));
+            memset(sender_instance->tx_buff + (motor->motor_can_ins->tx_id - 0x280) * 2, 0, sizeof(uint16_t));
         }
     }
 
     if (idx) // 如果有电机注册了
     {
-        CANTransmit(sender_instance,1);
+        CANTransmit(sender_instance, 1);
     }
 }
 

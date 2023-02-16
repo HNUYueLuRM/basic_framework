@@ -9,7 +9,7 @@
  * @copyrightCopyright (c) 2022 HNU YueLu EC all rights reserved
  */
 #include "controller.h"
-#include <memory.h>
+#include "memory.h"
 
 /* ----------------------------下面是pid优化环节的实现---------------------------- */
 
@@ -40,7 +40,7 @@ static void f_Integral_Limit(PIDInstance *pid)
     static float temp_Output, temp_Iout;
     temp_Iout = pid->Iout + pid->ITerm;
     temp_Output = pid->Pout + pid->Iout + pid->Dout;
-    if (abs(temp_Output) > pid->MaxOut) 
+    if (abs(temp_Output) > pid->MaxOut)
     {
         if (pid->Err * pid->Iout > 0) // 积分却还在累积
         {
@@ -117,7 +117,6 @@ static void f_PID_ErrorHandle(PIDInstance *pid)
     }
 }
 
-
 /* ---------------------------下面是PID的外部算法接口--------------------------- */
 
 /**
@@ -126,8 +125,8 @@ static void f_PID_ErrorHandle(PIDInstance *pid)
  * @param pid    PID实例
  * @param config PID初始化设置
  */
-void PID_Init(PIDInstance *pid, PID_Init_Config_s *config)
-{   
+void PIDInit(PIDInstance *pid, PID_Init_Config_s *config)
+{
     // config的数据和pid的部分数据是连续且相同的的,所以可以直接用memcpy
     // @todo: 不建议这样做,可扩展性差,不知道的开发者可能会误以为pid和config是同一个结构体
     // 后续修改为逐个赋值
@@ -135,7 +134,6 @@ void PID_Init(PIDInstance *pid, PID_Init_Config_s *config)
     // utilize the quality of struct that its memeory is continuous
     memcpy(pid, config, sizeof(PID_Init_Config_s));
     // set rest of memory to 0
-    
 }
 
 /**
@@ -145,13 +143,13 @@ void PID_Init(PIDInstance *pid, PID_Init_Config_s *config)
  * @param[in]      期望值
  * @retval         返回空
  */
-float PID_Calculate(PIDInstance *pid, float measure, float ref)
+float PIDCalculate(PIDInstance *pid, float measure, float ref)
 {
     // 堵转检测
-    if (pid->Improve & ErrorHandle)
+    if (pid->Improve & PID_ErrorHandle)
         f_PID_ErrorHandle(pid);
 
-    pid->dt = DWT_GetDeltaT((void *)&pid->DWT_CNT); //获取两次pid计算的时间间隔,用于积分和微分
+    pid->dt = DWT_GetDeltaT((void *)&pid->DWT_CNT); // 获取两次pid计算的时间间隔,用于积分和微分
 
     // 保存上次的测量值和误差,计算当前error
     pid->Measure = measure;
@@ -160,33 +158,33 @@ float PID_Calculate(PIDInstance *pid, float measure, float ref)
 
     // 如果在死区外,则计算PID
     if (abs(pid->Err) > pid->DeadBand)
-    {   
+    {
         // 基本的pid计算,使用位置式
         pid->Pout = pid->Kp * pid->Err;
         pid->ITerm = pid->Ki * pid->Err * pid->dt;
         pid->Dout = pid->Kd * (pid->Err - pid->Last_Err) / pid->dt;
 
         // 梯形积分
-        if (pid->Improve & Trapezoid_Intergral)
+        if (pid->Improve & PID_Trapezoid_Intergral)
             f_Trapezoid_Intergral(pid);
         // 变速积分
-        if (pid->Improve & ChangingIntegrationRate)
+        if (pid->Improve & PID_ChangingIntegrationRate)
             f_Changing_Integration_Rate(pid);
         // 微分先行
-        if (pid->Improve & Derivative_On_Measurement)
+        if (pid->Improve & PID_Derivative_On_Measurement)
             f_Derivative_On_Measurement(pid);
         // 微分滤波器
-        if (pid->Improve & DerivativeFilter)
+        if (pid->Improve & PID_DerivativeFilter)
             f_Derivative_Filter(pid);
         // 积分限幅
-        if (pid->Improve & Integral_Limit)
+        if (pid->Improve & PID_Integral_Limit)
             f_Integral_Limit(pid);
 
-        pid->Iout += pid->ITerm; // 累加积分
+        pid->Iout += pid->ITerm;                         // 累加积分
         pid->Output = pid->Pout + pid->Iout + pid->Dout; // 计算输出
 
         // 输出滤波
-        if (pid->Improve & OutputFilter)
+        if (pid->Improve & PID_OutputFilter)
             f_Output_Filter(pid);
 
         // 输出限幅
@@ -194,10 +192,10 @@ float PID_Calculate(PIDInstance *pid, float measure, float ref)
     }
     else // 进入死区, 则清空积分和输出
     {
-        pid->Output=0;
-        pid->ITerm=0;
+        pid->Output = 0;
+        pid->ITerm = 0;
     }
-    
+
     // 保存当前数据,用于下次计算
     pid->Last_Measure = pid->Measure;
     pid->Last_Output = pid->Output;

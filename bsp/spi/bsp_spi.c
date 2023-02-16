@@ -15,7 +15,7 @@ SPIInstance *SPIRegister(SPI_Init_Config_s *conf)
     memset(instance, 0, sizeof(SPIInstance));
 
     instance->spi_handle = conf->spi_handle;
-    instance->GPIO_cs = conf->GPIO_cs;
+    instance->GPIOx = conf->GPIOx;
     instance->cs_pin = conf->cs_pin;
     instance->spi_work_mode = conf->spi_work_mode;
     instance->callback = conf->callback;
@@ -28,7 +28,7 @@ SPIInstance *SPIRegister(SPI_Init_Config_s *conf)
 void SPITransmit(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
 {
     // 拉低片选,开始传输(选中从机)
-    HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
     switch (spi_ins->spi_work_mode)
     {
     case SPI_DMA_MODE:
@@ -40,7 +40,7 @@ void SPITransmit(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
     case SPI_BLOCK_MODE:
         HAL_SPI_Transmit(spi_ins->spi_handle, ptr_data, len, 50); // 默认50ms超时
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
-        HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
         break;
     default:
         while (1)
@@ -55,7 +55,7 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
     spi_ins->rx_size = len;
     spi_ins->rx_buffer = ptr_data;
     // 拉低片选,开始传输
-    HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
     switch (spi_ins->spi_work_mode)
     {
     case SPI_DMA_MODE:
@@ -67,7 +67,7 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
     case SPI_BLOCK_MODE:
         HAL_SPI_Receive(spi_ins->spi_handle, ptr_data, len, 10);
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
-        HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
         break;
     default:
         while (1)
@@ -82,7 +82,7 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
     spi_ins->rx_size = len;
     spi_ins->rx_buffer = ptr_data_rx;
     // 拉低片选,开始传输
-    HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
     switch (spi_ins->spi_work_mode)
     {
     case SPI_DMA_MODE:
@@ -94,7 +94,7 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
     case SPI_BLOCK_MODE:
         HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 50); // 默认50ms超时
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
-        HAL_GPIO_WritePin(spi_ins->GPIO_cs, spi_ins->cs_pin, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
         break;
     default:
         while (1)
@@ -126,13 +126,13 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
     {
         // 如果是当前spi硬件发出的complete,且cs_pin为低电平(说明正在传输),则尝试调用回调函数
         if (spi_instance[i]->spi_handle == hspi && // 显然同一时间一条总线只能有一个从机在接收数据
-            HAL_GPIO_ReadPin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin) == GPIO_PIN_RESET)
+            HAL_GPIO_ReadPin(spi_instance[i]->GPIOx, spi_instance[i]->cs_pin) == GPIO_PIN_RESET)
         {
             // 先拉高片选,结束传输,在判断是否有回调函数,如果有则调用回调函数
-            HAL_GPIO_WritePin(spi_instance[i]->GPIO_cs, spi_instance[i]->cs_pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(spi_instance[i]->GPIOx, spi_instance[i]->cs_pin, GPIO_PIN_SET);
             if (spi_instance[i]->callback != NULL) // 回调函数不为空, 则调用回调函数
             {
-                
+
                 spi_instance[i]->callback(spi_instance[i]);
             }
             return;

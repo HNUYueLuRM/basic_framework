@@ -16,11 +16,11 @@
 #include "master_process.h"
 #include "stdint.h"
 
-
 /* 开发板类型定义,烧录时注意不要弄错对应功能;修改定义后需要重新编译,只能存在一个定义! */
 #define ONE_BOARD // 单板控制整车
 // #define CHASSIS_BOARD //底盘板
 // #define GIMBAL_BOARD  //云台板
+// #define BALANCE_BOARD //启用平衡底盘,则默认双板且当前板位底盘,目前不支持!请勿使用!
 
 // @todo: 增加机器人类型定义,后续是否要兼容所有机器人?(只兼容步兵英雄哨兵似乎就够了)
 // 通过该宏,你可以直接将所有机器人的参数保存在一处,然后每次只需要修改这个宏就可以替换所有参数
@@ -179,6 +179,7 @@ typedef struct
  *
  */
 
+/* @todo : 对于平衡底盘,需要新增控制模式和控制数据 */
 typedef struct
 {
 #ifdef CHASSIS_BOARD
@@ -198,6 +199,7 @@ typedef struct
 
 } Chassis_Upload_Data_s;
 
+/* @todo : 对于平衡底盘,需要不同的反馈数据 */
 typedef struct
 {
     attitude_t gimbal_imu_data;

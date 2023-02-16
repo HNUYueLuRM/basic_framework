@@ -109,7 +109,7 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088);
 /**
  * @brief 标定传感器.BMI088在初始化的时候会调用此函数. 提供接口方便标定离线数据
  * @attention @todo 注意,当操作系统开始运行后,此函数会和INS_Task冲突.目前不允许在运行时调用此函数,后续加入标志位判断以提供运行时重新的标定功能
- * 
+ *
  * @param _bmi088 待标定的实例
  */
 void BMI088CalibrateIMU(BMI088Instance *_bmi088);
