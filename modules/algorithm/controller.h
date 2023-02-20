@@ -43,7 +43,7 @@ typedef enum
 typedef enum errorType_e
 {
     PID_ERROR_NONE = 0x00U,
-    Motor_Blocked = 0x01U
+    PID_MOTOR_BLOCKED_ERROR = 0x01U
 } ErrorType_e;
 
 typedef struct
@@ -63,12 +63,13 @@ typedef struct
     float MaxOut;
     float DeadBand;
 
+    // improve parameter
     PID_Improvement_e Improve;
-    float IntegralLimit;
-    float CoefA;         // For Changing Integral
-    float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
-    float Output_LPF_RC; // RC = 1/omegac
-    float Derivative_LPF_RC;
+    float IntegralLimit; // 积分限幅
+    float CoefA;         // 变速积分 For Changing Integral
+    float CoefB;         // 变速积分 ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
+    float Output_LPF_RC; // 输出滤波器 RC = 1/omegac
+    float Derivative_LPF_RC; // 微分滤波器系数
 
     //-----------------------------------
     // for calculating
@@ -108,7 +109,7 @@ typedef struct // config parameter
     // improve parameter
     PID_Improvement_e Improve;
     float IntegralLimit; // 积分限幅
-    float CoefA;         // For Changing Integral
+    float CoefA;         // AB为变速积分参数,变速积分实际上就引入了积分分离
     float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;

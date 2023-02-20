@@ -2,11 +2,14 @@
 
 > **代码参考了哈工深南宫小樱战队的框架设计，在此鸣谢。**
 
-当前版本更新日期：2023.02.15
+**更新日志**
+2023.02.18 正在增加平衡底盘的支持！
 
-**==由于当前仍然处在测试开发阶段，请定期拉取（`git pull`）获取最新更新。==**
+**==由于当前仍然处在持续测试集成开发阶段，请定期拉取（`git pull`）获取最新更新。==**
 
-
+> 每个bsp/module/application都有对应文档，建议阅读之后再看代码&进行开发。框架的搭建思路和讲解视频戳这里：[basic_framework讲解](https://www.bilibili.com/video/BV1Bd4y1E7CN)。
+> 开发之前必看的文档：README.md & VSCode+Ozone使用方法.md + 修改HAL配置时文件目录的更改.md。开发app层请看application目录下的文档，若要开发module以及bsp务必把上层文档也浏览一遍以熟悉接口定义的方式。
+> 程序的运行流程和框架所有app/module/bsp的数据流图直接拉到本文档底部。
 
 [TOC]
 
@@ -223,7 +226,7 @@ ROOT:.
 
 ### 软件分层
 
-![image-20221113211942850](assets\framework.png)
+![image-20221113211942850](assets/framework.png)
 
 ### 运行任务
 
@@ -246,10 +249,10 @@ main函数唯一需要的函数是app层的`robot.c`中的`RobotInit()`函数，
 
 ### 程序运行流程
 
-![运行](assets\总程序流程.png)
+![运行](assets/总程序流程.png)
 
 
 
 ### 程序数据流
 
-![数据流](assets\数据流.png)
+![数据流](assets/数据流.png)

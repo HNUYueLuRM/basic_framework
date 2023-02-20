@@ -35,7 +35,7 @@ void IICSetMode(IICInstance *iic, IIC_Work_Mode_e mode)
 
 void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e seq_mode)
 {
-    if (seq_mode != IIC_RELEASE && seq_mode != IIC_HOLD_ON)
+    if (seq_mode != IIC_SEQ_RELEASE && seq_mode != IIC_SEQ_HOLDON)
         while (1)
             ; // 未知传输模式, 程序停止
 
@@ -43,21 +43,21 @@ void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e 
     switch (iic->work_mode)
     {
     case IIC_BLOCK_MODE:
-        if (seq_mode != IIC_RELEASE)
+        if (seq_mode != IIC_SEQ_RELEASE)
             while (1)
                 ;                                                                // 阻塞模式下不支持HOLD ON模式!!!只能传输完成后立刻释放总线
         HAL_I2C_Master_Transmit(iic->handle, iic->dev_address, data, size, 100); // 默认超时时间100ms
         break;
     case IIC_IT_MODE:
-        if (seq_mode == IIC_RELEASE)
+        if (seq_mode == IIC_SEQ_RELEASE)
             HAL_I2C_Master_Seq_Transmit_IT(iic->handle, iic->dev_address, data, size, I2C_OTHER_AND_LAST_FRAME);
-        else if (seq_mode == IIC_HOLD_ON)
+        else if (seq_mode == IIC_SEQ_HOLDON)
             HAL_I2C_Master_Seq_Transmit_IT(iic->handle, iic->dev_address, data, size, I2C_OTHER_FRAME);
         break;
     case IIC_DMA_MODE:
-        if (seq_mode == IIC_RELEASE)
+        if (seq_mode == IIC_SEQ_RELEASE)
             HAL_I2C_Master_Seq_Transmit_DMA(iic->handle, iic->dev_address, data, size, I2C_OTHER_AND_LAST_FRAME);
-        else if (seq_mode == IIC_HOLD_ON)
+        else if (seq_mode == IIC_SEQ_HOLDON)
             HAL_I2C_Master_Seq_Transmit_DMA(iic->handle, iic->dev_address, data, size, I2C_OTHER_FRAME);
         break;
     default:
@@ -68,7 +68,7 @@ void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e 
 
 void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e seq_mode)
 {
-    if (seq_mode != IIC_RELEASE && seq_mode != IIC_HOLD_ON)
+    if (seq_mode != IIC_SEQ_RELEASE && seq_mode != IIC_SEQ_HOLDON)
         while (1)
             ; // 未知传输模式, 程序停止,请检查指针越界
 
@@ -79,21 +79,21 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e s
     switch (iic->work_mode)
     {
     case IIC_BLOCK_MODE:
-        if (seq_mode != IIC_RELEASE)
+        if (seq_mode != IIC_SEQ_RELEASE)
             while (1)
                 ;                                                               // 阻塞模式下不支持HOLD ON模式!!!
         HAL_I2C_Master_Receive(iic->handle, iic->dev_address, data, size, 100); // 默认超时时间100ms
         break;
     case IIC_IT_MODE:
-        if (seq_mode == IIC_RELEASE)
+        if (seq_mode == IIC_SEQ_RELEASE)
             HAL_I2C_Master_Seq_Receive_IT(iic->handle, iic->dev_address, data, size, I2C_OTHER_AND_LAST_FRAME);
-        else if (seq_mode == IIC_HOLD_ON)
+        else if (seq_mode == IIC_SEQ_HOLDON)
             HAL_I2C_Master_Seq_Receive_IT(iic->handle, iic->dev_address, data, size, I2C_OTHER_FRAME);
         break;
     case IIC_DMA_MODE:
-        if (seq_mode == IIC_RELEASE)
+        if (seq_mode == IIC_SEQ_RELEASE)
             HAL_I2C_Master_Seq_Receive_DMA(iic->handle, iic->dev_address, data, size, I2C_OTHER_AND_LAST_FRAME);
-        else if (seq_mode == IIC_HOLD_ON)
+        else if (seq_mode == IIC_SEQ_HOLDON)
             HAL_I2C_Master_Seq_Receive_DMA(iic->handle, iic->dev_address, data, size, I2C_OTHER_FRAME);
         break;
     default:

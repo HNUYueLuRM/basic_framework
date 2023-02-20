@@ -113,7 +113,7 @@ static void f_PID_ErrorHandle(PIDInstance *pid)
     if (pid->ERRORHandler.ERRORCount > 500)
     {
         // Motor blocked over 1000times
-        pid->ERRORHandler.ERRORType = Motor_Blocked;
+        pid->ERRORHandler.ERRORType = PID_MOTOR_BLOCKED_ERROR;
     }
 }
 

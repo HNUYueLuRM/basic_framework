@@ -38,7 +38,7 @@ void SPITransmit(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
         HAL_SPI_Transmit_IT(spi_ins->spi_handle, ptr_data, len);
         break;
     case SPI_BLOCK_MODE:
-        HAL_SPI_Transmit(spi_ins->spi_handle, ptr_data, len, 50); // 默认50ms超时
+        HAL_SPI_Transmit(spi_ins->spi_handle, ptr_data, len, 1000); // 默认50ms超时
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
         HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
         break;
@@ -65,7 +65,7 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
         HAL_SPI_Receive_IT(spi_ins->spi_handle, ptr_data, len);
         break;
     case SPI_BLOCK_MODE:
-        HAL_SPI_Receive(spi_ins->spi_handle, ptr_data, len, 10);
+        HAL_SPI_Receive(spi_ins->spi_handle, ptr_data, len, 1000);
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
         HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
         break;
@@ -78,7 +78,7 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
 
 void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len)
 {
-    // 用于稍后回调使用
+    // 用于稍后回调使用,请保证ptr_data_rx在回调函数被调用之前仍然在作用域内,否则析构之后的行为是未定义的!!!
     spi_ins->rx_size = len;
     spi_ins->rx_buffer = ptr_data_rx;
     // 拉低片选,开始传输
@@ -92,7 +92,7 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
         HAL_SPI_TransmitReceive_IT(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len);
         break;
     case SPI_BLOCK_MODE:
-        HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 50); // 默认50ms超时
+        HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 1000); // 默认50ms超时
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
         HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
         break;

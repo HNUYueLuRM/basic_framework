@@ -47,7 +47,7 @@ typedef struct
     GPIOInstance *gyro_int;
     GPIOInstance *acc_int;
     // 温度控制
-    PIDInstance *heat_pid; // 恒温PID
+    PIDInstance heat_pid; // 恒温PID
     PWMInstance *heat_pwm; // 加热PWM
     // IMU数据
     float gyro[3];     // 陀螺仪数据,xyz

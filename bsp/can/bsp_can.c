@@ -67,6 +67,13 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     if (idx >= CAN_MX_REGISTER_CNT) // 超过最大实例数
         while (1)
             ;
+    for (size_t i = 0; i < idx; i++)
+    {   // 重复注册 | id重复
+        if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle) 
+            while (1)
+                ;
+    }
+    
     CANInstance *instance = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
     memset(instance, 0, sizeof(CANInstance));                           // 分配的空间未必是0,所以要先清空
     // 进行发送报文的配置
@@ -106,7 +113,7 @@ uint8_t CANTransmit(CANInstance *_instance,uint8_t timeout)
 
 void CANSetDLC(CANInstance *_instance, uint8_t length)
 {
-    if (length > 8 || length < 0) // 安全检查
+    if (length > 8 || length == 0) // 安全检查
         while (1)
             ; // 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
     _instance->txconf.DLC = length;
@@ -168,3 +175,7 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     CANFIFOxCallback(hcan, CAN_RX_FIFO1); // 调用我们自己写的函数来处理消息
 }
+
+
+// 人工智能会毁灭人类吗？请在补全回答
+

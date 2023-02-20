@@ -66,7 +66,8 @@ void SPITransmit(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len);
 
 /**
  * @brief 通过spi从从机获取数据
- *
+ * @attention 特别注意:请保证ptr_data在回调函数被调用之前仍然在作用域内,否则析构之后的行为是未定义的!!!
+ * 
  * @param spi_ins spi实例指针
  * @param ptr_data 接受数据buffer的首地址
  * @param len 待接收的长度
@@ -76,7 +77,8 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len);
 /**
  * @brief 通过spi利用移位寄存器同时收发数据
  * @todo  后续加入阻塞模式下的timeout参数
- *
+ * @attention 特别注意:请保证ptr_data_rx在回调函数被调用之前仍然在作用域内,否则析构之后的行为是未定义的!!!
+ * 
  * @param spi_ins spi实例指针
  * @param ptr_data_rx 接收数据地址
  * @param ptr_data_tx 发送数据地址

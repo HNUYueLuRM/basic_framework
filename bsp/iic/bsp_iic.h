@@ -25,8 +25,8 @@ typedef enum
 // 必须以IIC_RELEASE为最后一次传输,否则会导致总线占有权无法释放
 typedef enum
 {
-    IIC_RELEASE,     // 完成传输后释放总线占有权,这是默认的传输方式
-    IIC_HOLD_ON = 0, // 保持总线占有权不释放,只支持IT和DMA模式
+    IIC_SEQ_RELEASE,    // 完成传输后释放总线占有权,这是默认的传输方式
+    IIC_SEQ_HOLDON = 0, // 保持总线占有权不释放,只支持IT和DMA模式
 } IIC_Seq_Mode_e;
 
 /* i2c实例 */
@@ -83,7 +83,7 @@ void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e 
 
 /**
  * @brief IIC接收数据
- * 
+ *
  * @param iic iic实例
  * @param data 接收数据的首地址指针
  * @param size 接收长度
@@ -91,7 +91,7 @@ void IICTransmit(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e 
  * @note 注意,如果直接将接收数据memcpy到目标结构体或通过强制类型转换进行逐字节写入,
  *       那么该结构体在声明时务必使用#pragma pack(1)进行对齐,并在声明结束后使用#pragma pack()恢复对齐
  */
-void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size,IIC_Seq_Mode_e mode);
+void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e mode);
 
 /**
  * @brief IIC读取从机寄存器(内存),只支持阻塞模式,超时默认为1ms
