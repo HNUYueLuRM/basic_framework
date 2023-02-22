@@ -9,7 +9,7 @@
 
 > 每个bsp/module/application都有对应文档，建议阅读之后再看代码&进行开发。框架的搭建思路和讲解视频戳这里：[basic_framework讲解](https://www.bilibili.com/video/BV1Bd4y1E7CN)。
 > 开发之前必看的文档：README.md & VSCode+Ozone使用方法.md + 修改HAL配置时文件目录的更改.md。开发app层请看application目录下的文档，若要开发module以及bsp务必把上层文档也浏览一遍以熟悉接口定义的方式。
-> 程序的运行流程和框架所有app/module/bsp的数据流图直接拉到本文档底部。
+> **程序的运行流程和框架所有app/module/bsp的数据流图直接拉到本文档底部。**
 
 [TOC]
 

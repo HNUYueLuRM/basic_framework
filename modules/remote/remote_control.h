@@ -122,4 +122,11 @@ typedef struct
  */
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle);
 
+/**
+ * @brief 检查遥控器是否在线,若尚未初始化也视为离线
+ * 
+ * @return uint8_t 1:在线 0:离线
+ */
+uint8_t RemoteControlIsOnline();
+
 #endif

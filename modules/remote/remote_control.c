@@ -7,7 +7,9 @@
 
 #define REMOTE_CONTROL_FRAME_SIZE 18u // 遥控器接收的buffer大小
 // 遥控器数据
-static RC_ctrl_t rc_ctrl[2]; //[0]:当前数据TEMP,[1]:上一次的数据LAST.用于按键持续按下和切换的判断
+static RC_ctrl_t rc_ctrl[2];     //[0]:当前数据TEMP,[1]:上一次的数据LAST.用于按键持续按下和切换的判断
+static uint8_t rc_init_flag = 0; // 遥控器初始化标志位
+
 // 遥控器拥有的串口实例,因为遥控器是单例,所以这里只有一个,就不封装了
 static USARTInstance *rc_usart_instance;
 static DaemonInstance *rc_daemon_instance;
@@ -81,17 +83,17 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
 
 /**
  * @brief 对sbus_to_rc的简单封装,用于注册到bsp_usart的回调函数中
- *        
+ *
  */
 static void RemoteControlRxCallback()
 {
-    DaemonReload(rc_daemon_instance);        // 先喂狗
+    DaemonReload(rc_daemon_instance);         // 先喂狗
     sbus_to_rc(rc_usart_instance->recv_buff); // 进行协议解析
 }
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  */
 static void RCLostCallback()
 {
@@ -115,5 +117,14 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
     };
     rc_daemon_instance = DaemonRegister(&daemon_conf);
 
+    rc_init_flag = 1;
     return (RC_ctrl_t *)&rc_ctrl;
+}
+
+uint8_t RemotecontrolIsOnline()
+{
+    if (rc_init_flag)
+        return DaemonIsOnline(rc_daemon_instance);
+    return 0;
+    
 }

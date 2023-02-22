@@ -22,7 +22,7 @@ static float hibernate_time = 0, dead_time = 0;
 void ShootInit()
 {
     // 左摩擦轮
-    Motor_Init_Config_s left_friction_config = {
+    Motor_Init_Config_s friction_config = {
         .can_init_config = {
             .can_handle = &hcan2,
             .tx_id = 6,
@@ -50,34 +50,12 @@ void ShootInit()
             .reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = M3508};
-    // 右摩擦轮
-    Motor_Init_Config_s right_friction_config = {
-        .can_init_config = {
-            .can_handle = &hcan2,
-            .tx_id = 5,
-        },
-        .controller_param_init_config = {
-            .speed_PID = {
-                .Kp = 10,
-                .Ki = 0,
-                .Kd = 0,
-                .MaxOut = 2000,
-            },
-            .current_PID = {
-                .Kp = 1,
-                .Ki = 0,
-                .Kd = 0,
-                .MaxOut = 2000,
-            },
-        },
-        .controller_setting_init_config = {
-            .angle_feedback_source = MOTOR_FEED,
-            .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type = SPEED_LOOP,
-            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_NORMAL,
-        },
-        .motor_type = M3508};
+        friction_l = DJIMotorInit(&friction_config);
+        
+        friction_config.can_init_config.tx_id = 5; // 右摩擦轮,改txid和方向就行
+        friction_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
+        friction_r = DJIMotorInit(&friction_config); 
+    
     // 拨盘电机
     Motor_Init_Config_s loader_config = {
         .can_init_config = {
@@ -99,7 +77,7 @@ void ShootInit()
                 .MaxOut = 2000,
             },
             .current_PID = {
-                .Kp = 10,
+                .Kp = 1,
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 3000,
@@ -113,9 +91,6 @@ void ShootInit()
         },
         .motor_type = M2006 // 英雄使用m3508
     };
-
-    friction_l = DJIMotorInit(&left_friction_config);
-    friction_r = DJIMotorInit(&right_friction_config);
     loader = DJIMotorInit(&loader_config);
 
     shoot_pub = PubRegister("shoot_feed", sizeof(Shoot_Upload_Data_s));
@@ -206,8 +181,8 @@ void ShootTask()
             DJIMotorSetRef(friction_r, 0);
             break;
         default: // 当前为了调试设定的默认值4000,因为还没有加入裁判系统无法读取弹速.
-            DJIMotorSetRef(friction_l, 4000);
-            DJIMotorSetRef(friction_r, 4000);
+            DJIMotorSetRef(friction_l, 1000);
+            DJIMotorSetRef(friction_r, 1000);
             break;
         } 
     }
