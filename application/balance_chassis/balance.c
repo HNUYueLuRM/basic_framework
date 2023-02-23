@@ -134,7 +134,7 @@ void BalanceInit()
         .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
         .work_mode = BMI088_BLOCK_PERIODIC_MODE,
     };
-    imu = BMI088Register(&imu_config);
+    // imu = BMI088Register(&imu_config);
 
     SuperCap_Init_Config_s cap_conf = {
         // 超级电容初始化
@@ -162,10 +162,28 @@ void BalanceInit()
 
     Motor_Init_Config_s driven_conf = {
         // 写一个,剩下的修改方向和id即可
+        .can_init_config.can_handle = &hcan1,
+        .controller_param_init_config = {
+            .current_PID = {
+                .Kp = 1,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 500,
+            },
+        },
+        .controller_setting_init_config = {
+            .angle_feedback_source = MOTOR_FEED,
+            .speed_feedback_source = MOTOR_FEED,
+            .outer_loop_type = CURRENT_LOOP,
+            .close_loop_type = CURRENT_LOOP,
+        },
+        .motor_type = LK9025,
 
     };
+    driven_conf.can_init_config.tx_id=1;
     l_driven = LKMotorInit(&driven_conf);
 
+    driven_conf.can_init_config.tx_id=2;
     r_driven = LKMotorInit(&driven_conf);
 
     CANComm_Init_Config_s chassis_comm_conf = {
