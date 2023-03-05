@@ -235,7 +235,7 @@ typedef struct
 /* 交互数据头结构 */
 typedef struct
 {
-	uint16_t data_cmd_id;    //由于存在多个内容 ID，但整个cmd_id 上行频率最大为 10Hz，请合理安排带宽。syhtodo  注意交互部分的上行频率
+	uint16_t data_cmd_id;    //由于存在多个内容 ID，但整个cmd_id 上行频率最大为 10Hz，请合理安排带宽。注意交互部分的上行频率
 	uint16_t sender_ID;
 	uint16_t receiver_ID;
 } ext_student_interactive_header_data_t;

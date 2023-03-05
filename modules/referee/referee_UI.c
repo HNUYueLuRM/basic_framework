@@ -40,7 +40,7 @@ void UI_Delete(referee_id_t *_id, uint8_t Del_Operate, uint8_t Del_Layer)
    UI_delete_data.Layer = Del_Layer;
 
    UI_delete_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_delete_data, LEN_HEADER + LEN_CMDID + temp_datalength, 0xFFFF);
-   /* syhtodo为什么填入0xFFFF,关于crc校验 */
+   /* 填入0xFFFF,关于crc校验 */
 
    RefereeSend((uint8_t *)&UI_delete_data, LEN_HEADER + LEN_CMDID + temp_datalength + LEN_TAIL); // 发送
 

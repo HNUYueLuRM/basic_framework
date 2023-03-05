@@ -178,8 +178,6 @@ static void robot_mode_change(Referee_Interactive_info_t *_Interactive_data) // 
 
 static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_info_t *_Interactive_data)
 {
-    // syhtodo 按键刷新
-
     Mode_Change_Check(_Interactive_data);
     // chassis
     if (_Interactive_data->Referee_Interactive_Flag.chassis_flag == 1)

@@ -24,7 +24,7 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    Referee_Interactive_init();//syh
+    Referee_Interactive_init();
     ChassisInit();
 #endif
 }
