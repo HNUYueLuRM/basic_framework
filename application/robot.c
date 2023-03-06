@@ -10,6 +10,7 @@
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
 #include "chassis.h"
+#include "referee.h"
 #endif
 
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
@@ -34,6 +35,7 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
+    Referee_Interactive_init();
     ChassisInit();
 #endif
     // 初始化完成,开启中断
@@ -50,5 +52,6 @@ void RobotTask()
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisTask();
+    Referee_Interactive_task();
 #endif
 }
