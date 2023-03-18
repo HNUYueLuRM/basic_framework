@@ -19,7 +19,7 @@ static USARTInstance *usart_instance[DEVICE_USART_CNT] = {NULL};
 
 /**
  * @brief 启动串口服务,会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
- *  
+ *
  * @todo 串口服务会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
  *       可能还要将此函数修改为extern,使得module可以控制串口的启停
  *
@@ -52,24 +52,22 @@ USARTInstance *USARTRegister(USART_Init_Config_s *init_config)
 }
 
 /* @todo 当前仅进行了形式上的封装,后续要进一步考虑是否将module的行为与bsp完全分离 */
-void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size)
-{
-    HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
-}
-
-void USARTAbort(USARTInstance *_instance, USART_TRANSFER_MODE mode)
+void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size, USART_TRANSFER_MODE mode)
 {
     switch (mode)
     {
-    case USART_TRANSFER_TX:
-        // if(_instance.work_mode == USART_TX_DMA)
-        HAL_UART_AbortTransmit_IT(_instance->usart_handle);
+    case USART_TRANSFER_BLOCKING:
+        HAL_UART_Transmit(_instance->usart_handle, send_buf, send_size, 100);
         break;
-    case USART_TRANSFER_RX:
-        // if(_instance.work_mode == USART_RX_DMA)
-        HAL_UART_AbortReceive_IT(_instance->usart_handle);
+    case USART_TRANSFER_IT:
+        HAL_UART_Transmit_IT(_instance->usart_handle, send_buf, send_size);
         break;
-    case USART_TRANSFER_NONE:
+    case USART_TRANSFER_DMA:
+        HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
+        break;
+    default:
+        while (1)
+            ; // illegal mode! check your code context!
         break;
     }
 }

@@ -114,7 +114,7 @@ uint16_t get_protocol_info(uint8_t *rx_buf,          // 接收到的原始数据
         if (CRC16_Check_Sum(&rx_buf[0], date_length))
         {
             *flags_register = (rx_buf[7] << 8) | rx_buf[6];
-            memcpy(rx_data, rx_buf + 8, 4 * sizeof(pro.header.data_length - 2));
+            memcpy(rx_data, rx_buf + 8, pro.header.data_length - 2);
             return pro.cmd_id;
         }
     }

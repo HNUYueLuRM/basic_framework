@@ -13,8 +13,9 @@ typedef void (*usart_module_callback)();
 typedef enum
 {
     USART_TRANSFER_NONE=0,
-    USART_TRANSFER_TX,
-    USART_TRANSFER_RX,
+    USART_TRANSFER_BLOCKING,
+    USART_TRANSFER_IT,
+    USART_TRANSFER_DMA,
 } USART_TRANSFER_MODE;
 
 // 串口实例结构体,每个module都要包含一个实例.
@@ -52,14 +53,6 @@ USARTInstance *USARTRegister(USART_Init_Config_s *init_config);
  * @param send_buf 待发送数据的buffer
  * @param send_size how many bytes to send
  */
-void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size);
-
-/**
- * @brief 通过调用该函数终止串口的发送或者接收,通过传入mode参数来选择终止发送还是接收
- * 
- * @param _instance 串口实例
- * @param mode 选择终止发送还是接收的模式
- */
-void USARTAbort(USARTInstance *_instance,USART_TRANSFER_MODE mode);
+void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size,USART_TRANSFER_MODE mode);
 
 #endif
