@@ -30,5 +30,12 @@
                 "isDefault": false,
             }
         },
+        {
+            "label": "log",
+            "type": "shell",
+            "command":"JlinkRTTClient",
+            "args": [],
+            "problemMatcher": [],
+        }
     ]
 }
