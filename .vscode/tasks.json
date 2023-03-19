@@ -36,6 +36,9 @@
             "command":"JlinkRTTClient",
             "args": [],
             "problemMatcher": [],
+            // "dependsOn":[
+            //     "build task", // 可以添加多个.
+            // ]
         }
     ]
 }

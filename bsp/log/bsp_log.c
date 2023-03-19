@@ -4,7 +4,6 @@
 #include "SEGGER_RTT_Conf.h"
 #include <stdio.h>
 
-#define BUFFER_INDEX 0
 
 void BSPLogInit()
 {

@@ -17,6 +17,7 @@
 #include "super_cap.h"
 #include "message_center.h"
 
+// referee需要移动到module层
 /////////////////////////
 #include "referee.h"
 #include "rm_referee.h"
