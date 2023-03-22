@@ -25,7 +25,7 @@ static USARTInstance *usart_instance[DEVICE_USART_CNT] = {NULL};
  *
  * @param _instance instance owned by module,模块拥有的串口实例
  */
-static void USARTServiceInit(USARTInstance *_instance)
+void USARTServiceInit(USARTInstance *_instance)
 {
     HAL_UARTEx_ReceiveToIdle_DMA(_instance->usart_handle, _instance->recv_buff, _instance->recv_buff_size);
     // 关闭dma half transfer中断防止两次进入HAL_UARTEx_RxEventCallback()
@@ -67,10 +67,11 @@ void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size, 
         break;
     default:
         while (1)
-            ; // illegal mode! check your code context!
+            ; // illegal mode! check your code context! 检查定义instance的代码上下文,可能出现指针越界
         break;
     }
 }
+
 /* 串口发送时,gstate会被设为BUSY_TX */
 uint8_t USARTIsReady(USARTInstance *_instance)
 {
@@ -83,6 +84,7 @@ uint8_t USARTIsReady(USARTInstance *_instance)
         return 1;
     }
 }
+
 /**
  * @brief 每次dma/idle中断发生时，都会调用此函数.对于每个uart实例会调用对应的回调进行进一步的处理
  *        例如:视觉协议解析/遥控器解析/裁判系统解析

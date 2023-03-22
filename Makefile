@@ -132,7 +132,7 @@ modules/motor/servo_motor/servo_motor.c \
 modules/motor/motor_task.c \
 modules/oled/oled.c \
 modules/referee/crc_ref.c \
-modules/referee/referee.c \
+modules/referee/rm_referee.c \
 modules/referee/referee_UI.c \
 modules/referee/referee_communication.c \
 modules/remote/remote_control.c \
@@ -145,6 +145,7 @@ modules/ps_handle/ps_handle.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
+application/referee/referee.c \
 application/cmd/robot_cmd.c \
 application/balance_chassis/balance.c \
 application/robot.c 
@@ -228,6 +229,7 @@ C_INCLUDES =  \
 -Iapplication/gimbal \
 -Iapplication/cmd \
 -Iapplication/balance_chassis \
+-Iapplication/referee \
 -Iapplication \
 -Ibsp/dwt \
 -Ibsp/can \

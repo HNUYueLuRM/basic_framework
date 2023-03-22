@@ -8,7 +8,6 @@
 >
 > 1. 添加一键编译+启用ozone调试脚本，使得整个进一步流程自动化
 > 2. 增加更多的背景知识介绍
-> 3. 增加VSCode下RTT viewer的支持
 
 
 
@@ -478,6 +477,12 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 > 如果你想在VSCode中也使用segger RTT viewer的功能（即bsp_log提供的日志功能），请参阅[附录2](##附录2：在VSCode中启用SEGGER RTT日志)。
 >
 > 如果想直接下载代码不想调试，参阅[附录4](##附录4：VSCode直接烧录代码)。
+
+
+
+### RTT Viewer日志功能
+
+本框架添加了vscode下Segger RTT client的支持。在`.vscode/task.json`中已经添加了启动rtt viewer client的任务。你也可以将此任务作为附加启动任务和调试一起启动，方便查看日志。要使用日志，请包含`bsp_log.h`。注意，需要将jlink的安装目录添加到环境变量中。
 
 
 

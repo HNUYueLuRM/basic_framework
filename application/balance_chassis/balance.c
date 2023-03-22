@@ -1,4 +1,10 @@
+// app
 #include "balance.h"
+#include "vmc_project.h"
+#include "gain_table.h"
+#include "robot_def.h"
+#include "general_def.h"
+// module
 #include "HT04.h"
 #include "LK9025.h"
 #include "bmi088.h"
@@ -6,9 +12,8 @@
 #include "super_cap.h"
 #include "controller.h"
 #include "can_comm.h"
+// standard
 #include "stdint.h"
-#include "robot_def.h"
-#include "general_def.h"
 #include "arm_math.h" // 需要用到较多三角函数
 
 /* 底盘拥有的模块实例 */
@@ -47,7 +52,7 @@ static float T_leg_left, T_leg_right; // 左右驱动电机力矩
  *
  */
 static void CalcLQR()
-{
+{ 
 }
 
 /**
@@ -55,15 +60,15 @@ static void CalcLQR()
  *
  */
 static void VMCProject()
-{
+{ // 拟将功能封装到vmc_project.h中
 }
 
 /**
  * @brief 腿部角度控制:转向和抗劈叉
  *
  */
-static PIDInstance swerving_pid;
-static PIDInstance anti_crash_pid;
+static PIDInstance swerving_pid; // 转向PID,有转向指令时使用IMU的加速度反馈积分以获取速度和位置状态量
+static PIDInstance anti_crash_pid; // 抗劈叉,将输出以相反的方向叠加到左右腿的上
 
 static void SynthesizeMotion()
 {
@@ -73,15 +78,16 @@ static void SynthesizeMotion()
  * @brief 腿长控制:长度 + roll轴补偿(保持机体水平),用PD模拟弹簧的传递函数
  *
  */
-static PIDInstance leg_length_pid;
-static PIDInstance roll_compensate_pid;
+static PIDInstance leg_length_pid; // 用PD模拟弹簧的传递函数,不需要积分项(弹簧是一个无积分的二阶系统),增益不可过大否则抗外界冲击响应时太"硬"
+static PIDInstance roll_compensate_pid; // roll轴补偿,用于保持机体水平
 
 static void LegControl()
 {
 }
 
 /**
- * @brief 离地监测和?跳跃控制
+ * @brief 离地监测和?跳跃控制?
+ *        通过模型解算地面的支持力完成离地检测
  *
  */
 static void FlyDetect()
@@ -89,7 +95,7 @@ static void FlyDetect()
 }
 
 /**
- * @brief 功率限制
+ * @brief 功率限制,一般不需要
  *
  */
 static void WattLimit()
@@ -134,7 +140,7 @@ void BalanceInit()
         .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
         .work_mode = BMI088_BLOCK_PERIODIC_MODE,
     };
-    imu = BMI088Register(&imu_config);
+    // imu = BMI088Register(&imu_config);
 
     SuperCap_Init_Config_s cap_conf = {
         // 超级电容初始化
@@ -162,10 +168,28 @@ void BalanceInit()
 
     Motor_Init_Config_s driven_conf = {
         // 写一个,剩下的修改方向和id即可
+        .can_init_config.can_handle = &hcan1,
+        .controller_param_init_config = {
+            .current_PID = {
+                .Kp = 1,
+                .Ki = 0,
+                .Kd = 0,
+                .MaxOut = 500,
+            },
+        },
+        .controller_setting_init_config = {
+            .angle_feedback_source = MOTOR_FEED,
+            .speed_feedback_source = MOTOR_FEED,
+            .outer_loop_type = CURRENT_LOOP,
+            .close_loop_type = CURRENT_LOOP,
+        },
+        .motor_type = LK9025,
 
     };
+    driven_conf.can_init_config.tx_id=1;
     l_driven = LKMotorInit(&driven_conf);
 
+    driven_conf.can_init_config.tx_id=2;
     r_driven = LKMotorInit(&driven_conf);
 
     CANComm_Init_Config_s chassis_comm_conf = {
@@ -224,6 +248,7 @@ void BalanceInit()
     PIDInit(&roll_compensate_pid, &roll_compensate_pid_conf);
 }
 
+/* balanceTask可能需要以更高频率运行,以提高线性化的精确程度 */
 void BalanceTask()
 {
 }

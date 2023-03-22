@@ -4,7 +4,6 @@
 #include "SEGGER_RTT_Conf.h"
 #include <stdio.h>
 
-#define BUFFER_INDEX 0
 
 void BSPLogInit()
 {
@@ -15,7 +14,7 @@ int PrintLog(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int n = SEGGER_RTT_vprintf(BUFFER_INDEX, fmt, &args);
+    int n = SEGGER_RTT_vprintf(BUFFER_INDEX, fmt, &args); // 一次可以开启多个buffer(多个终端),我们只用一个
     va_end(args);
     return n;
 }
@@ -32,3 +31,4 @@ void Float2Str(char *str, float va)
     else
         sprintf(str, "%d.%d", head, point);
 }
+

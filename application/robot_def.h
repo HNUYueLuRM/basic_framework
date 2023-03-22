@@ -132,7 +132,6 @@ typedef enum
 // 功率限制,从裁判系统获取
 typedef struct
 { // 功率控制
-
 } Chassis_Power_Data_s;
 
 /* ----------------CMD应用发布的控制数据,应当由gimbal/chassis/shoot订阅---------------- */
