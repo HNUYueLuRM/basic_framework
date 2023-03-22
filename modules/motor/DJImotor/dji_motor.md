@@ -138,7 +138,7 @@ Motor_Init_Config_s config = {
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP, 
              .speed_feedback_source = MOTOR_FEED, 
-             .reverse_flag = MOTOR_DIRECTION_NORMAL},
+             .motor_reverse_flag = MOTOR_DIRECTION_NORMAL},
      // 电流环和速度环PID参数的设置,不采用计算优化则不需要传入Improve参数
         // 不使用其他数据来源(如IMU),不需要传入反馈数据变量指针
   .controller_param_init_config = {.current_PID = {.Improve = 0,
@@ -241,7 +241,7 @@ typedef struct
   {
       Closeloop_Type_e outer_loop_type;
       Closeloop_Type_e close_loop_type;
-      Reverse_Flag_e reverse_flag;
+      Motor_Reverse_Flag_e motor_reverse_flag;
       Feedback_Source_e angle_feedback_source;
       Feedback_Source_e speed_feedback_source;
   } Motor_Control_Setting_s;
@@ -268,14 +268,14 @@ typedef struct
 
     > 注意，务必分清串级控制（多环）和外层闭环的区别。前者是为了提高内环的性能，使得其能更好地跟随外环参考值；而后者描述的是系统真实的控制目标（闭环目标）。如3508，没有电流环仍然可以对速度完成闭环，对于高层的应用来说，它们本质上不关心电机内部是否还有电流环，它们只把外层闭环为速度的电机当作一个**速度伺服执行器**，**外层闭环**描述的就是真正的闭环目标。
 
-  - 为了避开恼人的正负号，提高代码的可维护性，在初始化电机时设定`reverse_flag`使得所有电机都按照你想要的方向旋转，其定义如下：
+  - 为了避开恼人的正负号，提高代码的可维护性，在初始化电机时设定`motor_reverse_flag`使得所有电机都按照你想要的方向旋转，其定义如下：
 
     ```c
     typedef enum
     {
         MOTOR_DIRECTION_NORMAL = 0,
         MOTOR_DIRECTION_REVERSE = 1
-    } Reverse_Flag_e;
+    } Motor_Reverse_Flag_e;
     ```
 
   - `speed_feedback_source`以及`angle_feedback_source`是指示电机反馈来源的标志位。一般情况下电机使用自身的编码器作为控制反馈量。但在某些时候，如小陀螺模式，云台电机会使用IMU的姿态数据作为反馈数据来源。其定义如下：
@@ -433,7 +433,7 @@ Motor_Init_Config_s config = {
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | ANGLE_LOOP, 
             .speed_feedback_source = MOTOR_FEED, 
-            .reverse_flag = MOTOR_DIRECTION_NORMAL
+            .motor_reverse_flag = MOTOR_DIRECTION_NORMAL
         },
   .controller_param_init_config = {
             .angle_PID = {

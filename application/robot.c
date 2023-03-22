@@ -34,7 +34,7 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    ChassisInit();
+   ChassisInit();
 #endif
     // 初始化完成,开启中断
     __enable_irq();

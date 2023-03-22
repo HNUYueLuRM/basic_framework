@@ -54,8 +54,13 @@ typedef enum
 {
     MOTOR_DIRECTION_NORMAL = 0,
     MOTOR_DIRECTION_REVERSE = 1
-} Reverse_Flag_e;
-
+} Motor_Reverse_Flag_e;
+/* 反馈量正反标志 */
+typedef enum
+{
+    FEEDBACK_DIRECTION_NORMAL = 0,
+    FEEDBACK_DIRECTION_REVERSE = 1
+} Feedback_Reverse_Flag_e;
 typedef enum
 {
     MOTOR_STOP = 0,
@@ -67,7 +72,8 @@ typedef struct
 {
     Closeloop_Type_e outer_loop_type;        // 最外层的闭环,未设置时默认为最高级的闭环
     Closeloop_Type_e close_loop_type;        // 使用几个闭环(串级)
-    Reverse_Flag_e reverse_flag;             // 是否反转
+    Motor_Reverse_Flag_e motor_reverse_flag; // 是否反转
+    Feedback_Reverse_Flag_e feedback_reverse_flag; // 反馈是否反向
     Feedback_Source_e angle_feedback_source; // 角度反馈类型
     Feedback_Source_e speed_feedback_source; // 速度反馈类型
     Feedfoward_Type_e feedforward_flag;      // 前馈标志

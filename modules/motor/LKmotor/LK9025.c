@@ -110,7 +110,7 @@ void LKMotorControl()
         }
 
         set = pid_ref;
-        if (setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
+        if (setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
             set *= -1;
         // 这里随便写的,为了兼容多电机命令.后续应该将tx_id以更好的方式表达电机id,单独使用一个CANInstance,而不是用第一个电机的CANInstance
         memcpy(sender_instance->tx_buff + (motor->motor_can_ins->tx_id - 0x280) * 2, &set, sizeof(uint16_t));

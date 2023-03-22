@@ -15,6 +15,11 @@
 #include "crc16.h"
 #include "memory.h"
 
+/*获取CRC8校验码*/
+uint8_t Get_CRC8_Check(uint8_t *pchMessage,uint16_t dwLength)
+{
+    return crc_8(pchMessage,dwLength);
+}
 /*检验CRC8数据段*/
 static uint8_t CRC8_Check_Sum(uint8_t *pchMessage, uint16_t dwLength)
 {
@@ -23,6 +28,12 @@ static uint8_t CRC8_Check_Sum(uint8_t *pchMessage, uint16_t dwLength)
         return 0;
     ucExpected = crc_8(pchMessage, dwLength - 1);
     return (ucExpected == pchMessage[dwLength - 1]);
+}
+
+/*获取CRC16校验码*/
+uint16_t Get_CRC16_Check(uint8_t *pchMessage,uint32_t dwLength)
+{
+    return crc_16(pchMessage,dwLength);
 }
 
 /*检验CRC16数据段*/
@@ -45,7 +56,7 @@ static uint8_t protocol_heade_Check(protocol_rm_struct *pro, uint8_t *rx_buf)
         pro->header.sof = rx_buf[0];
         if (CRC8_Check_Sum(&rx_buf[0], 4))
         {
-            pro->header.data_length = (rx_buf[2] << 8) | rx_buf[1];
+            pro->header.data_length = ((rx_buf[2] << 8) | rx_buf[1]);
             pro->header.crc_check = rx_buf[3];
             pro->cmd_id = (rx_buf[5] << 8) | rx_buf[4];
             return 1;
@@ -114,9 +125,9 @@ uint16_t get_protocol_info(uint8_t *rx_buf,          // 接收到的原始数据
         if (CRC16_Check_Sum(&rx_buf[0], date_length))
         {
             *flags_register = (rx_buf[7] << 8) | rx_buf[6];
-            memcpy(rx_data, rx_buf + 8, 4 * sizeof(pro.header.data_length - 2));
+            memcpy(rx_data, rx_buf + 8, (pro.header.data_length - 2));
             return pro.cmd_id;
-        }
+       }
     }
     return 0;
 }

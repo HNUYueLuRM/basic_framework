@@ -28,6 +28,7 @@ static void DecodeVision()
 {
     static uint16_t flag_register;
     get_protocol_info(vision_usart_instance->recv_buff, &flag_register, (uint8_t *)&recv_data.pitch);
+ 
     // TODO: code to resolve flag_register;
 }
 
@@ -58,8 +59,13 @@ void VisionSend(Vision_Send_s *send)
     static uint8_t send_buff[VISION_SEND_SIZE];
     static uint16_t tx_len;
     // TODO: code to set flag_register
-    
+    flag_register = 0x0001;
     // 将数据转化为seasky协议的数据包
     get_protocol_send_data(0x02, flag_register, &send->yaw, 3, send_buff, &tx_len);
-    USARTSend(vision_usart_instance, send_buff, tx_len);
+    USARTSend(vision_usart_instance, send_buff, tx_len,USART_TRANSFER_IT);
+    // if(vision_usart_instance->usart_handle->ReceptionType == HAL_UART_RECEPTION_TOIDLE)
+    // {HAL_UARTEx_ReceiveToIdle_DMA(vision_usart_instance->usart_handle, vision_usart_instance->recv_buff, vision_usart_instance->recv_buff_size);
+    //         __HAL_DMA_DISABLE_IT(vision_usart_instance->usart_handle->hdmarx, DMA_IT_HT);
+        
+    // }
 }

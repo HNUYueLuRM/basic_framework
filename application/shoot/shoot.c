@@ -25,20 +25,23 @@ void ShootInit()
     Motor_Init_Config_s friction_config = {
         .can_init_config = {
             .can_handle = &hcan2,
-            .tx_id = 6,
         },
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp = 10,
-                .Ki = 0,
+                .Kp = 0,//20
+                .Ki = 0,//1
                 .Kd = 0,
-                .MaxOut = 2000,
+                .Improve = PID_Integral_Limit,
+                .IntegralLimit = 10000,
+                .MaxOut = 15000,
             },
             .current_PID = {
-                .Kp = 1,
-                .Ki = 0,
+                .Kp = 0,//0.7
+                .Ki = 0,//0.1
                 .Kd = 0,
-                .MaxOut = 2000,
+                .Improve = PID_Integral_Limit,
+                .IntegralLimit = 10000,
+                .MaxOut = 15000,
             },
         },
         .controller_setting_init_config = {
@@ -47,47 +50,52 @@ void ShootInit()
 
             .outer_loop_type = SPEED_LOOP,
             .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_NORMAL,
+            .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = M3508};
+        friction_config.can_init_config.tx_id = 1,
         friction_l = DJIMotorInit(&friction_config);
         
-        friction_config.can_init_config.tx_id = 5; // 右摩擦轮,改txid和方向就行
-        friction_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
+        friction_config.can_init_config.tx_id = 2; // 右摩擦轮,改txid和方向就行
+        friction_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
         friction_r = DJIMotorInit(&friction_config); 
     
     // 拨盘电机
     Motor_Init_Config_s loader_config = {
         .can_init_config = {
             .can_handle = &hcan2,
-            .tx_id = 7,
+            .tx_id = 3,
         },
         .controller_param_init_config = {
             .angle_PID = {
                 // 如果启用位置环来控制发弹,需要较大的I值保证输出力矩的线性度否则出现接近拨出的力矩大幅下降
-                .Kp = 10,
+                .Kp = 0,//10
                 .Ki = 0,
                 .Kd = 0,
                 .MaxOut = 200,
             },
             .speed_PID = {
-                .Kp = 1,
-                .Ki = 0,
+                .Kp = 0,//10
+                .Ki = 0,//1
                 .Kd = 0,
-                .MaxOut = 2000,
+                .Improve = PID_Integral_Limit,
+                .IntegralLimit = 5000,
+                .MaxOut = 5000,
             },
             .current_PID = {
-                .Kp = 1,
-                .Ki = 0,
+                .Kp = 0,//0.7
+                .Ki = 0,//0.1
                 .Kd = 0,
-                .MaxOut = 3000,
+                .Improve = PID_Integral_Limit,
+                .IntegralLimit = 5000,
+                .MaxOut = 5000,
             },
         },
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED, .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = SPEED_LOOP, // 初始化成SPEED_LOOP,让拨盘停在原地,防止拨盘上电时乱转
-            .close_loop_type = ANGLE_LOOP | SPEED_LOOP,
-            .reverse_flag = MOTOR_DIRECTION_NORMAL, // 注意方向设置为拨盘的拨出的击发方向
+            .close_loop_type = CURRENT_LOOP | SPEED_LOOP,
+            .motor_reverse_flag = MOTOR_DIRECTION_NORMAL, // 注意方向设置为拨盘的拨出的击发方向
         },
         .motor_type = M2006 // 英雄使用m3508
     };
@@ -119,8 +127,8 @@ void ShootTask()
 
     // 如果上一次触发单发或3发指令的时间加上不应期仍然大于当前时间(尚未休眠完毕),直接返回即可
     // 单发模式主要提供给能量机关激活使用(以及英雄的射击大部分处于单发)
-    if (hibernate_time + dead_time > DWT_GetTimeline_ms())
-        return;
+    // if (hibernate_time + dead_time > DWT_GetTimeline_ms())
+    //     return;
 
     // 若不在休眠状态,根据robotCMD传来的控制模式进行拨盘电机参考值设定和模式切换
     switch (shoot_cmd_recv.load_mode)
@@ -181,8 +189,8 @@ void ShootTask()
             DJIMotorSetRef(friction_r, 0);
             break;
         default: // 当前为了调试设定的默认值4000,因为还没有加入裁判系统无法读取弹速.
-            DJIMotorSetRef(friction_l, 1000);
-            DJIMotorSetRef(friction_r, 1000);
+            DJIMotorSetRef(friction_l, 30000);
+            DJIMotorSetRef(friction_r, 30000);
             break;
         } 
     }
