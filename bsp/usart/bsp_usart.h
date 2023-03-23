@@ -46,8 +46,8 @@ USARTInstance *USARTRegister(USART_Init_Config_s *init_config);
 
 /**
  * @brief 启动串口服务,需要传入一个usart实例.一般用于lost callback的情况(使用串口的模块daemon)
- * 
- * @param _instance 
+ *
+ * @param _instance
  */
 void USARTServiceInit(USARTInstance *_instance);
 
@@ -66,7 +66,7 @@ void USARTSend(USARTInstance *_instance, uint8_t *send_buf, uint16_t send_size,U
 
 /**
  * @brief 判断串口是否准备好,用于连续或异步的IT/DMA发送
- * 
+ *
  * @param _instance 要判断的串口实例
  * @return uint8_t ready 1, busy 0
  */

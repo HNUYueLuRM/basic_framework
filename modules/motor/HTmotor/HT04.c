@@ -134,7 +134,7 @@ void HTMotorControl()
         }
 
         set = pid_ref;
-        if (setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
+        if (setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
             set *= -1;
 
         LIMIT_MIN_MAX(set, T_MIN, T_MAX);           // 限幅,实际上这似乎和pid输出限幅重复了

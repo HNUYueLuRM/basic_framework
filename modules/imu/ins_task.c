@@ -17,7 +17,7 @@
 #include "bsp_temperature.h"
 #include "spi.h"
 #include "user_lib.h"
-
+#include "general_def.h"
 static INS_t INS;
 static IMU_Param_t IMU_Param;
 static PIDInstance TempCtrl = {0};
@@ -118,7 +118,6 @@ void INS_Task(void)
         }
         BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
 
-        // 获取最终数据
         INS.Yaw = QEKF_INS.Yaw;
         INS.Pitch = QEKF_INS.Pitch;
         INS.Roll = QEKF_INS.Roll;

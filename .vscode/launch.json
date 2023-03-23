@@ -6,7 +6,7 @@
         {
             "name": "Debug-DAP",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}\\build\\${workspaceFolderBasename}.elf", // 要下载到调试器的文件,花括号中的是vscode两个预定义的参数
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf", // 要下载到调试器的文件,花括号中的是vscode两个预定义的参数
             "request": "launch",
             "type": "cortex-debug",
             //使用J-link GDB Server时必须;其他GBD Server时可选（有可能帮助自动选择SVD文件）
@@ -28,7 +28,7 @@
         {
             "name": "Debug-Jlink",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceRoot}\\build\\${workspaceFolderBasename}.elf",
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf",
             "request": "launch",
             "type": "cortex-debug",
             "device": "STM32F407IG",

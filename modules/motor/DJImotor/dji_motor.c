@@ -233,7 +233,8 @@ void DJIMotorControl()
         motor_controller = &motor->motor_controller;
         motor_measure = &motor->motor_measure;
         pid_ref = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
-
+        if (motor_setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
+             pid_ref*= -1; // 设置反转
         // pid_ref会顺次通过被启用的闭环充当数据的载体
         // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
         if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
@@ -265,8 +266,7 @@ void DJIMotorControl()
 
         // 获取最终输出
         set = (int16_t)pid_ref;
-        if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
-            set *= -1; // 设置反转
+       
 
         // 分组填入发送数据
         group = motor->sender_group;
