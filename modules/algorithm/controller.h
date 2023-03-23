@@ -113,6 +113,8 @@ typedef struct // config parameter
     float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
+
+    
 } PID_Init_Config_s;
 
 /**

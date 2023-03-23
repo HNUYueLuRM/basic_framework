@@ -34,7 +34,7 @@ static void DecodeVision()
     get_protocol_info(vision_usart_instance->recv_buff, &flag_register, (uint8_t *)&recv_data.pitch);
     // TODO: code to resolve flag_register;
     PrintLog("decode vision");
-    
+
 }
 
 /**

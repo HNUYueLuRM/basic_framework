@@ -68,16 +68,20 @@ void ChassisInit()
         .can_init_config.can_handle = &hcan1,
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp = 10,
-                .Ki = 0,
-                .Kd = 0,
-                .MaxOut = 4000,
+                .Kp = 4.5,//9
+                .Ki = 0,//0.02
+                .Kd = 0.01,//0.01
+                .IntegralLimit = 3000,
+                 .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
+                .MaxOut = 12000,
             },
             .current_PID = {
-                .Kp = 1,
-                .Ki = 0,
+                .Kp = 0.4,//0.7
+                .Ki = 0,//0.1
                 .Kd = 0,
-                .MaxOut = 4000,
+                .IntegralLimit = 3000,
+                 .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
+                .MaxOut = 15000,
             },
         },
         .controller_setting_init_config = {
@@ -89,20 +93,20 @@ void ChassisInit()
         .motor_type = M3508,
     };
     //  @todo: 当前还没有设置电机的正反转,仍然需要手动添加reference的正负号,需要电机module的支持,待修改.
-    chassis_motor_config.can_init_config.tx_id = 4;
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
+    chassis_motor_config.can_init_config.tx_id = 1;
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_lf = DJIMotorInit(&chassis_motor_config);
 
-    chassis_motor_config.can_init_config.tx_id = 3,
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
+    chassis_motor_config.can_init_config.tx_id = 2;
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_rf = DJIMotorInit(&chassis_motor_config);
 
-    chassis_motor_config.can_init_config.tx_id = 1,
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
+    chassis_motor_config.can_init_config.tx_id = 4;
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_lb = DJIMotorInit(&chassis_motor_config);
 
-    chassis_motor_config.can_init_config.tx_id = 2,
-    chassis_motor_config.controller_setting_init_config.reverse_flag = MOTOR_DIRECTION_NORMAL;
+    chassis_motor_config.can_init_config.tx_id = 3;
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_rb = DJIMotorInit(&chassis_motor_config);
 
     // referee_data = RefereeInit(&huart6); // 裁判系统初始化
@@ -153,7 +157,7 @@ static void MecanumCalculate()
 {
     vt_lf = -chassis_vx - chassis_vy - chassis_cmd_recv.wz * LF_CENTER;
     vt_rf = -chassis_vx + chassis_vy - chassis_cmd_recv.wz * RF_CENTER;
-    vt_lb = chassis_vx - chassis_vy - chassis_cmd_recv.wz * LB_CENTER;
+    vt_lb = chassis_vx - chassis_vy -chassis_cmd_recv.wz * LB_CENTER;
     vt_rb = chassis_vx + chassis_vy - chassis_cmd_recv.wz * RB_CENTER;
 }
 
@@ -220,10 +224,10 @@ void ChassisTask()
         chassis_cmd_recv.wz = 0;
         break;
     case CHASSIS_FOLLOW_GIMBAL_YAW: // 跟随云台,不单独设置pid,以误差角度平方为速度输出
-        chassis_cmd_recv.wz = 0.05f * powf(chassis_cmd_recv.wz, 2.0f);
+        chassis_cmd_recv.wz = -1.5*chassis_cmd_recv.offset_angle*abs(chassis_cmd_recv.offset_angle);
         break;
     case CHASSIS_ROTATE: // 自旋,同时保持全向机动;当前wz维持定值,后续增加不规则的变速策略
-        // chassis_cmd_recv.wz=sin(t)
+        chassis_cmd_recv.wz=4000;
         break;
     default:
         break;
