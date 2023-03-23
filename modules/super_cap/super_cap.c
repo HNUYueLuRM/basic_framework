@@ -13,8 +13,8 @@ static SuperCapInstance *super_cap_instance = NULL; // 可以由app保存此指�
 
 static void SuperCapRxCallback(CANInstance *_instance)
 {
-    static uint8_t *rxbuff;
-    static SuperCap_Msg_s *Msg;
+    uint8_t *rxbuff;
+    SuperCap_Msg_s *Msg;
     rxbuff = _instance->rx_buff;
     Msg = &super_cap_instance->cap_msg;
     Msg->vol = (uint16_t)(rxbuff[0] << 8 | rxbuff[1]);

@@ -131,9 +131,9 @@ void CANSetDLC(CANInstance *_instance, uint8_t length)
  */
 static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
 {
-    static uint8_t can_rx_buff[8];     // 用于保存接收到的数据,static是为了减少栈空间占用,避免重复分配
     static CAN_RxHeaderTypeDef rxconf; // 同上
-
+    uint8_t can_rx_buff[8];    
+    
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
     for (size_t i = 0; i < idx; ++i)
     { // 两者相等说明这是要找的实例

@@ -40,12 +40,9 @@ static float uint_to_float(int x_int, float x_min, float x_max, int bits)
  */
 static void HTMotorDecode(CANInstance *motor_can)
 {
-    static uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
-    static HTMotor_Measure_t *measure;
-    static uint8_t *rxbuff;
-
-    rxbuff = motor_can->rx_buff;
-    measure = &((HTMotorInstance *)motor_can->id)->motor_measure; // 将can实例中保存的id转换成电机实例的指针
+    uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
+    uint8_t *rxbuff = motor_can->rx_buff;
+    HTMotor_Measure_t *measure = &((HTMotorInstance *)motor_can->id)->motor_measure; // 将can实例中保存的id转换成电机实例的指针
 
     measure->last_angle = measure->total_angle;
 
@@ -89,12 +86,12 @@ void HTMotorSetRef(HTMotorInstance *motor, float ref)
 
 void HTMotorControl()
 {
-    static float set, pid_measure, pid_ref;
-    static uint16_t tmp;
-    static HTMotorInstance *motor;
-    static HTMotor_Measure_t *measure;
-    static Motor_Control_Setting_s *setting;
-    static CANInstance *motor_can;
+    float set, pid_measure, pid_ref;
+    uint16_t tmp;
+    HTMotorInstance *motor;
+    HTMotor_Measure_t *measure;
+    Motor_Control_Setting_s *setting;
+    CANInstance *motor_can;
 
     // 遍历所有电机实例,计算PID
     for (size_t i = 0; i < idx; i++)
