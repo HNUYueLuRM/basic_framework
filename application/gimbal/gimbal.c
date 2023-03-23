@@ -6,9 +6,10 @@
 #include "ins_task.h"
 #include "message_center.h"
 #include "general_def.h"
+
 #include "bmi088.h"
 
-static attitude_t *gimba_IMU_data;   // 云台IMU数据
+static attitude_t *gimba_IMU_data;    // 云台IMU数据
 static DJIMotorInstance *yaw_motor;   // yaw电机
 static DJIMotorInstance *pitch_motor; // pitch电机
 
@@ -17,45 +18,45 @@ static Subscriber_t *gimbal_sub;                  // cmd控制消息订阅者
 static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给cmd的云台状态信息
 static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
-BMI088Instance* imu;
+BMI088Instance *imu;
 void GimbalInit()
 {
     BMI088_Init_Config_s imu_config = {
-        .spi_acc_config={
-            .GPIOx=CS1_ACCEL_GPIO_Port,
-            .cs_pin=CS1_ACCEL_Pin,
-            .spi_handle=&hspi1,
+        .spi_acc_config = {
+            .GPIOx = CS1_ACCEL_GPIO_Port,
+            .cs_pin = CS1_ACCEL_Pin,
+            .spi_handle = &hspi1,
         },
-        .spi_gyro_config={
-            .GPIOx=CS1_GYRO_GPIO_Port,
-            .cs_pin=CS1_GYRO_Pin,
-            .spi_handle=&hspi1,
+        .spi_gyro_config = {
+            .GPIOx = CS1_GYRO_GPIO_Port,
+            .cs_pin = CS1_GYRO_Pin,
+            .spi_handle = &hspi1,
         },
-        .acc_int_config={
-            .exti_mode=EXTI_TRIGGER_FALLING,
-            .GPIO_Pin=INT_ACC_Pin,
-            .GPIOx=INT_ACC_GPIO_Port,
+        .acc_int_config = {
+            .exti_mode = EXTI_TRIGGER_FALLING,
+            .GPIO_Pin = INT_ACC_Pin,
+            .GPIOx = INT_ACC_GPIO_Port,
         },
-        .gyro_int_config={
-            .exti_mode=EXTI_TRIGGER_FALLING,
-            .GPIO_Pin=INT_GYRO_Pin,
-            .GPIOx=INT_GYRO_GPIO_Port,
+        .gyro_int_config = {
+            .exti_mode = EXTI_TRIGGER_FALLING,
+            .GPIO_Pin = INT_GYRO_Pin,
+            .GPIOx = INT_GYRO_GPIO_Port,
         },
-        .heat_pid_config={
-            .Kp=0.0f,
-            .Kd=0.0f,
-            .Ki=0.0f,
-            .MaxOut=0.0f,
-            .DeadBand=0.0f,
+        .heat_pid_config = {
+            .Kp = 0.0f,
+            .Kd = 0.0f,
+            .Ki = 0.0f,
+            .MaxOut = 0.0f,
+            .DeadBand = 0.0f,
         },
-        .heat_pwm_config={
-            .channel=TIM_CHANNEL_1,
-            .htim=&htim1,
+        .heat_pwm_config = {
+            .channel = TIM_CHANNEL_1,
+            .htim = &htim1,
         },
-        .cali_mode=BMI088_CALIBRATE_ONLINE_MODE,
-        .work_mode=BMI088_BLOCK_PERIODIC_MODE,
+        .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
+        .work_mode = BMI088_BLOCK_PERIODIC_MODE,
     };
-   // imu=BMI088Register(&imu_config);
+    // imu=BMI088Register(&imu_config);
     gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
     // YAW
     Motor_Init_Config_s yaw_config = {
@@ -65,26 +66,26 @@ void GimbalInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kp = 8, //8
+                .Kp = 8, // 8
                 .Ki = 0,
                 .Kd = 0,
                 .DeadBand = 0.1,
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
+                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .IntegralLimit = 100,
 
                 .MaxOut = 500,
             },
             .speed_PID = {
-                .Kp = 50,//40
+                .Kp = 50, // 40
                 .Ki = 200,
                 .Kd = 0,
-                .Improve = PID_Trapezoid_Intergral |PID_Integral_Limit |PID_Derivative_On_Measurement,
+                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .IntegralLimit = 3000,
                 .MaxOut = 20000,
             },
             .other_angle_feedback_ptr = &gimba_IMU_data->YawTotalAngle,
             // 还需要增加角速度额外反馈指针,注意方向,ins_task.md中有c板的bodyframe坐标系说明
-            .other_speed_feedback_ptr=&gimba_IMU_data->Gyro[2],
+            .other_speed_feedback_ptr = &gimba_IMU_data->Gyro[2],
         },
         .controller_setting_init_config = {
             .angle_feedback_source = OTHER_FEED,
@@ -102,24 +103,24 @@ void GimbalInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kp =10,//10
+                .Kp = 10, // 10
                 .Ki = 0,
                 .Kd = 0,
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
-                .IntegralLimit =100,
+                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+                .IntegralLimit = 100,
                 .MaxOut = 500,
             },
             .speed_PID = {
-                .Kp=50,//50
-                .Ki =350,//350
-                .Kd =0,//0.1
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
-                .IntegralLimit =2500,
+                .Kp = 50,  // 50
+                .Ki = 350, // 350
+                .Kd = 0,   // 0.1
+                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+                .IntegralLimit = 2500,
                 .MaxOut = 20000,
             },
             .other_angle_feedback_ptr = &gimba_IMU_data->Pitch,
             // 还需要增加角速度额外反馈指针,注意方向,ins_task.md中有c板的bodyframe坐标系说明
-            .other_speed_feedback_ptr=(&gimba_IMU_data->Gyro[0]),
+            .other_speed_feedback_ptr = (&gimba_IMU_data->Gyro[0]),
         },
         .controller_setting_init_config = {
             .angle_feedback_source = OTHER_FEED,

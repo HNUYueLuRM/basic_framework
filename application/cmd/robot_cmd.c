@@ -69,6 +69,7 @@ void RobotCMDInit()
     cmd_can_comm = CANCommInit(&comm_conf);
 #endif // GIMBAL_BOARD
     gimbal_cmd_send.pitch = 0;
+gimbal_cmd_send.pitch = 0;
 
     robot_state = ROBOT_READY; // 启动时机器人进入工作模式,后续加入所有应用初始化完成之后再进入
 }
@@ -100,6 +101,17 @@ static void CalcOffsetAngle()
 #endif
 }
 
+static void OffsetAnglePidCalc()
+{
+    // float pid_measure,pid_ref;
+    // static PIDInstance AngleCal = {
+    //         .Kp = -1,
+    //         .Ki = 0,
+    //         .Kd = 0,
+    //         .MaxOut = 10000,
+    // };
+    // chassis_cmd_send.offset_angle = PIDCalculate(&AngleCal,chassis_cmd_send.offset_angle,0);  
+}
 /**
  * @brief 控制输入为遥控器(调试时)的模式和控制量设置
  *
@@ -134,6 +146,7 @@ static void RemoteControlSet()
     // 底盘参数,目前没有加入小陀螺(调试似乎暂时没有必要),系数需要调整
     chassis_cmd_send.vx = 10.0f * (float)rc_data[TEMP].rc.rocker_r_; // _水平方向
     chassis_cmd_send.vy = 10.0f * (float)rc_data[TEMP].rc.rocker_r1; // 1数值方向
+    //chassis_cmd_send.wz = 300;
 
     // 发射参数
     if (switch_is_up(rc_data[TEMP].rc.switch_right)) // 右侧开关状态[上],弹舱打开
@@ -181,6 +194,8 @@ static void EmergencyHandler()
         gimbal_cmd_send.gimbal_mode = GIMBAL_ZERO_FORCE;    // 云台模式改为零力矩
         chassis_cmd_send.chassis_mode = CHASSIS_ZERO_FORCE; // 底盘模式改为零力矩
         shoot_cmd_send.shoot_mode = SHOOT_OFF;              // 射击模式改为关闭
+        shoot_cmd_send.friction_mode = FRICTION_OFF;
+        shoot_cmd_send.load_mode = LOAD_STOP;
     }
     // 遥控器右侧开关为[上],恢复正常运行
     if (switch_is_up(rc_data[TEMP].rc.switch_right))
@@ -218,7 +233,7 @@ void RobotCMDTask()
     vision_send_data.enemy_color = 0;
     vision_send_data.pitch = gimbal_fetch_data.gimbal_imu_data.Pitch;
     vision_send_data.yaw = gimbal_fetch_data.gimbal_imu_data.Yaw;
-    vision_send_data.roll = gimbal_fetch_data.gimbal_imu_data.Roll;
+    vision_send_data.roll = gimbal_fetch_data.gimbal_imu_data.Roll;;
 
     // 推送消息,双板通信,视觉通信等
     // 其他应用所需的控制数据在remotecontrolsetmode和mousekeysetmode中完成设置

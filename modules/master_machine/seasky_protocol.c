@@ -15,6 +15,11 @@
 #include "crc16.h"
 #include "memory.h"
 
+/*获取CRC8校验码*/
+uint8_t Get_CRC8_Check(uint8_t *pchMessage,uint16_t dwLength)
+{
+    return crc_8(pchMessage,dwLength);
+}
 /*检验CRC8数据段*/
 static uint8_t CRC8_Check_Sum(uint8_t *pchMessage, uint16_t dwLength)
 {
@@ -23,6 +28,12 @@ static uint8_t CRC8_Check_Sum(uint8_t *pchMessage, uint16_t dwLength)
         return 0;
     ucExpected = crc_8(pchMessage, dwLength - 1);
     return (ucExpected == pchMessage[dwLength - 1]);
+}
+
+/*获取CRC16校验码*/
+uint16_t Get_CRC16_Check(uint8_t *pchMessage,uint32_t dwLength)
+{
+    return crc_16(pchMessage,dwLength);
 }
 
 /*检验CRC16数据段*/
