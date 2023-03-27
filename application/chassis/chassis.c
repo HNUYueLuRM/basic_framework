@@ -19,7 +19,7 @@
 
 // referee需要移动到module层
 /////////////////////////
-#include "referee.h"
+
 #include "rm_referee.h"
 /////////////////////////
 
@@ -68,16 +68,16 @@ void ChassisInit()
         .can_init_config.can_handle = &hcan1,
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp = 4.5,//9
-                .Ki = 0,//0.02
-                .Kd = 0.01,//0.01
+                .Kp = 10,//4.5
+                .Ki = 0,//0
+                .Kd = 0,//0
                 .IntegralLimit = 3000,
                  .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
                 .MaxOut = 12000,
             },
             .current_PID = {
-                .Kp = 0.4,//0.7
-                .Ki = 0,//0.1
+                .Kp = 0.5,//0.4
+                .Ki = 0,//0
                 .Kd = 0,
                 .IntegralLimit = 3000,
                  .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,

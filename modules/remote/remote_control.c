@@ -32,9 +32,10 @@ static void RectifyRCjoystick()
  * @param[out]     rc_ctrl: remote control data struct point
  * @retval         none
  */
+uint16_t aaaaa;
 static void sbus_to_rc(const uint8_t *sbus_buf)
 {
-    memcpy(&rc_ctrl[1], &rc_ctrl[TEMP], sizeof(RC_ctrl_t)); // 保存上一次的数据,用于按键持续按下和切换的判断
+
     // 摇杆,直接解算时减去偏置
     rc_ctrl[TEMP].rc.rocker_r_ = ((sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff) - RC_CH_VALUE_OFFSET;                              //!< Channel 0
     rc_ctrl[TEMP].rc.rocker_r1 = (((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff) - RC_CH_VALUE_OFFSET;                       //!< Channel 1
@@ -53,32 +54,51 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
     rc_ctrl[TEMP].mouse.press_l = sbus_buf[12];                 //!< Mouse Left Is Press ?
     rc_ctrl[TEMP].mouse.press_r = sbus_buf[13];                 //!< Mouse Right Is Press ?
 
-    // 按键值,每个键1bit,key_temp共16位;按键顺序在remote_control.h的宏定义中可见
-    // 使用位域后不再需要这一中间操作
-    rc_ctrl[TEMP].key_temp = sbus_buf[14] | (sbus_buf[15] << 8); //!< KeyBoard value
+    //  位域的按键值解算,直接memcpy即可,注意小端低字节在前,即lsb在第一位,msb在最后. 尚未测试
+    *(uint16_t *)&rc_ctrl[TEMP].key[KEY_PRESS] = (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
 
-    // @todo 似乎可以直接用位域操作进行,把key_temp通过强制类型转换变成key类型? 位域方案在下面,尚未测试
-    // 按键值解算,利用宏+循环减少代码长度
-    for (uint16_t i = 0x0001, j = 0; i != 0x8000; i *= 2, j++) // 依次查看每一个键
+    if (rc_ctrl[TEMP].key[KEY_PRESS].ctrl)
+        rc_ctrl[TEMP].key[KEY_PRESS_WITH_CTRL] = rc_ctrl[TEMP].key[KEY_PRESS];
+    else
+        memset(&rc_ctrl[TEMP].key[KEY_PRESS_WITH_CTRL], 0, sizeof(Key_t));
+    if (rc_ctrl[TEMP].key[KEY_PRESS].shift)
+        rc_ctrl[TEMP].key[KEY_PRESS_WITH_SHIFT] = rc_ctrl[TEMP].key[KEY_PRESS];
+    else
+        memset(&rc_ctrl[TEMP].key[KEY_PRESS_WITH_SHIFT], 0, sizeof(Key_t));
+
+    for (uint32_t i = 0, j = 0x1; i < 16; j <<= 1, i++)
     {
-        // 如果键按下,对应键的key press状态置1,否则为0
-        rc_ctrl[TEMP].key[KEY_PRESS][j] = rc_ctrl[TEMP].key_temp & i;
-        // 如果当前按下且上一次没按下,切换按键状态.一些模式要通过按键状态而不是按键是否按下来确定(实际上是大部分)
-        rc_ctrl[TEMP].key[KEY_STATE][j] = rc_ctrl[TEMP].key[KEY_PRESS][j] && !rc_ctrl[1].key[KEY_PRESS][j];
-        // 检查是否有组合键按下
-        if (rc_ctrl[TEMP].key_temp & 0x0001u << Key_Shift) // 按下ctrl
-            rc_ctrl[TEMP].key[KEY_PRESS_WITH_SHIFT][j] = rc_ctrl[TEMP].key_temp & i;
-        if (rc_ctrl[TEMP].key_temp & 0x0001u << Key_Ctrl) //  按下shift
-            rc_ctrl[TEMP].key[KEY_PRESS_WITH_CTRL][j] = rc_ctrl[TEMP].key_temp & i;
+        if (((*(uint16_t *)&rc_ctrl[TEMP].key[KEY_PRESS] & j) == j) && ((*(uint16_t *)&rc_ctrl[1].key[KEY_PRESS] & j) == 0) && ((*(uint16_t *)&rc_ctrl[TEMP].key[KEY_PRESS_WITH_CTRL] & j) != j) && ((*(uint16_t *)&rc_ctrl[TEMP].key[KEY_PRESS_WITH_SHIFT] & j) != j))
+        {
+            rc_ctrl[TEMP].key_count[KEY_PRESS][i]++;
+
+            if (rc_ctrl[TEMP].key_count[KEY_PRESS][i] >= 240)
+            {
+                rc_ctrl[TEMP].key_count[KEY_PRESS][i] = 0;
+            }
+
+        }
+        if (((*(uint16_t *)&rc_ctrl[TEMP].key[KEY_PRESS_WITH_CTRL] & j) == j) && ((*(uint16_t *)&rc_ctrl[1].key[KEY_PRESS_WITH_CTRL] & j) == 0))
+        {
+            rc_ctrl[TEMP].key_count[KEY_PRESS_WITH_CTRL][i]++;
+
+            if (rc_ctrl[TEMP].key_count[KEY_PRESS_WITH_CTRL][i] >= 240)
+            {
+                rc_ctrl[TEMP].key_count[KEY_PRESS_WITH_CTRL][i] = 0;
+            }
+        }
+        if (((*(uint16_t *)&rc_ctrl[TEMP].key[KEY_PRESS_WITH_SHIFT] & j) == j) && ((*(uint16_t *)&rc_ctrl[1].key[KEY_PRESS_WITH_SHIFT] & j) == 0))
+        {
+            rc_ctrl[TEMP].key_count[KEY_PRESS_WITH_SHIFT][i]++;
+
+            if (rc_ctrl[TEMP].key_count[KEY_PRESS_WITH_SHIFT][i] >= 240)
+            {
+                rc_ctrl[TEMP].key_count[KEY_PRESS_WITH_SHIFT][i] = 0;
+            }
+        }
     }
 
-    // 位域的按键值解算,直接memcpy即可,注意小端低字节在前,即lsb在第一位,msb在最后. 尚未测试
-    // *(uint16_t *)&rc_ctrl[TEMP].key_test[KEY_PRESS] = (uint16_t)(sbus_buf[14] | (sbus_buf[15] << 8));
-    // *(uint16_t *)&rc_ctrl[TEMP].key_test[KEY_STATE] = *(uint16_t *)&rc_ctrl[TEMP].key_test[KEY_PRESS] & ~(*(uint16_t *)&(rc_ctrl[1].key_test[KEY_PRESS]));
-    // if (rc_ctrl[TEMP].key_test[KEY_PRESS].ctrl)
-    //     rc_ctrl[TEMP].key_test[KEY_PRESS_WITH_CTRL] = rc_ctrl[TEMP].key_test[KEY_PRESS];
-    // if (rc_ctrl[TEMP].key_test[KEY_PRESS].shift)
-    //     rc_ctrl[TEMP].key_test[Key_Shift] = rc_ctrl[TEMP].key_test[KEY_PRESS];
+    memcpy(&rc_ctrl[1], &rc_ctrl[TEMP], sizeof(RC_ctrl_t)); // 保存上一次的数据,用于按键持续按下和切换的判断
 }
 
 /**
@@ -126,5 +146,4 @@ uint8_t RemotecontrolIsOnline()
     if (rc_init_flag)
         return DaemonIsOnline(rc_daemon_instance);
     return 0;
-    
 }
