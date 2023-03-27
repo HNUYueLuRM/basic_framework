@@ -20,41 +20,41 @@ BMI088Instance* imu;
 void GimbalInit()
 {
     BMI088_Init_Config_s imu_config = {
-        .spi_acc_config={
-            .GPIOx=CS1_ACCEL_GPIO_Port,
-            .cs_pin=CS1_ACCEL_Pin,
-            .spi_handle=&hspi1,
+        .spi_acc_config = {
+            .GPIOx = CS1_ACCEL_GPIO_Port,
+            .cs_pin = CS1_ACCEL_Pin,
+            .spi_handle = &hspi1,
         },
-        .spi_gyro_config={
-            .GPIOx=CS1_GYRO_GPIO_Port,
-            .cs_pin=CS1_GYRO_Pin,
-            .spi_handle=&hspi1,
+        .spi_gyro_config = {
+            .GPIOx = CS1_GYRO_GPIO_Port,
+            .cs_pin = CS1_GYRO_Pin,
+            .spi_handle = &hspi1,
         },
-        .acc_int_config={
-            .exti_mode=EXTI_TRIGGER_FALLING,
-            .GPIO_Pin=INT_ACC_Pin,
-            .GPIOx=INT_ACC_GPIO_Port,
+        .acc_int_config = {
+            .exti_mode = EXTI_TRIGGER_FALLING,
+            .GPIO_Pin = INT_ACC_Pin,
+            .GPIOx = INT_ACC_GPIO_Port,
         },
-        .gyro_int_config={
-            .exti_mode=EXTI_TRIGGER_FALLING,
-            .GPIO_Pin=INT_GYRO_Pin,
-            .GPIOx=INT_GYRO_GPIO_Port,
+        .gyro_int_config = {
+            .exti_mode = EXTI_TRIGGER_FALLING,
+            .GPIO_Pin = INT_GYRO_Pin,
+            .GPIOx = INT_GYRO_GPIO_Port,
         },
-        .heat_pid_config={
-            .Kp=0.0f,
-            .Kd=0.0f,
-            .Ki=0.0f,
-            .MaxOut=0.0f,
-            .DeadBand=0.0f,
+        .heat_pid_config = {
+            .Kp = 0.0f,
+            .Kd = 0.0f,
+            .Ki = 0.0f,
+            .MaxOut = 0.0f,
+            .DeadBand = 0.0f,
         },
-        .heat_pwm_config={
-            .channel=TIM_CHANNEL_1,
-            .htim=&htim1,
+        .heat_pwm_config = {
+            .channel = TIM_CHANNEL_1,
+            .htim = &htim1,
         },
-        .cali_mode=BMI088_CALIBRATE_ONLINE_MODE,
-        .work_mode=BMI088_BLOCK_PERIODIC_MODE,
+        .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
+        .work_mode = BMI088_BLOCK_PERIODIC_MODE,
     };
-   // imu=BMI088Register(&imu_config);
+    // imu=BMI088Register(&imu_config);
     gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
     // YAW
     Motor_Init_Config_s yaw_config = {
@@ -101,11 +101,11 @@ void GimbalInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kp =10,//10
+                .Kp = 10, // 10
                 .Ki = 0,
                 .Kd = 0,
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit |PID_Derivative_On_Measurement,
-                .IntegralLimit =100,
+                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+                .IntegralLimit = 100,
                 .MaxOut = 500,
             },
             .speed_PID = {
@@ -118,7 +118,7 @@ void GimbalInit()
             },
             .other_angle_feedback_ptr = &gimba_IMU_data->Pitch,
             // 还需要增加角速度额外反馈指针,注意方向,ins_task.md中有c板的bodyframe坐标系说明
-            .other_speed_feedback_ptr=(&gimba_IMU_data->Gyro[0]),
+            .other_speed_feedback_ptr = (&gimba_IMU_data->Gyro[0]),
         },
         .controller_setting_init_config = {
             .angle_feedback_source = OTHER_FEED,
@@ -136,7 +136,7 @@ void GimbalInit()
     gimbal_pub = PubRegister("gimbal_feed", sizeof(Gimbal_Upload_Data_s));
     gimbal_sub = SubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));
 }
-int aaaaaaa;
+
 /* 机器人云台控制核心任务,后续考虑只保留IMU控制,不再需要电机的反馈 */
 void GimbalTask()
 {
@@ -178,10 +178,7 @@ void GimbalTask()
     default:
         break;
     }
-// if(yaw_motor->motor_measure.total_angle>120)
-// {
-//     aaaaaaa++;
-// }
+
     // 在合适的地方添加pitch重力补偿前馈力矩
     // 根据IMU姿态/pitch电机角度反馈计算出当前配重下的重力矩
     // ...

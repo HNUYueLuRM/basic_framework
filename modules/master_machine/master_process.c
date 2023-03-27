@@ -29,12 +29,10 @@ static DaemonInstance *vision_daemon_instance;
  */
 static void DecodeVision()
 {
-    static uint16_t flag_register;
+    uint16_t flag_register;
     DaemonReload(vision_daemon_instance); // 喂狗
     get_protocol_info(vision_usart_instance->recv_buff, &flag_register, (uint8_t *)&recv_data.pitch);
     // TODO: code to resolve flag_register;
-    PrintLog("decode vision");
-
 }
 
 /**
@@ -80,9 +78,9 @@ Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
  */
 void VisionSend(Vision_Send_s *send)
 {
-    static uint16_t flag_register;
-    static uint8_t send_buff[VISION_SEND_SIZE];
-    static uint16_t tx_len;
+    uint16_t flag_register;
+    uint8_t send_buff[VISION_SEND_SIZE];
+    uint16_t tx_len;
     // TODO: code to set flag_register
 flag_register = 30<<8|0b00000001;
     // 将数据转化为seasky协议的数据包

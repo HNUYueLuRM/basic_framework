@@ -112,12 +112,13 @@ static void RemoteControlRxCallback()
 }
 
 /**
- * @brief
+ * @brief 遥控器离线的回调函数,注册到守护进程中,串口掉线时调用
  *
  */
-static void RCLostCallback()
+static void RCLostCallback(void *id)
 {
     // @todo 遥控器丢失的处理
+    USARTServiceInit(rc_usart_instance); // 尝试重新启动接收
 }
 
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
@@ -131,9 +132,9 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
     // 进行守护进程的注册,用于定时检查遥控器是否正常工作
     // @todo 当前守护进程直接在这里注册,后续考虑将其封装到遥控器的初始化函数中,即可以让用户决定reload_count的值(是否有必要?)
     Daemon_Init_Config_s daemon_conf = {
-        .reload_count = 100, // 100ms,遥控器的接收频率实际上是1000/14Hz(大约70)
-        .callback = NULL,    // 后续考虑重新启动遥控器对应串口的传输
-        .owner_id = NULL,    // 只有1个遥控器,不需要owner_id
+        .reload_count = 10, // 100ms未收到数据视为离线,遥控器的接收频率实际上是1000/14Hz(大约70Hz)
+        .callback = RCLostCallback,
+        .owner_id = NULL, // 只有1个遥控器,不需要owner_id
     };
     rc_daemon_instance = DaemonRegister(&daemon_conf);
 

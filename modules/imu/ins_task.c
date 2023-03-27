@@ -118,18 +118,10 @@ void INS_Task(void)
         }
         BodyFrameToEarthFrame(INS.MotionAccel_b, INS.MotionAccel_n, INS.q); // 转换回导航系n
 
-        //获取最终数据
-        INS.Accel[X] = INS.Accel[X]*RAD_2_ANGLE;
-        INS.Accel[Y] = INS.Accel[Y]*RAD_2_ANGLE;
-        INS.Accel[Z] = INS.Accel[Z]*RAD_2_ANGLE;
-        INS.Gyro[X] = INS.Gyro[X]*RAD_2_ANGLE;
-        INS.Gyro[Y] = INS.Gyro[Y]*RAD_2_ANGLE;
-        INS.Gyro[Z] = INS.Gyro[Z]*RAD_2_ANGLE;
         INS.Yaw = QEKF_INS.Yaw;
         INS.Pitch = QEKF_INS.Pitch;
         INS.Roll = QEKF_INS.Roll;
         INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
-        
     }
 
     // temperature control

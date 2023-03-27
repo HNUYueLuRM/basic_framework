@@ -659,7 +659,7 @@ Project.SetOSPlugin(“plugin_name”)
 
 在Terminal窗口查看，还可以通过命令直接控制单片机的运行（不过不常用）。
 
-未打开窗口则在view-> terminal中打开。
+未打开窗口则在view-> terminal中打开。使用bsp_log打印的日志会输出到该窗口中.
 
 - **外设查看**
 

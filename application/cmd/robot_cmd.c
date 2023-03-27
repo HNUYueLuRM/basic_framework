@@ -240,14 +240,14 @@ static void MouseKeySet()
     switch (rc_data[TEMP].key[KEY_PRESS].shift) //待添加 按shift允许超功率 消耗缓冲能量
     {
     case 1:
-        
+
         break;
-    
+
     default:
 
         break;
     }
-    
+
 }
 
 /**
@@ -281,7 +281,7 @@ static void EmergencyHandler()
         robot_state = ROBOT_READY;
         shoot_cmd_send.shoot_mode = SHOOT_ON;
         break;
-    
+
     default:
         robot_state = ROBOT_STOP;
         gimbal_cmd_send.gimbal_mode = GIMBAL_ZERO_FORCE;

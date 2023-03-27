@@ -65,10 +65,10 @@ typedef struct
 
     // improve parameter
     PID_Improvement_e Improve;
-    float IntegralLimit; // 积分限幅
-    float CoefA;         // 变速积分 For Changing Integral
-    float CoefB;         // 变速积分 ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
-    float Output_LPF_RC; // 输出滤波器 RC = 1/omegac
+    float IntegralLimit;     // 积分限幅
+    float CoefA;             // 变速积分 For Changing Integral
+    float CoefB;             // 变速积分 ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
+    float Output_LPF_RC;     // 输出滤波器 RC = 1/omegac
     float Derivative_LPF_RC; // 微分滤波器系数
 
     //-----------------------------------
@@ -113,8 +113,6 @@ typedef struct // config parameter
     float CoefB;         // ITerm = Err*((A-abs(err)+B)/A)  when B<|err|<A+B
     float Output_LPF_RC; // RC = 1/omegac
     float Derivative_LPF_RC;
-
-    
 } PID_Init_Config_s;
 
 /**

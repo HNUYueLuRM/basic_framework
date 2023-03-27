@@ -13,8 +13,8 @@ static CANInstance *sender_instance; // 多电机发送时使用的caninstance(�
  */
 static void LKMotorDecode(CANInstance *_instance)
 {
-    static LKMotor_Measure_t *measure;
-    static uint8_t *rx_buff;
+    LKMotor_Measure_t *measure;
+    uint8_t *rx_buff;
     rx_buff = _instance->rx_buff;
     measure = &(((LKMotorInstance *)_instance->id)->measure); // 通过caninstance保存的id获取对应的motorinstance
 
@@ -72,11 +72,11 @@ LKMotorInstance *LKMotorInit(Motor_Init_Config_s *config)
 /* 第一个电机的can instance用于发送数据,向其tx_buff填充数据 */
 void LKMotorControl()
 {
-    static float pid_measure, pid_ref;
-    static int16_t set;
-    static LKMotorInstance *motor;
-    static LKMotor_Measure_t *measure;
-    static Motor_Control_Setting_s *setting;
+    float pid_measure, pid_ref;
+    int16_t set;
+    LKMotorInstance *motor;
+    LKMotor_Measure_t *measure;
+    Motor_Control_Setting_s *setting;
 
     for (size_t i = 0; i < idx; ++i)
     {
