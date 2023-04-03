@@ -7,12 +7,12 @@
 extern uint8_t UI_Seq; 
 
 #pragma pack(1)
-#define RE_TX_BUFFER_SIZE 1024
+#define RE_TX_BUFFER_SIZE 512
 //发送缓冲区结构体定义
 typedef struct
 {
 	uint8_t buffer[RE_TX_BUFFER_SIZE];
-	uint8_t pos;
+	uint16_t pos;
 } referee_tx_buffer_t;
 
 typedef struct

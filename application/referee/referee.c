@@ -31,18 +31,13 @@ void Referee_Interactive_init()
 {
     referee_data = RefereeInit(&huart6); // 裁判系统初始化
     // while (referee_data->GameRobotState.robot_id == 0);
-    referee_data->GameRobotState.robot_id = 101; // syhtodo RobotInit中关闭了中断进行初始化，无法读取到裁判系统的ID，暂时在此处写死
+    referee_data->GameRobotState.robot_id = 103; // syhtodo RobotInit中关闭了中断进行初始化，无法读取到裁判系统的ID，暂时在此处写死
     determine_ID(referee_data);
-    // My_UI_init(referee_data);
-    UI_test_init(referee_data); // syhtodo此处先使用测试函数
-
-    // syhtodo此处先关闭机器人车间通信
-    //  for (int i=0;i<Communicate_Data_LEN;i++)
-    //  {
-    //      SendData->data[i]=i+1;
-    //  }
-    //  referee_data->referee_id.Receiver_Robot_ID = RobotID_BEngineer;   // 机器人车间通信时接收者的ID暂时发给蓝色2
-    //  Communicate_SendData(&referee_data->referee_id,SendData);
+    My_UI_init(referee_data);
+    // UI_test_init(referee_data); // 测试函数
+     RefereeSend();
+    //如果此处还要加入车间通信初始化，注意将referee和车间通信的数据合并后再使用
+    //refereesend函数永远是最后一步
 }
 
 void Referee_Interactive_task()
@@ -381,6 +376,4 @@ static void UI_test_init(referee_info_t *_referee_info)
     Char_Draw(&sdata[0], "s7", UI_Graph_ADD, 0, UI_Color_Green, 20, 2, 620, 710);
     Char_Write(&sdata[0], "number:%d", 123);
     Char_ReFresh(&_referee_info->referee_id, sdata[0]);
-
-    RefereeSend();
 }
