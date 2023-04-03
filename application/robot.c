@@ -52,6 +52,6 @@ void RobotTask()
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisTask();
-    Referee_Interactive_task();
+    // Referee_Interactive_task();
 #endif
 }

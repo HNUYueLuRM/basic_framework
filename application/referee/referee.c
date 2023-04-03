@@ -15,7 +15,7 @@
 #include "referee_communication.h"
 
 static Referee_Interactive_info_t Interactive_data; // 非裁判系统数据
-static referee_info_t *referee_data;              // 裁判系统相关数据
+static referee_info_t *referee_data;                // 裁判系统相关数据
 static robot_interactive_data_t *SendData;
 
 static void determine_ID(referee_info_t *_referee_info);
@@ -23,25 +23,26 @@ static void My_UI_init(referee_info_t *_referee_info);
 static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_info_t *_Interactive_data);
 static void Mode_Change_Check(Referee_Interactive_info_t *_Interactive_data); // 模式切换检测
 
-//syhtod 正式上车后需删除
+// syhtod 正式上车后需删除
 static void robot_mode_change(Referee_Interactive_info_t *_Interactive_data); // 测试用函数，实现模式自动变化
-static void UI_test_init(referee_info_t *_referee_info);//UI测试函数
+static void UI_test_init(referee_info_t *_referee_info);                      // UI测试函数
 
 void Referee_Interactive_init()
 {
     referee_data = RefereeInit(&huart6); // 裁判系统初始化
-    while (referee_data->GameRobotState.robot_id == 0)
-        ;
+    // while (referee_data->GameRobotState.robot_id == 0);
+    referee_data->GameRobotState.robot_id = 101; // syhtodo RobotInit中关闭了中断进行初始化，无法读取到裁判系统的ID，暂时在此处写死
     determine_ID(referee_data);
-    My_UI_init(referee_data);
-    //UI_test_init(referee_data);
+    // My_UI_init(referee_data);
+    UI_test_init(referee_data); // syhtodo此处先使用测试函数
 
-    for (int i=0;i<Communicate_Data_LEN;i++)
-    {
-        SendData->data[i]=i+1;
-    }
-    referee_data->referee_id.Receiver_Robot_ID = RobotID_BEngineer;   // 机器人车间通信时接收者的ID暂时发给蓝色2
-    Communicate_SendData(&referee_data->referee_id,SendData);
+    // syhtodo此处先关闭机器人车间通信
+    //  for (int i=0;i<Communicate_Data_LEN;i++)
+    //  {
+    //      SendData->data[i]=i+1;
+    //  }
+    //  referee_data->referee_id.Receiver_Robot_ID = RobotID_BEngineer;   // 机器人车间通信时接收者的ID暂时发给蓝色2
+    //  Communicate_SendData(&referee_data->referee_id,SendData);
 }
 
 void Referee_Interactive_task()
@@ -305,7 +306,6 @@ static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_inf
     }
 }
 
-
 /**
  * @brief  模式切换检测,模式发生切换时，对flag置位
  * @param  Referee_Interactive_info_t *_Interactive_data
@@ -357,29 +357,28 @@ static void determine_ID(referee_info_t *_referee_info)
     _referee_info->referee_id.Robot_Color = _referee_info->GameRobotState.robot_id > 7 ? Robot_Blue : Robot_Red;
     _referee_info->referee_id.Robot_ID = _referee_info->GameRobotState.robot_id;
     _referee_info->referee_id.Cilent_ID = 0x0100 + _referee_info->referee_id.Robot_ID; // 计算客户端ID
-    _referee_info->referee_id.Receiver_Robot_ID = 0;   
+    _referee_info->referee_id.Receiver_Robot_ID = 0;
 }
 
 /* 测试用函数 */
 static void UI_test_init(referee_info_t *_referee_info)
 {
     Graph_Data_t graph[5];
-	Graph_Data_t num[2];
-	String_Data_t sdata[1];
+    Graph_Data_t num[2];
+    String_Data_t sdata[1];
     UI_Delete(&_referee_info->referee_id, UI_Data_Del_ALL, 0);
 
-	Line_Draw(&graph[0],"s0",UI_Graph_ADD,0,UI_Color_White,3,710,540,1210,540);
-	Rectangle_Draw(&graph[1],"s1",UI_Graph_ADD,0,UI_Color_Yellow,4,600,200,800,500);     
-	Circle_Draw(&graph[2],"s2",UI_Graph_ADD,0,UI_Color_Green,5,960,540,100);
-	Elliptical_Draw(&graph[3],"s3",UI_Graph_ADD,0,UI_Color_Orange,3,960,540,100,20);
-	Arc_Draw(&graph[4],"s4",UI_Graph_ADD,0,UI_Color_Purplish_red,30,160,3,1200,550,50,100);
+    Line_Draw(&graph[0], "s0", UI_Graph_ADD, 0, UI_Color_White, 3, 710, 540, 1210, 540);
+    Rectangle_Draw(&graph[1], "s1", UI_Graph_ADD, 0, UI_Color_Yellow, 4, 600, 200, 800, 500);
+    Circle_Draw(&graph[2], "s2", UI_Graph_ADD, 0, UI_Color_Green, 5, 960, 540, 100);
+    Elliptical_Draw(&graph[3], "s3", UI_Graph_ADD, 0, UI_Color_Orange, 3, 960, 540, 100, 20);
+    Arc_Draw(&graph[4], "s4", UI_Graph_ADD, 0, UI_Color_Purplish_red, 30, 160, 3, 1200, 550, 50, 100);
 
-	Float_Draw(&num[0],"s5",UI_Graph_ADD,0,UI_Color_Pink,50,3,5,1050,660,1245545);
-	Integer_Draw(&num[1],"s6",UI_Graph_ADD,0,UI_Color_Cyan,50,5,1050,460,12345);
-	UI_ReFresh(&_referee_info->referee_id,7,graph[0],graph[1],graph[2],graph[3],graph[4],num[0],num[1]);
+    Float_Draw(&num[0], "s5", UI_Graph_ADD, 0, UI_Color_Pink, 50, 3, 5, 1050, 660, 1245545);
+    Integer_Draw(&num[1], "s6", UI_Graph_ADD, 0, UI_Color_Cyan, 50, 5, 1050, 460, 12345);
+    UI_ReFresh(&_referee_info->referee_id, 7, graph[0], graph[1], graph[2], graph[3], graph[4], num[0], num[1]);
 
-
-	Char_Draw(&sdata[0],"s7",UI_Graph_ADD,0,UI_Color_Green,20,2,620,710);
-	Char_Write(&sdata[0],"number:%d",123);
-	Char_ReFresh(&_referee_info->referee_id,sdata[0]);
+    Char_Draw(&sdata[0], "s7", UI_Graph_ADD, 0, UI_Color_Green, 20, 2, 620, 710);
+    Char_Write(&sdata[0], "number:%d", 123);
+    Char_ReFresh(&_referee_info->referee_id, sdata[0]);
 }

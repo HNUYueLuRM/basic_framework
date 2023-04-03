@@ -43,7 +43,6 @@ void RefereeSend(uint8_t *send, uint16_t tx_len)
 {
 	USARTSend(referee_usart_instance, send, tx_len);
 	/* syhtodo DMA请求过快会导致数据发送丢失，考虑数据尽可能打成一个整包以及队列发送，并且发送函数添加缓冲区 */
-	HAL_Delay(5);
 }
 
 /*裁判系统串口接收回调函数,解析数据 */
