@@ -16,8 +16,8 @@
 
 #define RE_RX_BUFFER_SIZE 200
 
-static USARTInstance *referee_usart_instance; // 暂时改为非静态变量
-
+static USARTInstance *referee_usart_instance; 
+static referee_tx_buffer_t referee_tx_buffer={{0},0};    
 static referee_info_t referee_info;
 static void JudgeReadData(uint8_t *ReadFromUsart);
 static void RefereeRxCallback();
@@ -36,14 +36,27 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 }
 
 /**
+ * @brief 载入缓存区函数
+ * @param send 待载入的数据
+ */
+void RefereeLoadToBuffer(uint8_t *send, uint16_t tx_len)
+{
+	memcpy((uint8_t *)(&referee_tx_buffer.buffer)+referee_tx_buffer.pos,send,tx_len);  
+	referee_tx_buffer.pos+=tx_len;
+}
+
+
+/**
  * @brief 发送函数
  * @param send 待发送数据
  */
 void RefereeSend(uint8_t *send, uint16_t tx_len)
 {
-	USARTSend(referee_usart_instance, send, tx_len);
+	USARTSend(referee_usart_instance, send, tx_len);//syhtodo此函数需要重写
 	/* syhtodo DMA请求过快会导致数据发送丢失，考虑数据尽可能打成一个整包以及队列发送，并且发送函数添加缓冲区 */
 }
+
+
 
 /*裁判系统串口接收回调函数,解析数据 */
 static void RefereeRxCallback()

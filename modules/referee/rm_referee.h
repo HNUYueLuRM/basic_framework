@@ -7,6 +7,14 @@
 extern uint8_t UI_Seq; 
 
 #pragma pack(1)
+#define RE_TX_BUFFER_SIZE 1024
+//发送缓冲区结构体定义
+typedef struct
+{
+	uint8_t buffer[RE_TX_BUFFER_SIZE];
+	uint8_t pos;
+} referee_tx_buffer_t;
+
 typedef struct
 {
 	uint8_t Robot_Color;   //机器人颜色
@@ -49,6 +57,13 @@ typedef struct
  * @return referee_info_t*
  */
 referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle);
+
+
+/**
+ * @brief 载入缓存区函数
+ * @param send 待载入的数据
+ */
+void RefereeLoadToBuffer(uint8_t *send, uint16_t tx_len);
 
 /**
  * @brief 发送函数
