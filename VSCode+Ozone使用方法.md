@@ -8,7 +8,6 @@
 >
 > 1. 添加一键编译+启用ozone调试脚本，使得整个进一步流程自动化
 > 2. 增加更多的背景知识介绍
-> 3. 增加VSCode下RTT viewer的支持
 
 
 
@@ -481,6 +480,12 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
 
 
+### RTT Viewer日志功能
+
+本框架添加了vscode下Segger RTT client的支持。在`.vscode/task.json`中已经添加了启动rtt viewer client的任务。你也可以将此任务作为附加启动任务和调试一起启动，方便查看日志。要使用日志，请包含`bsp_log.h`。注意，需要将jlink的安装目录添加到环境变量中。
+
+
+
 ### 更好的编辑体验
 
 建议安装以下插件：
@@ -595,7 +600,7 @@ Project.SetOSPlugin(“plugin_name”)
 
 2. 变量watch窗口，这里的变量不会实时更新，只有在暂停或遇到断点的时候才会更新。若希望实时查看，在这里右键选择需要动态查看的变量，选择Graph，他就会出现在**窗口8**的位置。
 
-   如果不需要可视化查看变量变化的趋势，但是想不赞同查看变量的值，请右键点击变量，选择一个合适的refresh rate：
+   如果不需要可视化查看变量变化的趋势，但是想不暂停查看变量的值，请右键点击变量，选择一个合适的refresh rate：
 
    ![image-20221119173731119](assets/image-20221119173731119.png)
 
@@ -654,7 +659,7 @@ Project.SetOSPlugin(“plugin_name”)
 
 在Terminal窗口查看，还可以通过命令直接控制单片机的运行（不过不常用）。
 
-未打开窗口则在view-> terminal中打开。
+未打开窗口则在view-> terminal中打开。使用bsp_log打印的日志会输出到该窗口中.
 
 - **外设查看**
 

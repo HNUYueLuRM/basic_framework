@@ -23,8 +23,7 @@ static void CANCommResetRx(CANCommInstance *ins)
  */
 static void CANCommRxCallback(CANInstance *_instance)
 {
-    static CANCommInstance *comm;
-    comm = (CANCommInstance *)_instance->id; // 注意写法,将can instance的id强制转换为CANCommInstance*类型
+    CANCommInstance *comm = (CANCommInstance *)_instance->id; // 注意写法,将can instance的id强制转换为CANCommInstance*类型
 
     /* 接收状态判断 */
     if (_instance->rx_buff[0] == CAN_COMM_HEADER && comm->recv_state == 0) // 之前尚未开始接收且此次包里第一个位置是帧头

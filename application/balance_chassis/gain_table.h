@@ -2,13 +2,14 @@
 
 #pragma once
 #include "stdint.h"
+#include "stm32f407xx.h"
 #include "arm_math.h"
 #include "math.h"
 
 #define GAIN_TABLE_SIZE 100 // 增益表大小
 
 // K 2x6,6个状态变量2个输出(Tp关节电机和T驱动轮电机)
-static float leglen2gain [GAIN_TABLE_SIZE][2][6] = {};
+static float leglen2gain [GAIN_TABLE_SIZE][2][6] = {0};
 
 static interpolation_flag = 0; // 插值方式:1 线性插值 0 关闭插值
 

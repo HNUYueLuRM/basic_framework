@@ -14,9 +14,9 @@
         },
         {
             "label": "download dap",
-            "type": "shell",
-            "command": "mingw32-make download_dap",
-            "group": {
+            "type": "shell",               // 如果希望在下载前编译,可以把command换成下面的命令
+            "command":"mingw32-make download_dap", // "mingw32-make -j24 ; mingw32-make download_dap",
+            "group": {                     // 如果没有修改代码,编译任务不会消耗时间,因此推荐使用上面的替换.
                 "kind": "build",
                 "isDefault": false
             }
@@ -24,11 +24,21 @@
         {
             "label": "download jlink",
             "type": "shell",
-            "command": "mingw32-make download_jlink",
+            "command":"mingw32-make download_jlink", // "mingw32-make -j24 ; mingw32-make download_dap"
             "group": {
                 "kind": "build",
                 "isDefault": false
             }
+        },
+        {
+            "label": "log",
+            "type": "shell",
+            "command":"JlinkRTTClient",
+            "args": [],
+            "problemMatcher": [],
+            // "dependsOn":[
+            //     "build task", // 可以添加多个.
+            // ]
         }
     ]
 }

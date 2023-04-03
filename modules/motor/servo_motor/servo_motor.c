@@ -82,7 +82,7 @@ void Servo_Motor_Type_Select(ServoInstance *Servo_Motor, int16_t mode)
  */
 void ServeoMotorControl()
 {
-    static ServoInstance *Servo_Motor;
+    ServoInstance *Servo_Motor;
 
     for (size_t i = 0; i < servo_idx; i++)
     {

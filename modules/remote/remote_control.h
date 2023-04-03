@@ -24,8 +24,8 @@
 // 获取按键操作
 #define KEY_PRESS 0
 #define KEY_STATE 1
-#define KEY_PRESS_WITH_CTRL 2
-#define KEY_PRESS_WITH_SHIFT 3
+#define KEY_PRESS_WITH_CTRL 1
+#define KEY_PRESS_WITH_SHIFT 2
 
 // 检查接收值是否出错
 #define RC_CH_VALUE_MIN ((uint16_t)364)
@@ -42,6 +42,9 @@
 #define switch_is_up(s) (s == RC_SW_UP)
 #define LEFT_SW 1  // 左侧开关
 #define RIGHT_SW 0 // 右侧开关
+//键盘状态的宏
+#define key_is_press(s) (s == 1)
+#define key_not_press(s) (s == 0)
 
 /* ----------------------- PC Key Definition-------------------------------- */
 // 对应key[x][0~16],获取对应的键;例如通过key[KEY_PRESS][Key_W]获取W键是否按下,后续改为位域后删除
@@ -105,11 +108,10 @@ typedef struct
         uint8_t press_l;
         uint8_t press_r;
     } mouse;
+    
+    Key_t key[3];  // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
 
-    uint16_t key_temp;
-    uint8_t key[4][16]; // 当前使用的键盘索引
-    // Key_t key_test[4];  // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
-
+    uint8_t key_count[3][16];
 } RC_ctrl_t;
 
 /* ------------------------- Internal Data ----------------------------------- */

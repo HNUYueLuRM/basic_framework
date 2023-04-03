@@ -29,9 +29,8 @@ static uint8_t ist8310_write_reg_data_error[IST8310_WRITE_REG_NUM][3] = {
  */
 static void IST8310Decode(IICInstance *iic)
 {
-    static int16_t temp[3];             // 用于存储解码后的数据
-    static IST8310Instance *ist;        // 用于存储IST8310实例的指针
-    ist = (IST8310Instance *)(iic->id); // iic的id保存了IST8310实例的指针(父指针)
+    int16_t temp[3];             // 用于存储解码后的数据
+    IST8310Instance *ist= (IST8310Instance *)(iic->id); // iic的id保存了IST8310实例的指针(父指针)
 
     memcpy(temp, ist->iic_buffer, 6 * sizeof(uint8_t)); // 不要强制转换,直接cpy
     for (uint8_t i = 0; i < 3; i++)

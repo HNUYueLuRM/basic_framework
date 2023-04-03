@@ -19,30 +19,6 @@
 #define MAX_EVENT_COUNT 12    // 最多支持的事件数量
 #define QUEUE_SIZE 1
 
-/**
- * @brief 在所有应用初始化结束之后调用,当作app的"回调函数"
- *
- */
-void MessageInit();
-
-/**
- * @brief 注册成为消息发布者
- *
- * @param name 消息标识名,注意不要超过MAX_EVENT_NAME_LEN
- * @param data 发布者的数据地址
- */
-void PublisherRegister(char *name, void *data);
-
-/**
- * @brief 订阅消息,成为消息订阅者
- *
- * @param name 消息标识名
- * @param data 保存数据的指针的地址,注意这是一个二级指针,传入的时候对数据指针取地址(&)
- */
-void SubscribeEvent(char *name, void **data);
-
-#endif // !PUBSUB_H
-
 typedef struct mqt
 {
     /* 用数组模拟FIFO队列 */
@@ -69,6 +45,7 @@ typedef struct ent
     Subscriber_t *first_subs;
     /* 指向下一个Publisher的指针 */
     struct ent *next_event_node;
+    uint8_t pub_registered_flag; // 用于标记该发布者是否已经注册
 } Publisher_t;
 
 /**
@@ -105,3 +82,5 @@ uint8_t SubGetMessage(Subscriber_t *sub, void *data_ptr);
  * @return uint8_t 新消息成功推送给几个订阅者
  */
 uint8_t PubPushMessage(Publisher_t *pub, void *data_ptr);
+
+#endif // !PUBSUB_H

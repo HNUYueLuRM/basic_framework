@@ -1,5 +1,6 @@
 #include "dji_motor.h"
 #include "general_def.h"
+#include "bsp_log.h"
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
 
@@ -31,16 +32,6 @@ static CANInstance sender_assignment[6] = {
  *
  */
 static uint8_t sender_enable_flag[6] = {0};
-
-/**
- * @brief 当注册的电机id冲突时,会进入这个函数并提示冲突的ID
- * @todo 通过segger jlink 发送日志
- */
-static void IDcrash_Handler(uint8_t conflict_motor_idx, uint8_t temp_motor_idx)
-{
-    while (1)
-        ;
-}
 
 /**
  * @brief 根据电调/拨码开关上的ID,根据说明书的默认id分配方式计算发送ID和接收ID,
@@ -79,7 +70,11 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         for (size_t i = 0; i < idx; ++i)
         {
             if (dji_motor_instance[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_instance[i]->motor_can_instance->rx_id == config->rx_id)
-                IDcrash_Handler(i, idx);
+            {
+                LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information."); // 后续可以把id和CAN打印出来
+                while (1)
+                    ; // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
+            }
         }
         break;
 
@@ -103,7 +98,11 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         for (size_t i = 0; i < idx; ++i)
         {
             if (dji_motor_instance[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_instance[i]->motor_can_instance->rx_id == config->rx_id)
-                IDcrash_Handler(i, idx);
+            {
+                LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
+                while (1)
+                    ; // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8)
+            }
         }
         break;
 
@@ -121,13 +120,10 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
  */
 static void DecodeDJIMotor(CANInstance *_instance)
 {
-    // 由于需要多次变址访存,直接将buff和measure地址保存在寄存器里避免多次存取
-    static uint8_t *rxbuff;
-    static DJI_Motor_Measure_s *measure;
-    rxbuff = _instance->rx_buff;
     // 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
     // _instance指针指向的id是对应电机instance的地址,通过强制转换为电机instance的指针,再通过->运算符访问电机的成员motor_measure,最后取地址获得指针
-    measure = &(((DJIMotorInstance *)_instance->id)->motor_measure); // measure要多次使用,保存指针减小访存开销
+    uint8_t *rxbuff = _instance->rx_buff;
+    DJI_Motor_Measure_s *measure = &(((DJIMotorInstance *)_instance->id)->motor_measure); // measure要多次使用,保存指针减小访存开销
 
     // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
     measure->last_ecd = measure->ecd;
@@ -139,7 +135,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
     measure->temperate = rxbuff[6];
 
-    // 多圈角度计算,前提是两次采样间电机转过的角度小于180°,高速转动时可能会出现问题,自己画个图就清楚计算过程了
+    // 多圈角度计算,前提是假设两次采样间电机转过的角度小于180°,自己画个图就清楚计算过程了
     if (measure->ecd - measure->last_ecd > 4096)
         measure->total_round--;
     else if (measure->ecd - measure->last_ecd < -4096)
@@ -191,8 +187,7 @@ void DJIMotorChangeFeed(DJIMotorInstance *motor, Closeloop_Type_e loop, Feedback
     }
     else
     {
-        while (1)
-            ; // LOOP TYPE ERROR!!!检查是否传入了正确的LOOP类型,或发生了指针越界
+        LOGERROR("[dji_motor] loop type error, check memory access and func param"); // 检查是否传入了正确的LOOP类型,或发生了指针越界
     }
 }
 
@@ -221,15 +216,14 @@ void DJIMotorSetRef(DJIMotorInstance *motor, float ref)
 // 为所有电机实例计算三环PID,发送控制报文
 void DJIMotorControl()
 {
-    // 预先通过静态变量定义避免反复释放分配栈空间,直接保存一次指针引用从而减小访存的开销
-    // 同样可以提高可读性
-    static uint8_t group, num; // 电机组号和组内编号
-    static int16_t set;        // 电机控制CAN发送设定值
-    static DJIMotorInstance *motor;
-    static Motor_Control_Setting_s *motor_setting; // 电机控制参数
-    static Motor_Controller_s *motor_controller;   // 电机控制器
-    static DJI_Motor_Measure_s *motor_measure;     // 电机测量值
-    static float pid_measure, pid_ref;             // 电机PID测量值和设定值
+    // 直接保存一次指针引用从而减小访存的开销,同样可以提高可读性
+    uint8_t group, num; // 电机组号和组内编号
+    int16_t set;        // 电机控制CAN发送设定值
+    DJIMotorInstance *motor;
+    Motor_Control_Setting_s *motor_setting; // 电机控制参数
+    Motor_Controller_s *motor_controller;   // 电机控制器
+    DJI_Motor_Measure_s *motor_measure;     // 电机测量值
+    float pid_measure, pid_ref;             // 电机PID测量值和设定值
 
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
     for (size_t i = 0; i < idx; ++i)
@@ -239,7 +233,8 @@ void DJIMotorControl()
         motor_controller = &motor->motor_controller;
         motor_measure = &motor->motor_measure;
         pid_ref = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
-
+        if (motor_setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
+             pid_ref*= -1; // 设置反转
         // pid_ref会顺次通过被启用的闭环充当数据的载体
         // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
         if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
@@ -271,8 +266,7 @@ void DJIMotorControl()
 
         // 获取最终输出
         set = (int16_t)pid_ref;
-        if (motor_setting->reverse_flag == MOTOR_DIRECTION_REVERSE)
-            set *= -1; // 设置反转
+       
 
         // 分组填入发送数据
         group = motor->sender_group;
