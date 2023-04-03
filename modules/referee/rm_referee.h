@@ -68,8 +68,8 @@ void RefereeLoadToBuffer(uint8_t *send, uint16_t tx_len);
 /**
  * @brief 发送函数
  * @todo
- * @param send 待发送数据
+ * @param 
  */
-void RefereeSend(uint8_t *send, uint16_t tx_len);
+void RefereeSend(void);
 
 #endif // !REFEREE_H

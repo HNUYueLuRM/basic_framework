@@ -381,4 +381,6 @@ static void UI_test_init(referee_info_t *_referee_info)
     Char_Draw(&sdata[0], "s7", UI_Graph_ADD, 0, UI_Color_Green, 20, 2, 620, 710);
     Char_Write(&sdata[0], "number:%d", 123);
     Char_ReFresh(&_referee_info->referee_id, sdata[0]);
+
+    RefereeSend();
 }

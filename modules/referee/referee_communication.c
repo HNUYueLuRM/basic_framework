@@ -40,6 +40,6 @@ void Communicate_SendData(referee_id_t *_id,robot_interactive_data_t *_data)
 
     SendData.frametail = Get_CRC16_Check_Sum((uint8_t *)&SendData,LEN_HEADER+LEN_CMDID+temp_datalength,0xFFFF);
 
-    RefereeSend((uint8_t *)&SendData,LEN_HEADER+LEN_CMDID+temp_datalength+LEN_TAIL); //发送
+    RefereeLoadToBuffer((uint8_t *)&SendData,LEN_HEADER+LEN_CMDID+temp_datalength+LEN_TAIL); //发送
     UI_Seq++; // 包序号+1
 }

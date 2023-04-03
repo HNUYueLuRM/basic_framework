@@ -35,11 +35,12 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    // Referee_Interactive_init();
+
     ChassisInit();
 #endif
     // 初始化完成,开启中断
     __enable_irq();
+    Referee_Interactive_init();
 }
 
 void RobotTask()

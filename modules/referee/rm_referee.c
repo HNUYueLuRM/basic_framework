@@ -48,11 +48,12 @@ void RefereeLoadToBuffer(uint8_t *send, uint16_t tx_len)
 
 /**
  * @brief 发送函数
- * @param send 待发送数据
+ * @param 
  */
-void RefereeSend(uint8_t *send, uint16_t tx_len)
+void RefereeSend()
 {
-	USARTSend(referee_usart_instance, send, tx_len,USART_TRANSFER_IT);//syhtodo此函数需要重写
+	USARTSend(referee_usart_instance, (uint8_t *)(&referee_tx_buffer.buffer), referee_tx_buffer.pos,USART_TRANSFER_DMA);
+	referee_tx_buffer.pos=0;
 	/* syhtodo DMA请求过快会导致数据发送丢失，考虑数据尽可能打成一个整包以及队列发送，并且发送函数添加缓冲区 */
 }
 

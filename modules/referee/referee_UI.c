@@ -42,7 +42,7 @@ void UI_Delete(referee_id_t *_id, uint8_t Del_Operate, uint8_t Del_Layer)
    UI_delete_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_delete_data, LEN_HEADER + LEN_CMDID + temp_datalength, 0xFFFF);
    /* 填入0xFFFF,关于crc校验 */
 
-   RefereeSend((uint8_t *)&UI_delete_data, LEN_HEADER + LEN_CMDID + temp_datalength + LEN_TAIL); // 发送
+   RefereeLoadToBuffer((uint8_t *)&UI_delete_data, LEN_HEADER + LEN_CMDID + temp_datalength + LEN_TAIL); // 发送
 
    UI_Seq++; // 包序号+1
 }
@@ -388,17 +388,17 @@ void UI_ReFresh(referee_id_t *_id, int cnt, ...)
 
    // 先发送帧头、命令码、交互数据帧头三部分，并计算CRC16校验值
    UI_GraphReFresh_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_GraphReFresh_data, LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head, 0xFFFF);
-   RefereeSend((uint8_t *)&UI_GraphReFresh_data, LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head);
+   RefereeLoadToBuffer((uint8_t *)&UI_GraphReFresh_data, LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head);
 
    for (i = 0; i < cnt; i++) // 发送交互数据的数据帧，并计算CRC16校验值
    {
       graphData = va_arg(ap, Graph_Data_t); // 访问参数列表中的每个项,第二个参数是你要返回的参数的类型,在取值时需要将其强制转化为指定类型的变量
       // 发送并计算CRC16
-      RefereeSend((uint8_t *)&graphData, UI_Operate_LEN_PerDraw);
+      RefereeLoadToBuffer((uint8_t *)&graphData, UI_Operate_LEN_PerDraw);
       UI_GraphReFresh_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&graphData, UI_Operate_LEN_PerDraw, UI_GraphReFresh_data.frametail);
    }
 
-   RefereeSend((uint8_t *)&UI_GraphReFresh_data.frametail, LEN_TAIL); // 发送CRC16校验值
+   RefereeLoadToBuffer((uint8_t *)&UI_GraphReFresh_data.frametail, LEN_TAIL); // 发送CRC16校验值
 
    va_end(ap); // 结束可变参数的获取
    UI_Seq++;   // 包序号+1
@@ -427,7 +427,7 @@ void Char_ReFresh(referee_id_t *_id, String_Data_t string_Data)
 
    UI_CharReFresh_data.frametail = Get_CRC16_Check_Sum((uint8_t *)&UI_CharReFresh_data, LEN_HEADER + LEN_CMDID + temp_datalength, 0xFFFF);
 
-   RefereeSend((uint8_t *)&UI_CharReFresh_data, LEN_HEADER + LEN_CMDID + temp_datalength + LEN_TAIL); // 发送
+   RefereeLoadToBuffer((uint8_t *)&UI_CharReFresh_data, LEN_HEADER + LEN_CMDID + temp_datalength + LEN_TAIL); // 发送
 
    UI_Seq++; // 包序号+1
 }
