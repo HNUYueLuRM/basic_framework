@@ -107,6 +107,7 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         break;
 
     default: // other motors should not be registered here
+        LOGERROR("You must not register other motors using the API of DJI motor.");
         while (1)
             ; // 其他电机不应该在这里注册
     }

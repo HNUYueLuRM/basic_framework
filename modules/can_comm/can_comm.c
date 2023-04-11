@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "stdlib.h"
 #include "crc8.h"
+#include "bsp_dwt.h"
 
 /**
  * @brief 重置CAN comm的接收状态和buffer
@@ -25,7 +26,7 @@ static void CANCommRxCallback(CANInstance *_instance)
 {
     CANCommInstance *comm = (CANCommInstance *)_instance->id; // 注意写法,将can instance的id强制转换为CANCommInstance*类型
 
-    /* 接收状态判断 */
+    /* 当前接收状态判断 */
     if (_instance->rx_buff[0] == CAN_COMM_HEADER && comm->recv_state == 0) // 之前尚未开始接收且此次包里第一个位置是帧头
     {
         if (_instance->rx_buff[1] == comm->recv_data_len) // 如果这一包里的datalen也等于我们设定接收长度(这是因为暂时不支持动态包长)
@@ -51,25 +52,18 @@ static void CANCommRxCallback(CANInstance *_instance)
 
         // 收完这一包以后刚好等于总buf len,说明已经收完了
         if (comm->cur_recv_len == comm->recv_buf_len)
-        {   
-            // 如果buff里本该是tail的位置不等于CAN_COMM_TAIL
-            if (comm->raw_recvbuf[comm->recv_buf_len - 1] != CAN_COMM_TAIL)
-            {
-                CANCommResetRx(comm);
-                return; // 重置状态然后返回
-            }
-            else // tail正确, 对数据进行crc8校验
-            {
-                if (comm->raw_recvbuf[comm->recv_buf_len - 2] ==
-                    crc_8(comm->raw_recvbuf + 2, comm->recv_data_len))
-                {   // 通过校验,复制数据到unpack_data中
-                    memcpy(comm->unpacked_recv_data, comm->raw_recvbuf + 2, comm->recv_data_len); // 数据量大的话考虑使用DMA
+        {
+            // 如果buff里本tail的位置等于CAN_COMM_TAIL
+            if (comm->raw_recvbuf[comm->recv_buf_len - 1] == CAN_COMM_TAIL)
+            { // 通过校验,复制数据到unpack_data中
+                if (comm->raw_recvbuf[comm->recv_buf_len - 2] == crc_8(comm->raw_recvbuf + 2, comm->recv_data_len))
+                { // 数据量大的话考虑使用DMA
+                    memcpy(comm->unpacked_recv_data, comm->raw_recvbuf + 2, comm->recv_data_len);
                     comm->update_flag = 1; // 数据更新flag置为1
                 }
-                CANCommResetRx(comm);
-                return; // 重置状态然后返回
             }
-            return; // 访问完一个can comm直接退出,一次中断只处理一个实例的回调
+            CANCommResetRx(comm);
+            return; // 重置状态然后返回
         }
     }
 }
@@ -108,7 +102,10 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data)
         send_len = instance->send_buf_len - i >= 8 ? 8 : instance->send_buf_len - i;
         CANSetDLC(instance->can_ins, send_len);
         memcpy(instance->can_ins->tx_buff, instance->raw_sendbuf + i, send_len);
-        CANTransmit(instance->can_ins,1);
+        CANTransmit(instance->can_ins, 1);
+        if(instance->send_buf_len - i > 8)
+            DWT_Delay(0.001*0.005); // delay 5ns以保证CAN发送的顺序,如果是最后一包,不需要延时
+        // CAN的邮箱不保证发送顺序,当存在空闲时便放入对应邮箱,因此需要延时保证发送顺序
     }
 }
 
