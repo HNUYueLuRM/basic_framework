@@ -188,10 +188,7 @@ typedef struct
 /* @todo : 对于平衡底盘,需要新增控制模式和控制数据 */
 typedef struct
 {
-#ifdef CHASSIS_BOARD
     attitude_t chassis_imu_data;
-#endif // CHASSIS_BOARD
-
     // 后续增加底盘的真实速度
     // float real_vx;
     // float real_vy;
