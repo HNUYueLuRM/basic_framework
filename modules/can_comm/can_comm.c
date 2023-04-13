@@ -103,9 +103,6 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data)
         CANSetDLC(instance->can_ins, send_len);
         memcpy(instance->can_ins->tx_buff, instance->raw_sendbuf + i, send_len);
         CANTransmit(instance->can_ins, 1);
-        if(instance->send_buf_len - i > 8)
-            DWT_Delay(0.001*0.005); // delay 5ns以保证CAN发送的顺序,如果是最后一包,不需要延时
-        // CAN的邮箱不保证发送顺序,当存在空闲时便放入对应邮箱,因此需要延时保证发送顺序
     }
 }
 

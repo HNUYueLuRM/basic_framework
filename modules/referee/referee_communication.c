@@ -9,7 +9,7 @@
  */
 
 #include "referee_communication.h"
-#include "crc.h"
+#include "crc_ref.h"
 #include "stdio.h"
 #include "rm_referee.h"
 
