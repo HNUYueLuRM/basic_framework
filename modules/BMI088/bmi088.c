@@ -261,9 +261,9 @@ BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088)
 
         first_read_flag = 1; // 最后在这里,完成一次读取,标志第一次读取完成
     }                        // 别担心,初始化调用的时候offset(即零飘bias)是0
-    bmi088->gyro[0] = (float)(int16_t)(((buf[1]) << 8) | buf[0]) * gyrosen - bias1 * dt_imu;
-    bmi088->gyro[0] = (float)(int16_t)(((buf[3]) << 8) | buf[2]) * gyrosen - bias2 * dt_imu;
-    bmi088->gyro[0] = (float)(int16_t)(((buf[5]) << 8) | buf[4]) * gyrosen - bias3 * dt_imu;
+    bmi088->gyro[0] = (float)(int16_t)(((buf[1]) << 8) | buf[0]) * gyrosen - bias1;
+    bmi088->gyro[0] = (float)(int16_t)(((buf[3]) << 8) | buf[2]) * gyrosen - bias2;
+    bmi088->gyro[0] = (float)(int16_t)(((buf[5]) << 8) | buf[4]) * gyrosen - bias3;
 
     BMI088AccelRead(bmi088, BMI088_TEMP_M, buf, 2); // 读温度,温度传感器在accel上
     bmi088->temperature = (float)(int16_t)(((buf[0] << 3) | (buf[1] >> 5))) * BMI088_TEMP_FACTOR + BMI088_TEMP_OFFSET;

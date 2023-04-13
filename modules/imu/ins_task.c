@@ -43,6 +43,33 @@ static void IMU_Temperature_Ctrl(void)
     IMUPWMSet(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
 }
 
+// 使用加速度计的数据初始化Roll和Pitch,而Yaw置0,这样可以避免在初始时候的姿态估计误差
+static void InitQuaternion(float* init_q4)
+{
+    float acc_init[3] = {0};
+    float gravity_norm[3] = {0, 0, 1}; // 导航系重力加速度矢量,归一化后为(0,0,1)
+    float axis_rot[3] = {0};           // 旋转轴
+    // 读取100次加速度计数据,取平均值作为初始值
+    for (uint8_t i = 0; i < 100; ++i)
+    {
+        BMI088_Read(&BMI088);
+        acc_init[X] += BMI088.Accel[X];
+        acc_init[Y] += BMI088.Accel[Y];
+        acc_init[Z] += BMI088.Accel[Z];
+        DWT_Delay(0.001);
+    }
+    for (uint8_t i = 0; i < 3; ++i)
+        acc_init[i] /= 100;
+    Norm3d(acc_init);
+    // 计算原始加速度矢量和导航系重力加速度矢量的夹角
+    float angle = acosf(Dot3d(acc_init, gravity_norm));
+    Cross3d(acc_init, gravity_norm, axis_rot);
+    Norm3d(axis_rot);
+    init_q4[0] = cosf(angle / 2.0f);
+    for(uint8_t i = 0; i < 2; ++i)
+        init_q4[i + 1] = axis_rot[i] * sinf(angle / 2.0f); // 轴角公式,第三轴为0(没有z轴分量)
+}
+
 attitude_t *INS_Init(void)
 {
     while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR)
@@ -55,19 +82,22 @@ attitude_t *INS_Init(void)
     IMU_Param.Roll = 0;
     IMU_Param.flag = 1;
 
-    IMU_QuaternionEKF_Init(10, 0.001, 10000000, 1, 0);
+    float init_quaternion[4] = {0};
+    InitQuaternion(init_quaternion);
+    IMU_QuaternionEKF_Init(init_quaternion, 10, 0.001, 1000000, 1, 0);
     // imu heat init
     PID_Init_Config_s config = {.MaxOut = 2000,
-                               .IntegralLimit = 300,
-                               .DeadBand = 0,
-                               .Kp = 1000,
-                               .Ki = 20,
-                               .Kd = 0,
-                               .Improve = 0x01}; // enable integratiaon limit
+                                .IntegralLimit = 300,
+                                .DeadBand = 0,
+                                .Kp = 1000,
+                                .Ki = 20,
+                                .Kd = 0,
+                                .Improve = 0x01}; // enable integratiaon limit
     PIDInit(&TempCtrl, &config);
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
+    DWT_GetDeltaT64(&INS_DWT_Count);
     return (attitude_t *)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
 }
 
