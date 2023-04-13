@@ -104,7 +104,7 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config);
  * @param bmi088 BMI088实例指针
  * @return BMI088_Data_t 读取到的数据
  */
-BMI088_Data_t BMI088Acquire(BMI088Instance *bmi088);
+uint8_t BMI088Acquire(BMI088Instance *bmi088,BMI088_Data_t* data_store);
 
 /**
  * @brief 标定传感器.BMI088在初始化的时候会调用此函数. 提供接口方便标定离线数据

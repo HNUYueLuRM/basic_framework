@@ -88,7 +88,7 @@ extern uint8_t GlobalDebugMode;
 #define VAL_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 /**
- * @brief 返回一块干净的内�?,不过仍然需要强制转�?为你需要的类型
+ * @brief 返回一块干净的内�?,不过仍然需要强制转�?为你需要的类型
  * 
  * @param size 分配大小
  * @return void* 
@@ -115,6 +115,8 @@ float theta_format(float Ang);
 int float_rounding(float raw);
 
 float* Norm3d(float* v);
+
+float NormOf3d(float* v);
 
 void Cross3d(float* v1, float* v2, float* res);
 
