@@ -32,7 +32,7 @@ static void RectifyRCjoystick()
  * @param[out]     rc_ctrl: remote control data struct point
  * @retval         none
  */
-uint16_t aaaaa;
+
 static void sbus_to_rc(const uint8_t *sbus_buf)
 {
 

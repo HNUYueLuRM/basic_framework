@@ -10,7 +10,6 @@
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
 #include "chassis.h"
-#include "referee.h"
 #endif
 
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
@@ -18,6 +17,11 @@
 #include "shoot.h"
 #include "robot_cmd.h"
 #endif
+
+#ifdef BALANCE_BAORD
+#include "balance.h"
+#endif // BALANCE_BOARD
+
 
 void RobotInit()
 {  
@@ -35,9 +39,13 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    // Referee_Interactive_init();
     ChassisInit();
 #endif
+
+#ifdef BALANCE_BAORD
+    BalanceInit();
+#endif // BALANCE_BA
+
     // 初始化完成,开启中断
     __enable_irq();
 }
@@ -52,6 +60,9 @@ void RobotTask()
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisTask();
-    // Referee_Interactive_task();
 #endif
+
+#ifdef BALANCE_BAORD
+    BalanceTask();
+#endif // BALANCE_BA
 }
