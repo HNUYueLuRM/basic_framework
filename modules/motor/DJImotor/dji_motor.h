@@ -49,7 +49,7 @@ typedef struct
 typedef struct
 {
 
-    DJI_Motor_Measure_s motor_measure;      // 电机测量值
+    DJI_Motor_Measure_s measure;      // 电机测量值
     Motor_Control_Setting_s motor_settings; // 电机设置
     Motor_Controller_s motor_controller;    // 电机控制器
 

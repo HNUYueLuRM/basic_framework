@@ -124,7 +124,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
     // 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
     // _instance指针指向的id是对应电机instance的地址,通过强制转换为电机instance的指针,再通过->运算符访问电机的成员motor_measure,最后取地址获得指针
     uint8_t *rxbuff = _instance->rx_buff;
-    DJI_Motor_Measure_s *measure = &(((DJIMotorInstance *)_instance->id)->motor_measure); // measure要多次使用,保存指针减小访存开销
+    DJI_Motor_Measure_s *measure = &(((DJIMotorInstance *)_instance->id)->measure); // measure要多次使用,保存指针减小访存开销
 
     // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
     measure->last_ecd = measure->ecd;
@@ -223,7 +223,7 @@ void DJIMotorControl()
     DJIMotorInstance *motor;
     Motor_Control_Setting_s *motor_setting; // 电机控制参数
     Motor_Controller_s *motor_controller;   // 电机控制器
-    DJI_Motor_Measure_s *motor_measure;     // 电机测量值
+    DJI_Motor_Measure_s *measure;           // 电机测量值
     float pid_measure, pid_ref;             // 电机PID测量值和设定值
 
     // 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
@@ -232,10 +232,10 @@ void DJIMotorControl()
         motor = dji_motor_instance[i];
         motor_setting = &motor->motor_settings;
         motor_controller = &motor->motor_controller;
-        motor_measure = &motor->motor_measure;
+        measure = &motor->measure;
         pid_ref = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
         if (motor_setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
-             pid_ref*= -1; // 设置反转
+            pid_ref *= -1; // 设置反转
         // pid_ref会顺次通过被启用的闭环充当数据的载体
         // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
         if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
@@ -243,7 +243,7 @@ void DJIMotorControl()
             if (motor_setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor_controller->other_angle_feedback_ptr;
             else
-                pid_measure = motor_measure->total_angle; // MOTOR_FEED,对total angle闭环,防止在边界处出现突跃
+                pid_measure = measure->total_angle; // MOTOR_FEED,对total angle闭环,防止在边界处出现突跃
             // 更新pid_ref进入下一个环
             pid_ref = PIDCalculate(&motor_controller->angle_PID, pid_measure, pid_ref);
         }
@@ -254,7 +254,7 @@ void DJIMotorControl()
             if (motor_setting->speed_feedback_source == OTHER_FEED)
                 pid_measure = *motor_controller->other_speed_feedback_ptr;
             else // MOTOR_FEED
-                pid_measure = motor_measure->speed_aps;
+                pid_measure = measure->speed_aps;
             // 更新pid_ref进入下一个环
             pid_ref = PIDCalculate(&motor_controller->speed_PID, pid_measure, pid_ref);
         }
@@ -262,12 +262,11 @@ void DJIMotorControl()
         // 计算电流环,目前只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
         if (motor_setting->close_loop_type & CURRENT_LOOP)
         {
-            pid_ref = PIDCalculate(&motor_controller->current_PID, motor_measure->real_current, pid_ref);
+            pid_ref = PIDCalculate(&motor_controller->current_PID, measure->real_current, pid_ref);
         }
 
         // 获取最终输出
         set = (int16_t)pid_ref;
-       
 
         // 分组填入发送数据
         group = motor->sender_group;

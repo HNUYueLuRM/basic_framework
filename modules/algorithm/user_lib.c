@@ -165,7 +165,7 @@ int float_rounding(float raw)
 }
 
 // 三维向量归一化
-float* Norm3d(float* v)
+float *Norm3d(float *v)
 {
     float len = Sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     v[0] /= len;
@@ -181,7 +181,7 @@ float NormOf3d(float *v)
 }
 
 // 三维向量叉乘v1 x v2
-void Cross3d(float* v1, float* v2,float* res)
+void Cross3d(float *v1, float *v2, float *res)
 {
     res[0] = v1[1] * v2[2] - v1[2] * v2[1];
     res[1] = v1[2] * v2[0] - v1[0] * v2[2];
@@ -189,7 +189,7 @@ void Cross3d(float* v1, float* v2,float* res)
 }
 
 // 三维向量点乘
-float Dot3d(float* v1, float* v2)
+float Dot3d(float *v1, float *v2)
 {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }

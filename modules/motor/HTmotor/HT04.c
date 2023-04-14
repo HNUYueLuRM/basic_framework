@@ -42,16 +42,16 @@ static void HTMotorDecode(CANInstance *motor_can)
 {
     uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
     uint8_t *rxbuff = motor_can->rx_buff;
-    HTMotor_Measure_t *measure = &((HTMotorInstance *)motor_can->id)->motor_measure; // 将can实例中保存的id转换成电机实例的指针
+    HTMotor_Measure_t *measure = &((HTMotorInstance *)motor_can->id)->measure; // 将can实例中保存的id转换成电机实例的指针
 
     measure->last_angle = measure->total_angle;
 
     tmp = (uint16_t)((rxbuff[1] << 8) | rxbuff[2]);
-    measure->total_angle = RAD_2_ANGLE * uint_to_float(tmp, P_MIN, P_MAX, 16);
+    measure->total_angle =  uint_to_float(tmp, P_MIN, P_MAX, 16);
 
     tmp = (uint16_t)((rxbuff[3] << 4) | (rxbuff[4] >> 4));
-    measure->speed_aps = SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MIN, V_MAX, 12) +
-                         (1 - SPEED_SMOOTH_COEF) * measure->speed_aps;
+    measure->speed_rads = SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MIN, V_MAX, 12) +
+                          (1 - SPEED_SMOOTH_COEF) * measure->speed_rads;
 
     tmp = (uint16_t)(((rxbuff[4] & 0x0f) << 8) | rxbuff[5]);
     measure->real_current = CURRENT_SMOOTH_COEF * uint_to_float(tmp, T_MIN, T_MAX, 12) +
@@ -97,7 +97,7 @@ void HTMotorControl()
     for (size_t i = 0; i < idx; i++)
     { // 先获取地址避免反复寻址
         motor = ht_motor_instance[i];
-        measure = &motor->motor_measure;
+        measure = &motor->measure;
         setting = &motor->motor_settings;
         motor_can = motor->motor_can_instace;
         pid_ref = motor->pid_ref;
@@ -109,7 +109,7 @@ void HTMotorControl()
             else
                 pid_measure = measure->real_current;
             // measure单位是rad,ref是角度,统一到angle下计算,方便建模
-            pid_ref = PIDCalculate(&motor->angle_PID, pid_measure * RAD_2_ANGLE, pid_ref);
+            pid_ref = PIDCalculate(&motor->angle_PID, pid_measure * RAD_2_DEGREE, pid_ref);
         }
 
         if ((setting->close_loop_type & SPEED_LOOP) && setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP))
@@ -120,9 +120,9 @@ void HTMotorControl()
             if (setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor->other_speed_feedback_ptr;
             else
-                pid_measure = measure->speed_aps;
+                pid_measure = measure->speed_rads;
             // measure单位是rad / s ,ref是angle per sec,统一到angle下计算
-            pid_ref = PIDCalculate(&motor->speed_PID, pid_measure * RAD_2_ANGLE, pid_ref);
+            pid_ref = PIDCalculate(&motor->speed_PID, pid_measure * RAD_2_DEGREE, pid_ref);
         }
 
         if (setting->close_loop_type & CURRENT_LOOP)

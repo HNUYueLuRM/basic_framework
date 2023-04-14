@@ -14,13 +14,14 @@
 #define SPEED_SMOOTH_COEF 0.85f
 #define REDUCTION_RATIO_DRIVEN 1
 #define ECD_ANGLE_COEF_LK (360.0f / 65536.0f)
+#define CURRENT_TORQUE_COEF_LK 0.003645f // 电流设定值转换成扭矩的系数,算出来的设定值除以这个系数就是扭矩值
 
 typedef struct // 9025
 {
     uint16_t last_ecd;        // 上一次读取的编码器值
     uint16_t ecd;             // 当前编码器值
     float angle_single_round; // 单圈角度
-    float speed_aps;          // speed angle per sec(degree:°)
+    float speed_rads;         // speed rad/s
     int16_t real_current;     // 实际电流
     uint8_t temperate;        // 温度,C°
 
