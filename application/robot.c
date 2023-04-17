@@ -39,11 +39,11 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    ChassisInit();
+    // ChassisInit();
 #endif
 
 #ifdef BALANCE_BAORD
-    BalanceInit();
+    // BalanceInit();
 #endif // BALANCE_BA
 
     // 初始化完成,开启中断
