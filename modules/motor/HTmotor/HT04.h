@@ -18,17 +18,17 @@
 #define T_MAX 18.0f
 
 typedef struct // HT04
-{              
-    float last_angle; 
+{
+    float last_angle;
     float total_angle; // 角度为多圈角度,范围是-95.5~95.5,单位为rad
-    float speed_aps;
+    float speed_rads;
     float real_current;
 } HTMotor_Measure_t;
 
 /* HT电机类型定义*/
 typedef struct
 {
-    HTMotor_Measure_t motor_measure;
+    HTMotor_Measure_t measure;
 
     Motor_Control_Setting_s motor_settings;
 
@@ -42,7 +42,7 @@ typedef struct
     float pid_ref;
 
     Motor_Working_Type_e stop_flag; // 启停标志
-    
+
     CANInstance *motor_can_instace;
 } HTMotorInstance;
 
@@ -55,16 +55,16 @@ typedef enum
 } HTMotor_Mode_t;
 
 /**
- * @brief 
- * 
- * @param config 
- * @return HTMotorInstance* 
+ * @brief
+ *
+ * @param config
+ * @return HTMotorInstance*
  */
 HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config);
 
 /**
  * @brief 设定电机的参考值
- * 
+ *
  * @param motor 要设定的电机
  * @param current   设定值
  */
@@ -72,20 +72,20 @@ void HTMotorSetRef(HTMotorInstance *motor, float ref);
 
 /**
  * @brief 给所有的HT电机发送控制指令
- * 
+ *
  */
 void HTMotorControl();
 
 /**
  * @brief 停止电机,之后电机不会响应HTMotorSetRef设定的值
- * 
- * @param motor 
+ *
+ * @param motor
  */
 void HTMotorStop(HTMotorInstance *motor);
 
 /**
  * @brief 启动电机
- * 
+ *
  * @param motor 要启动的电机
  */
 void HTMotorEnable(HTMotorInstance *motor);
@@ -96,8 +96,8 @@ void HTMotorEnable(HTMotorInstance *motor);
  *            注意,校准时务必将电机和其他机构分离,电机会旋转360°!
  *            注意,校准时务必将电机和其他机构分离,电机会旋转360°!
  *            注意,校准时务必将电机和其他机构分离,电机会旋转360°!
- * 
- * @param motor 
+ *
+ * @param motor
  */
 void HTMotorCalibEncoder(HTMotorInstance *motor);
 

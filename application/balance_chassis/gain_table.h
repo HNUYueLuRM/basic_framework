@@ -19,7 +19,7 @@ void EnalbeInterpolation(void)
 }
 
 /* 默认关闭插值,向下取整 */
-float LookUpKgain(float leg_length)
+float* LookUpKgain(float leg_length)
 {
-
+    
 }

@@ -1,5 +1,6 @@
 #include "LK9025.h"
 #include "stdlib.h"
+#include "general_def.h"
 
 static uint8_t idx;
 static LKMotorInstance *lkmotor_instance[LK_MOTOR_MX_CNT] = {NULL};
@@ -23,8 +24,8 @@ static void LKMotorDecode(CANInstance *_instance)
 
     measure->angle_single_round = ECD_ANGLE_COEF_LK * measure->ecd;
 
-    measure->speed_aps = (1 - SPEED_SMOOTH_COEF) * measure->speed_aps +
-                         SPEED_SMOOTH_COEF * (float)((int16_t)(rx_buff[5] << 8 | rx_buff[4]));
+    measure->speed_rads = (1 - SPEED_SMOOTH_COEF) * measure->speed_rads +
+                          DEGREE_2_RAD * SPEED_SMOOTH_COEF * (float)((int16_t)(rx_buff[5] << 8 | rx_buff[4]));
 
     measure->real_current = (1 - CURRENT_SMOOTH_COEF) * measure->real_current +
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rx_buff[3] << 8 | rx_buff[2]));
@@ -101,7 +102,7 @@ void LKMotorControl()
             if (setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor->other_speed_feedback_ptr;
             else
-                pid_measure = measure->speed_aps;
+                pid_measure = measure->speed_rads;
             pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
             if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
                 pid_ref += *motor->current_feedforward_ptr;

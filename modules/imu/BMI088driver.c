@@ -347,11 +347,11 @@ void BMI088_Read(IMU_Data_t *bmi088)
         if (caliOffset)
         {
             bmi088_raw_temp = (int16_t)((buf[3]) << 8) | buf[2];
-            bmi088->Gyro[0] = bmi088_raw_temp * BMI088_GYRO_SEN - bmi088->GyroOffset[0] * dt;
+            bmi088->Gyro[0] = bmi088_raw_temp * BMI088_GYRO_SEN - bmi088->GyroOffset[0];
             bmi088_raw_temp = (int16_t)((buf[5]) << 8) | buf[4];
-            bmi088->Gyro[1] = bmi088_raw_temp * BMI088_GYRO_SEN - bmi088->GyroOffset[1] * dt;
+            bmi088->Gyro[1] = bmi088_raw_temp * BMI088_GYRO_SEN - bmi088->GyroOffset[1];
             bmi088_raw_temp = (int16_t)((buf[7]) << 8) | buf[6];
-            bmi088->Gyro[2] = bmi088_raw_temp * BMI088_GYRO_SEN - bmi088->GyroOffset[2] * dt;
+            bmi088->Gyro[2] = bmi088_raw_temp * BMI088_GYRO_SEN - bmi088->GyroOffset[2];
         }
         else
         {

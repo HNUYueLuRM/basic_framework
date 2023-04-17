@@ -131,11 +131,11 @@ typedef enum
     LOAD_BURSTFIRE, // 连发
 } loader_mode_e;
 
-// 功率限制,从裁判系统获取
+// 功率限制,从裁判系统获取,是否有必要保留?
 typedef struct
 { // 功率控制
     float chassis_power_mx;
-} Chassis_Power_Data_s;
+} Chassis_Power_Data_s; 
 
 /* ----------------CMD应用发布的控制数据,应当由gimbal/chassis/shoot订阅---------------- */
 /**
@@ -188,10 +188,9 @@ typedef struct
 /* @todo : 对于平衡底盘,需要新增控制模式和控制数据 */
 typedef struct
 {
-#ifdef CHASSIS_BOARD
-    attitude_t chassis_imu_data;
-#endif // CHASSIS_BOARD
-
+#if defined(CHASSIS_BOARD) || defined(GIMBAL_BOARD) // 非单板的时候底盘还将imu数据回传(若有必要)
+    // attitude_t chassis_imu_data;
+#endif
     // 后续增加底盘的真实速度
     // float real_vx;
     // float real_vy;
@@ -200,9 +199,7 @@ typedef struct
     uint8_t rest_heat;           // 剩余枪口热量
     Bullet_Speed_e bullet_speed; // 弹速限制
     Enemy_Color_e enemy_color;   // 0 for blue, 1 for red
-
-    // 是否需要剩余电量?(电容)
-
+    
 } Chassis_Upload_Data_s;
 
 /* @todo : 对于平衡底盘,需要不同的反馈数据 */

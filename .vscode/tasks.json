@@ -22,7 +22,7 @@
             }
         },
         {
-            "label": "download jlink",
+            "label": "download jlink", // 要使用此任务,需添加jlink的环境变量
             "type": "shell",
             "command":"mingw32-make download_jlink", // "mingw32-make -j24 ; mingw32-make download_dap"
             "group": {
