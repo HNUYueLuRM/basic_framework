@@ -38,6 +38,8 @@ void Referee_Interactive_init()
      RefereeSend();
     //如果此处还要加入车间通信初始化，注意将referee和车间通信的数据合并后再使用
     //refereesend函数永远是最后一步
+
+    //串口接收需要设置喂狗
 }
 
 void Referee_Interactive_task()
