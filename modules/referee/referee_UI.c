@@ -390,7 +390,7 @@ void UI_ReFresh(referee_id_t *_id, int cnt, ...)
 		memcpy(buffer + (LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head + UI_Operate_LEN_PerDraw * i), (uint8_t *)&graphData, UI_Operate_LEN_PerDraw);
 	}
 	Append_CRC16_Check_Sum(buffer, temp_datalength);
-	RefereeSend(buffer, temp_datalength); // 发送CRC16校验值
+	RefereeSend(buffer, temp_datalength); 
 
 	va_end(ap); // 结束可变参数的获取
 }

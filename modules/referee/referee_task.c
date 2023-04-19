@@ -51,6 +51,7 @@ void Referee_Interactive_task()
 }
 
 static Graph_Data_t UI_shoot_line[10]; // 射击准线
+static Graph_Data_t UI_energy_line[1]; // 电容能量条
 static String_Data_t UI_State_sta[6];  // 机器人状态,静态只需画一次
 static String_Data_t UI_State_dyn[6];  // 机器人状态,动态先add才能change
 static uint32_t shoot_line_location[10] = {540, 960, 490, 515, 565};
