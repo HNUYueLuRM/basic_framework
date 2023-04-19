@@ -16,21 +16,32 @@
 static Referee_Interactive_info_t *Interactive_data; // UI绘制需要的机器人状态数据
 static referee_info_t *referee_recv_info;            // 接收到的裁判系统数据
 
-static void DeterminRobotID(referee_info_t *_referee_info);
-static void My_UI_init(referee_info_t *_referee_info);
-static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_info_t *_Interactive_data);
+/**
+ * @brief  判断各种ID，选择客户端ID
+ * @param  referee_info_t *referee_recv_info
+ * @retval none
+ * @attention
+ */
+static void DeterminRobotID()
+{
+    // id小于7是红色,大于7是蓝色,0为红色，1为蓝色   #define Robot_Red 0    #define Robot_Blue 1
+    referee_recv_info->referee_id.Robot_Color = referee_recv_info->GameRobotState.robot_id > 7 ? Robot_Blue : Robot_Red;
+    referee_recv_info->referee_id.Robot_ID = referee_recv_info->GameRobotState.robot_id;
+    referee_recv_info->referee_id.Cilent_ID = 0x0100 + referee_recv_info->referee_id.Robot_ID; // 计算客户端ID
+    referee_recv_info->referee_id.Receiver_Robot_ID = 0;
+}
+
+static void My_UI_Refresh(referee_info_t *referee_recv_info, Referee_Interactive_info_t *_Interactive_data);
 static void Mode_Change_Check(Referee_Interactive_info_t *_Interactive_data); // 模式切换检测
 
 // syhtod 正式上车后需删除
 static void robot_mode_change(Referee_Interactive_info_t *_Interactive_data); // 测试用函数，实现模式自动变化
-static void UI_test_init(referee_info_t *_referee_info);                      // UI测试函数
 
-void Referee_Interactive_init()
+referee_info_t *Referee_Interactive_init(UART_HandleTypeDef *referee_usart_handle, Referee_Interactive_info_t *UI_data)
 {
-    RefereeGetUIData(&referee_recv_info, &Interactive_data);
-    while (referee_recv_info->GameRobotState.robot_id == 0);
-    DeterminRobotID(referee_recv_info);
-    My_UI_init(referee_recv_info);
+    referee_recv_info = RefereeInit(referee_usart_handle); // 初始化裁判系统的串口,并返回裁判系统反馈数据指针
+    Interactive_data = UI_data;                            // 获取UI绘制需要的机器人状态数据
+    return referee_recv_info;
 }
 
 void Referee_Interactive_task()
@@ -44,9 +55,10 @@ static String_Data_t UI_State_sta[6];  // 机器人状态,静态只需画一次
 static String_Data_t UI_State_dyn[6];  // 机器人状态,动态先add才能change
 static uint32_t shoot_line_location[10] = {540, 960, 490, 515, 565};
 
-static void My_UI_init(referee_info_t *_referee_info)
+void My_UI_init()
 {
-    UIDelete(&_referee_info->referee_id, UI_Data_Del_ALL, 0);
+    DeterminRobotID();
+    UIDelete(&referee_recv_info->referee_id, UI_Data_Del_ALL, 0); // 清空UI
 
     // // 绘制发射基准线
     Line_Draw(&UI_shoot_line[0], "sl0", UI_Graph_ADD, 7, UI_Color_White, 3, 710, shoot_line_location[0], 1210, shoot_line_location[0]);
@@ -55,40 +67,40 @@ static void My_UI_init(referee_info_t *_referee_info)
     Line_Draw(&UI_shoot_line[3], "sl3", UI_Graph_ADD, 7, UI_Color_Yellow, 2, 810, shoot_line_location[3], 1110, shoot_line_location[3]);
     Line_Draw(&UI_shoot_line[4], "sl4", UI_Graph_ADD, 7, UI_Color_Yellow, 2, 810, shoot_line_location[4], 1110, shoot_line_location[4]);
 
-    UI_ReFresh(&_referee_info->referee_id, 5, UI_shoot_line[0], UI_shoot_line[1], UI_shoot_line[2], UI_shoot_line[3], UI_shoot_line[4]);
+    UI_ReFresh(&referee_recv_info->referee_id, 5, UI_shoot_line[0], UI_shoot_line[1], UI_shoot_line[2], UI_shoot_line[3], UI_shoot_line[4]);
 
     // 绘制车辆状态标志指示
     Char_Draw(&UI_State_sta[0], "ss0", UI_Graph_ADD, 8, UI_Color_Main, 15, 2, 150, 750, "chassis:");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_sta[0]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_sta[0]);
     Char_Draw(&UI_State_sta[1], "ss1", UI_Graph_ADD, 8, UI_Color_Yellow, 15, 2, 150, 700, "gimbal:");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_sta[1]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_sta[1]);
     Char_Draw(&UI_State_sta[2], "ss2", UI_Graph_ADD, 8, UI_Color_Orange, 15, 2, 150, 650, "shoot:");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_sta[2]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_sta[2]);
     Char_Draw(&UI_State_sta[3], "ss3", UI_Graph_ADD, 8, UI_Color_Pink, 15, 2, 150, 600, "frict:");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_sta[3]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_sta[3]);
     Char_Draw(&UI_State_sta[4], "ss4", UI_Graph_ADD, 8, UI_Color_Pink, 15, 2, 150, 550, "lid:");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_sta[4]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_sta[4]);
 
     // 底盘功率显示，静态
     Char_Draw(&UI_State_sta[5], "ss5", UI_Graph_ADD, 8, UI_Color_Green, 18, 2, 720, 210, "Power:");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_sta[5]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_sta[5]);
 
     // 绘制车辆状态标志，动态
     // 由于初始化时xxx_last_mode默认为0，所以此处对应UI也应该设为0时对应的UI，防止模式不变的情况下无法置位flag，导致UI无法刷新
     Char_Draw(&UI_State_dyn[0], "sd0", UI_Graph_ADD, 8, UI_Color_Main, 15, 2, 270, 750, "zeroforce");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[0]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[0]);
     Char_Draw(&UI_State_dyn[1], "sd1", UI_Graph_ADD, 8, UI_Color_Yellow, 15, 2, 270, 700, "zeroforce");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[1]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[1]);
     Char_Draw(&UI_State_dyn[2], "sd2", UI_Graph_ADD, 8, UI_Color_Orange, 15, 2, 270, 650, "off");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[2]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[2]);
     Char_Draw(&UI_State_dyn[3], "sd3", UI_Graph_ADD, 8, UI_Color_Pink, 15, 2, 270, 600, "off");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[3]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[3]);
     Char_Draw(&UI_State_dyn[4], "sd4", UI_Graph_ADD, 8, UI_Color_Pink, 15, 2, 270, 550, "open ");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[4]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[4]);
 
     // 底盘功率显示,动态
     Char_Draw(&UI_State_dyn[5], "sd5", UI_Graph_ADD, 8, UI_Color_Green, 18, 2, 840, 210, "0000");
-    Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[5]);
+    Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[5]);
 }
 
 static uint8_t count = 0;
@@ -144,7 +156,7 @@ static void robot_mode_change(Referee_Interactive_info_t *_Interactive_data) // 
     }
 }
 
-static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_info_t *_Interactive_data)
+static void My_UI_Refresh(referee_info_t *referee_recv_info, Referee_Interactive_info_t *_Interactive_data)
 {
     Mode_Change_Check(_Interactive_data);
     // chassis
@@ -166,7 +178,7 @@ static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_inf
             Char_Draw(&UI_State_dyn[0], "sd0", UI_Graph_Change, 8, UI_Color_Main, 15, 2, 270, 750, "follow   ");
             break;
         }
-        Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[0]);
+        Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[0]);
         _Interactive_data->Referee_Interactive_Flag.chassis_flag = 0;
     }
     // gimbal
@@ -190,7 +202,7 @@ static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_inf
             break;
         }
         }
-        Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[1]);
+        Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[1]);
         _Interactive_data->Referee_Interactive_Flag.gimbal_flag = 0;
     }
     // shoot
@@ -209,7 +221,7 @@ static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_inf
             break;
         }
         }
-        Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[2]);
+        Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[2]);
         _Interactive_data->Referee_Interactive_Flag.shoot_flag = 0;
     }
 
@@ -228,7 +240,7 @@ static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_inf
             break;
         }
         }
-        Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[3]);
+        Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[3]);
         _Interactive_data->Referee_Interactive_Flag.friction_flag = 0;
     }
 
@@ -247,7 +259,7 @@ static void My_UI_Refresh(referee_info_t *_referee_info, Referee_Interactive_inf
             break;
         }
         }
-        Char_ReFresh(&_referee_info->referee_id, UI_State_dyn[4]);
+        Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[4]);
         _Interactive_data->Referee_Interactive_Flag.lid_flag = 0;
     }
 }
@@ -289,41 +301,4 @@ static void Mode_Change_Check(Referee_Interactive_info_t *_Interactive_data)
         _Interactive_data->Referee_Interactive_Flag.lid_flag = 1;
         _Interactive_data->lid_last_mode = _Interactive_data->lid_mode;
     }
-}
-
-/**
- * @brief  判断各种ID，选择客户端ID
- * @param  referee_info_t *_referee_info
- * @retval none
- * @attention
- */
-static void DeterminRobotID(referee_info_t *_referee_info)
-{
-    // id小于7是红色,大于7是蓝色,0为红色，1为蓝色   #define Robot_Red 0    #define Robot_Blue 1
-    _referee_info->referee_id.Robot_Color = _referee_info->GameRobotState.robot_id > 7 ? Robot_Blue : Robot_Red;
-    _referee_info->referee_id.Robot_ID = _referee_info->GameRobotState.robot_id;
-    _referee_info->referee_id.Cilent_ID = 0x0100 + _referee_info->referee_id.Robot_ID; // 计算客户端ID
-    _referee_info->referee_id.Receiver_Robot_ID = 0;
-}
-
-/* 测试用函数 */
-static void UI_test_init(referee_info_t *_referee_info)
-{
-    Graph_Data_t graph[5];
-    Graph_Data_t num[2];
-    String_Data_t sdata[1];
-    UIDelete(&_referee_info->referee_id, UI_Data_Del_ALL, 0);
-
-    Line_Draw(&graph[0], "s0", UI_Graph_ADD, 0, UI_Color_White, 3, 710, 540, 1210, 540);
-    Rectangle_Draw(&graph[1], "s1", UI_Graph_ADD, 0, UI_Color_Yellow, 4, 600, 200, 800, 500);
-    Circle_Draw(&graph[2], "s2", UI_Graph_ADD, 0, UI_Color_Green, 5, 960, 540, 100);
-    Elliptical_Draw(&graph[3], "s3", UI_Graph_ADD, 0, UI_Color_Orange, 3, 960, 540, 100, 20);
-    Arc_Draw(&graph[4], "s4", UI_Graph_ADD, 0, UI_Color_Purplish_red, 30, 160, 3, 1200, 550, 50, 100);
-
-    Float_Draw(&num[0], "s5", UI_Graph_ADD, 0, UI_Color_Pink, 50, 3, 5, 1050, 660, 1245545);
-    Integer_Draw(&num[1], "s6", UI_Graph_ADD, 0, UI_Color_Cyan, 50, 5, 1050, 460, 12345);
-    UI_ReFresh(&_referee_info->referee_id, 7, graph[0], graph[1], graph[2], graph[3], graph[4], num[0], num[1]);
-
-    Char_Draw(&sdata[0], "s7", UI_Graph_ADD, 0, UI_Color_Green, 20, 2, 620, 710, "number:%d", 123);
-    Char_ReFresh(&_referee_info->referee_id, sdata[0]);
 }

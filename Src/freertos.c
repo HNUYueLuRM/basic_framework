@@ -206,7 +206,7 @@ void StartROBOTTASK(void const *argument)
 
 void StartUITASK(void const *argument)
 {
-  Referee_Interactive_init();
+  My_UI_init();
   while (1)
   {
     Referee_Interactive_task();

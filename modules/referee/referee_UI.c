@@ -389,7 +389,7 @@ void UI_ReFresh(referee_id_t *_id, int cnt, ...)
 		graphData = va_arg(ap, Graph_Data_t); // 访问参数列表中的每个项,第二个参数是你要返回的参数的类型,在取值时需要将其强制转化为指定类型的变量
 		memcpy(buffer + (LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head + UI_Operate_LEN_PerDraw * i), (uint8_t *)&graphData, UI_Operate_LEN_PerDraw);
 	}
-	Append_CRC16_Check_Sum(buffer,temp_datalength);
+	Append_CRC16_Check_Sum(buffer, temp_datalength);
 	RefereeSend(buffer, temp_datalength); // 发送CRC16校验值
 
 	va_end(ap); // 结束可变参数的获取

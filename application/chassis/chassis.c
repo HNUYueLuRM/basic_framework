@@ -16,7 +16,7 @@
 #include "dji_motor.h"
 #include "super_cap.h"
 #include "message_center.h"
-#include "rm_referee.h"
+#include "referee_task.h"
 
 #include "general_def.h"
 #include "bsp_dwt.h"
@@ -103,7 +103,7 @@ void ChassisInit()
     chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
     motor_rb = DJIMotorInit(&chassis_motor_config);
 
-    referee_data = RefereeInit(&huart6,&ui_data); // 裁判系统初始化
+    referee_data = Referee_Interactive_init(&huart6,&ui_data); // 裁判系统初始化
 
     // while (referee_data->GameRobotState.robot_id ==0);
     // Referee_Interactive_init(referee_data);

@@ -19,7 +19,6 @@
 
 static USARTInstance *referee_usart_instance; // 裁判系统串口实例
 static referee_info_t referee_info;			  // 裁判系统数据
-static Referee_Interactive_info_t *UI_tmp;	  // UI绘制需要的机器人状态数据
 
 static void RefereeRxCallback();
 static void JudgeReadData(uint8_t *buff);
@@ -27,46 +26,17 @@ static void JudgeReadData(uint8_t *buff);
 uint8_t UI_Seq = 0; // 包序号，供整个referee文件使用
 
 /* 裁判系统通信初始化 */
-referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle, Referee_Interactive_info_t *UI_data)
+referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 {
 	USART_Init_Config_s conf;
 	conf.module_callback = RefereeRxCallback;
 	conf.usart_handle = referee_usart_handle;
 	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
 	referee_usart_instance = USARTRegister(&conf);
-	UI_tmp = UI_data;
 	return &referee_info;
 }
 
-void RefereeGetUIData(referee_info_t **recv_info_pp, Referee_Interactive_info_t **UI_data_pp)
-{
-	*recv_info_pp = &referee_info;
-	*UI_data_pp = UI_tmp;
-}
 
-void CommBetweenRobotSend(referee_id_t *_id, robot_interactive_data_t *_data)
-{
-	Communicate_SendData_t SendData;
-	uint8_t temp_datalength = Interactive_Data_LEN_Head + Communicate_Data_LEN; // 计算交互数据长度  6+n,n为交互数据长度
-
-	SendData.FrameHeader.SOF = REFEREE_SOF;
-	SendData.FrameHeader.DataLength = temp_datalength;
-	SendData.FrameHeader.Seq = UI_Seq;
-	SendData.FrameHeader.CRC8 = Get_CRC8_Check_Sum((uint8_t *)&SendData, LEN_CRC8, 0xFF);
-
-	SendData.CmdID = ID_student_interactive;
-
-	SendData.datahead.data_cmd_id = Communicate_Data_ID;
-	SendData.datahead.sender_ID = _id->Robot_ID;
-	SendData.datahead.receiver_ID = _id->Receiver_Robot_ID;
-
-	SendData.Data = *_data;
-
-	SendData.frametail = Get_CRC16_Check_Sum((uint8_t *)&SendData, LEN_HEADER + LEN_CMDID + temp_datalength, 0xFFFF);
-
-	RefereeSend((uint8_t *)&SendData, LEN_HEADER + LEN_CMDID + temp_datalength + LEN_TAIL); // 发送
-	UI_Seq++;																				// 包序号+1
-}
 
 /**
  * @brief 裁判系统数据发送函数,由于使用

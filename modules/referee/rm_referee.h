@@ -68,8 +68,8 @@ typedef struct
 	lid_mode_e lid_mode;					 // 弹舱盖打开
 	loader_mode_e loader_mode;				 // 单发...连发
 	Chassis_Power_Data_s Chassis_Power_Data; // 功率控制
-	
-	//上一次的模式，用于flag判断
+
+	// 上一次的模式，用于flag判断
 	chassis_mode_e chassis_last_mode;	// 底盘模式
 	gimbal_mode_e gimbal_last_mode;		// 云台模式
 	shoot_mode_e shoot_last_mode;		// 发射模式设置
@@ -81,35 +81,19 @@ typedef struct
 #pragma pack()
 
 /**
- * @brief 裁判系统通信初始化, 该函数会初始化裁判系统串口,开启中断,同时将UI绘制的数据指针传入
- * 
+ * @brief 裁判系统通信初始化,该函数会初始化裁判系统串口,开启中断
+ *
  * @param referee_usart_handle 串口handle,C板一般用串口6
- * @param UI_data UI绘制数据指针,即保存着UI绘制的各种状态数据
  * @return referee_info_t* 返回裁判系统反馈的数据,包括热量/血量/状态等
  */
-referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle, Referee_Interactive_info_t *UI_data);
+referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle);
 
 /**
- * @brief 由UI绘制的任务初始化调用,用于获取裁判系统反馈的数据指针和UI绘制的数据指针,以便UI绘制任务使用
- * 
- * @param recv_info_pp 指向裁判系统反馈的数据指针
- * @param UI_data_pp 
- */
-void RefereeGetUIData(referee_info_t **recv_info_pp, Referee_Interactive_info_t **UI_data_pp);
-
-/**
- * @brief  发送机器人间的交互数据
- * @param  referee_id_t *_id  sender为本机器人，receiver为接收方机器人，发送前设置Receiver_Robot_ID再调用该函数
- *         robot_interactive_data_t *data    数据段
- * @retval none
- * @attention
- */
-void CommBetweenRobotSend(referee_id_t *_id, robot_interactive_data_t *_data);
-
-/**
- * @brief 发送函数
- * @todo
- * @param
+ * @brief UI绘制和交互数的发送接口,由UI绘制任务和多机通信函数调用
+ * @note 内部包含了一个实时系统的延时函数,这是因为裁判系统接收CMD数据至高位10Hz
+ *
+ * @param send 发送数据首地址
+ * @param tx_len 发送长度
  */
 void RefereeSend(uint8_t *send, uint16_t tx_len);
 
