@@ -22,14 +22,13 @@
 #include "balance.h"
 #endif // BALANCE_BOARD
 
-
 void RobotInit()
-{  
+{
     // 关闭中断,防止在初始化过程中发生中断
     // 请不要在初始化过程中使用中断和延时函数！
     // 若必须,则只允许使用DWT_Delay()
     __disable_irq();
-    
+
     BSPInit();
 
 #if defined(ONE_BOARD) || defined(GIMBAL_BOARD)
@@ -39,7 +38,7 @@ void RobotInit()
 #endif
 
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
-    // ChassisInit();
+    ChassisInit();
 #endif
 
 #ifdef BALANCE_BAORD
@@ -48,7 +47,6 @@ void RobotInit()
 
     // 初始化完成,开启中断
     __enable_irq();
-    Referee_Interactive_init();
 }
 
 void RobotTask()

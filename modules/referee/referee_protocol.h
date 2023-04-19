@@ -1,5 +1,5 @@
 /**
- * @file referee_def.h
+ * @file referee_protocol.h
  * @author kidneygood (you@domain.com)
  * @version 0.1
  * @date 2022-12-02
@@ -8,22 +8,20 @@
  *
  */
 
-#ifndef REFEREE_DEF_H
-#define REFEREE_DEF_H
+#ifndef referee_protocol_H
+#define referee_protocol_H
 
 #include "stdint.h"
 
-/****************************宏定义部分****************************/
 /****************************宏定义部分****************************/
 
 #define REFEREE_SOF 0xA5 // 起始字节,协议固定为0xA5
 #define Robot_Red 0
 #define Robot_Blue 1
-#define Communicate_Data_LEN 5   //自定义交互数据长度，该长度决定了我方发送和他方接收，自定义交互数据协议更改时只需要更改此宏定义即可
+#define Communicate_Data_LEN 5 // 自定义交互数据长度，该长度决定了我方发送和他方接收，自定义交互数据协议更改时只需要更改此宏定义即可
 
-#pragma pack(1)      
+#pragma pack(1)
 
-/****************************通信协议格式****************************/
 /****************************通信协议格式****************************/
 
 /* 通信协议格式偏移，枚举类型,代替#define声明 */
@@ -90,19 +88,19 @@ typedef enum
 /* 命令码数据段长,根据官方协议来定义长度，还有自定义数据长度 */
 typedef enum
 {
-	LEN_game_state = 3,				  // 0x0001
-	LEN_game_result = 1,			  // 0x0002
-	LEN_game_robot_HP = 2,			  // 0x0003
-	LEN_event_data = 4,				  // 0x0101
-	LEN_supply_projectile_action = 4, // 0x0102
-	LEN_game_robot_state = 27,		  // 0x0201
-	LEN_power_heat_data = 14,		  // 0x0202
-	LEN_game_robot_pos = 16,		  // 0x0203
-	LEN_buff_musk = 1,				  // 0x0204
-	LEN_aerial_robot_energy = 1,	  // 0x0205
-	LEN_robot_hurt = 1,				  // 0x0206
-	LEN_shoot_data = 7,				  // 0x0207
-	LEN_receive_data = 6+Communicate_Data_LEN,  //0x0301
+	LEN_game_state = 3,							 // 0x0001
+	LEN_game_result = 1,						 // 0x0002
+	LEN_game_robot_HP = 2,						 // 0x0003
+	LEN_event_data = 4,							 // 0x0101
+	LEN_supply_projectile_action = 4,			 // 0x0102
+	LEN_game_robot_state = 27,					 // 0x0201
+	LEN_power_heat_data = 14,					 // 0x0202
+	LEN_game_robot_pos = 16,					 // 0x0203
+	LEN_buff_musk = 1,							 // 0x0204
+	LEN_aerial_robot_energy = 1,				 // 0x0205
+	LEN_robot_hurt = 1,							 // 0x0206
+	LEN_shoot_data = 7,							 // 0x0207
+	LEN_receive_data = 6 + Communicate_Data_LEN, // 0x0301
 
 } JudgeDataLength_e;
 
@@ -235,7 +233,7 @@ typedef struct
 /* 交互数据头结构 */
 typedef struct
 {
-	uint16_t data_cmd_id;    //由于存在多个内容 ID，但整个cmd_id 上行频率最大为 10Hz，请合理安排带宽。注意交互部分的上行频率
+	uint16_t data_cmd_id; // 由于存在多个内容 ID，但整个cmd_id 上行频率最大为 10Hz，请合理安排带宽。注意交互部分的上行频率
 	uint16_t sender_ID;
 	uint16_t receiver_ID;
 } ext_student_interactive_header_data_t;
@@ -244,7 +242,7 @@ typedef struct
 typedef enum
 {
 	// 红方机器人ID
-	RobotID_RHero = 1,         
+	RobotID_RHero = 1,
 	RobotID_REngineer = 2,
 	RobotID_RStandard1 = 3,
 	RobotID_RStandard2 = 4,
@@ -291,13 +289,12 @@ typedef enum
 } Interactive_Data_Length_e;
 
 /****************************自定义交互数据****************************/
-/****************************自定义交互数据****************************/
 /*
 	学生机器人间通信 cmd_id 0x0301，内容 ID:0x0200~0x02FF
 	自定义交互数据 机器人间通信：0x0301。
 	发送频率：上限 10Hz
 */
-//自定义交互数据协议，可更改，更改后需要修改最上方宏定义数据长度的值
+// 自定义交互数据协议，可更改，更改后需要修改最上方宏定义数据长度的值
 typedef struct
 {
 	uint8_t data[Communicate_Data_LEN]; // 数据段,n需要小于113
@@ -319,8 +316,6 @@ typedef struct
 	robot_interactive_data_t Data; // 数据段
 } Communicate_ReceiveData_t;
 
-
-/****************************UI交互数据****************************/
 /****************************UI交互数据****************************/
 
 /* 图形数据 */
@@ -339,7 +334,7 @@ typedef struct
 	uint32_t radius : 10;
 	uint32_t end_x : 11;
 	uint32_t end_y : 11;
-} Graph_Data_t; 
+} Graph_Data_t;
 
 typedef struct
 {
