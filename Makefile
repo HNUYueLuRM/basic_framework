@@ -145,7 +145,7 @@ modules/oled/oled.c \
 modules/referee/crc_ref.c \
 modules/referee/rm_referee.c \
 modules/referee/referee_UI.c \
-modules/referee/referee_communication.c \
+modules/referee/referee_task.c \
 modules/remote/remote_control.c \
 modules/super_cap/super_cap.c \
 modules/can_comm/can_comm.c \
@@ -155,7 +155,6 @@ modules/vofa/vofa.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
-application/referee/referee.c \
 application/cmd/robot_cmd.c \
 application/balance_chassis/balance.c \
 application/robot.c
@@ -237,7 +236,6 @@ C_INCLUDES =  \
 -Iapplication/gimbal \
 -Iapplication/cmd \
 -Iapplication/balance_chassis \
--Iapplication/referee \
 -Iapplication \
 -Ibsp/dwt \
 -Ibsp/can \

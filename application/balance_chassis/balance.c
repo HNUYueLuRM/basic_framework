@@ -7,11 +7,11 @@
 #include "HT04.h"
 #include "LK9025.h"
 #include "bmi088.h"
-#include "referee.h"
 #include "super_cap.h"
 #include "controller.h"
 #include "can_comm.h"
 #include "user_lib.h"
+#include "rm_referee.h"
 // standard
 #include "stdint.h"
 #include "arm_math.h" // 需要用到较多三角函数
