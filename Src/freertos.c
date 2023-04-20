@@ -52,6 +52,12 @@
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
+osThreadId insTaskHandle;
+osThreadId ledTaskHandle;
+osThreadId robotTaskHandle;
+osThreadId motorTaskHandle;
+osThreadId daemonTaskHandle;
+osThreadId uiTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -119,16 +125,16 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   osThreadDef(instask, StartINSTASK, osPriorityNormal, 0, 1024);
-  defaultTaskHandle = osThreadCreate(osThread(instask), NULL);
+  insTaskHandle = osThreadCreate(osThread(instask), NULL);
 
-  osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 256);
-  defaultTaskHandle = osThreadCreate(osThread(motortask), NULL);
+  osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 512);
+  motorTaskHandle = osThreadCreate(osThread(motortask), NULL);
 
-  osThreadDef(daemontask, StartDAEMONTASK, osPriorityNormal, 0, 512);
-  defaultTaskHandle = osThreadCreate(osThread(daemontask), NULL);
+  osThreadDef(daemontask, StartDAEMONTASK, osPriorityNormal, 0, 128);
+  daemonTaskHandle = osThreadCreate(osThread(daemontask), NULL);
 
   osThreadDef(robottask, StartROBOTTASK, osPriorityNormal, 0, 1024);
-  defaultTaskHandle = osThreadCreate(osThread(robottask), NULL);
+  robotTaskHandle = osThreadCreate(osThread(robottask), NULL);
   /* USER CODE END RTOS_THREADS */
 
 }
@@ -191,7 +197,7 @@ void StartROBOTTASK(void const * argument)
   {
     // 200Hz
     RobotTask();
-    osDelay(10);//syh此处暂时将时间改�?10ms，原因在于未使用缓冲区发送，发�?�时延时5ms
+    osDelay(5);//syh此处暂时将时间改�?10ms，原因在于未使用缓冲区发送，发�?�时延时5ms
   }
 }
 /* USER CODE END Application */

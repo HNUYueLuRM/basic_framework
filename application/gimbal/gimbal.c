@@ -53,8 +53,8 @@ void GimbalInit()
         .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
         .work_mode = BMI088_BLOCK_PERIODIC_MODE,
     };
-    imu = BMI088Register(&imu_config);
-    // gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+    // imu = BMI088Register(&imu_config);
+    gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
     // YAW
     Motor_Init_Config_s yaw_config = {
         .can_init_config = {

@@ -78,11 +78,13 @@ Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
  */
 void VisionSend(Vision_Send_s *send)
 {
-    uint16_t flag_register;
-    uint8_t send_buff[VISION_SEND_SIZE];
-    uint16_t tx_len;
+    // buff和txlen必须为static,才能保证在函数退出后不被释放,使得DMA正确完成发送
+    // 析构后的陷阱需要特别注意!
+    static uint16_t flag_register;
+    static uint8_t send_buff[VISION_SEND_SIZE]; 
+    static uint16_t tx_len;
     // TODO: code to set flag_register
-    flag_register = 30<<8|0b00000001;
+    flag_register = 30 << 8 | 0b00000001;
     // 将数据转化为seasky协议的数据包
     get_protocol_send_data(0x02, flag_register, &send->yaw, 3, send_buff, &tx_len);
     USARTSend(vision_usart_instance, send_buff, tx_len, USART_TRANSFER_DMA); // 和视觉通信使用IT,防止和接收使用的DMA冲突
