@@ -62,7 +62,7 @@ Subscriber_t *SubRegister(char *name, uint8_t data_len)
     ret->data_len = data_len; // 设定数据长度
     for (size_t i = 0; i < QUEUE_SIZE; ++i)
     { // 给消息队列的每一个元素分配空间,queue里保存的实际上是数据执指针,这样可以兼容不同的数据长度
-        ret->queue[i] = malloc(sizeof(data_len));
+        ret->queue[i] = malloc(data_len);
     }
     // 如果是第一个订阅者,特殊处理一下,将first_subs指针指向新建的订阅者(详见文档)
     if (pub->first_subs == NULL)

@@ -7,11 +7,11 @@
 #include "HT04.h"
 #include "LK9025.h"
 #include "bmi088.h"
+#include "referee_task.h"
 #include "super_cap.h"
 #include "controller.h"
 #include "can_comm.h"
 #include "user_lib.h"
-#include "rm_referee.h"
 // standard
 #include "stdint.h"
 #include "arm_math.h" // 需要用到较多三角函数
@@ -24,7 +24,8 @@ static float balance_dt;
 static attitude_t *imu_data;
 // static BMI088Instance *imu;
 static SuperCapInstance *super_cap;
-static referee_info_t *referee_data; // 裁判系统的数据会被不断更新
+static referee_info_t *referee_data;         // 裁判系统的数据会被不断更新
+static Referee_Interactive_info_t my_uidata; // UI绘制数据,各种模式和状态/功率的显示
 // 电机
 static HTMotorInstance *lf, *rf, *lb, *rb;
 static LKMotorInstance *l_driven, *r_driven;
@@ -45,36 +46,45 @@ static PIDInstance roll_compensate_pid; // roll轴补偿,用于保持机体水�
  * @brief 将电机和imu的数据组装为LinkNPodParam结构体
  * @note 由于两个连杆和轮子连接时,只有一个使用了轴承,另外一个直接和电机的定子连接,
  *       所以轮子的转速和电机的转速不一致,因此和地面的速度应为电机转速减去杆的转速,得到的才是轮子的转速
+ * @note HT04电机上电的编码器位置为零,请看Link2Pod()的note,确定限位LIMIT_LINK_RAD的正负号
  *
  * @todo angle direction to be verified
  */
 static void ParamAssemble()
-{ // 电机的角度是逆时针为正,左侧全部取反
-    left_side.phi1 = PI2 - LIMIT_LINK_RAD - lb->measure.total_angle;
-    left_side.phi4 = -lf->measure.total_angle + LIMIT_LINK_RAD;
-    left_side.phi1_w = -lb->measure.speed_rads;
-    left_side.phi4_w = -lf->measure.speed_rads;
-    left_side.wheel_dist = -l_driven->measure.total_angle / 360 * WHEEL_RADIUS * PI;
-    left_side.wheel_w = -l_driven->measure.speed_rads;
-
-    right_side.phi1 = PI2 - LIMIT_LINK_RAD + rb->measure.total_angle;
-    right_side.phi4 = rf->measure.total_angle + LIMIT_LINK_RAD;
-    right_side.phi1_w = rb->measure.speed_rads;
-    right_side.phi4_w = rf->measure.speed_rads;
-    right_side.wheel_dist = r_driven->measure.total_angle / 360 * WHEEL_RADIUS * PI;
-    right_side.wheel_w = r_driven->measure.speed_rads;
-
-    if(chassis_cmd_recv.wz != 0) // 若有转向指令,则使用IMU积分得到的位置,否则左右轮位置相反会产生阻碍转向的力矩
+{
+    left_side.phi1 = PI2 - LIMIT_LINK_RAD + lb->measure.total_angle;
+    left_side.phi4 = lf->measure.total_angle + LIMIT_LINK_RAD;
+    left_side.phi1_w = lb->measure.speed_rads;
+    left_side.phi4_w = lf->measure.speed_rads;
+    left_side.wheel_dist = l_driven->measure.total_angle / 360 * WHEEL_RADIUS * PI;
+    left_side.wheel_w = l_driven->measure.speed_rads;
+    // 电机的角度是逆时针为正,右侧全部取反
+    right_side.phi1 = PI2 - LIMIT_LINK_RAD - rb->measure.total_angle;
+    right_side.phi4 = -rf->measure.total_angle + LIMIT_LINK_RAD;
+    right_side.phi1_w = -rb->measure.speed_rads;
+    right_side.phi4_w = -rf->measure.speed_rads;
+    right_side.wheel_dist = -r_driven->measure.total_angle / 360 * WHEEL_RADIUS * PI;
+    right_side.wheel_w = -r_driven->measure.speed_rads;
+    // 若有转向指令,则使用IMU积分得到的速度,否则左右轮相反会产生阻碍转向的力矩
+    if (chassis_cmd_recv.wz != 0) // 此时相当于lqr的平衡环只对机体的速度响应
     {
-        // left_side.wheel_dist = 0.5*imu_data->Accel[3];
-        // right_side.wheel_dist = 0.5*imu_data->Accel[3];
-    }
+        float vel_divide_R = imu_data->Accel[3] * balance_dt / WHEEL_RADIUS; // todo: 确定速度方向
+        left_side.wheel_w = vel_divide_R;
+        right_side.wheel_w = vel_divide_R;
+    } // 转向的时候不需要修正轮速
 }
 
 /**
  * @brief 根据关节角度和角速度,计算单杆长度和角度以及变化率
  * @todo 测试两种的效果,留下其中一种;
  *       若差分的效果好则不需要VELOCITY_DIFF_VMC内的代码
+ *
+ * @note 右侧视图
+ *  ___x          anti-clockwise is positive for motor
+ * |            _____
+ * |y          /     \
+ *             \     /
+ *              \   /
  *
  * @param p 5连杆和腿的参数
  */
@@ -88,15 +98,14 @@ static void Link2Pod(LinkNPodParam *p)
     BD = powf(xD - xB, 2) + powf(yD - yB, 2);
     A0 = 2 * CALF_LEN * (xD - xB);
     B0 = 2 * CALF_LEN * (yD - yB);
-    phi2t = 2 * atan2f(B0 + Sqrt(powf(A0, 2) + powf(B0, 2) - powf(BD, 2)), A0 + BD);
-    xC = xB + CALF_LEN * arm_cos_f32(phi2t);
-    yC = yB + CALF_LEN * arm_sin_f32(phi2t);
+    p->phi2 = 2 * atan2f(B0 + Sqrt(powf(A0, 2) + powf(B0, 2) - powf(BD, 2)), A0 + BD);
+    xC = xB + CALF_LEN * arm_cos_f32(p->phi2);
+    yC = yB + CALF_LEN * arm_sin_f32(p->phi2);
 
-    p->phi2 = phi2t;
     p->phi5 = atan2f(yC, xC - JOINT_DISTANCE / 2);
     p->pod_len = Sqrt(powf(xC - JOINT_DISTANCE / 2, 2) + powf(yC, 2));
-    p->phi3 = atan2(yC - yD, xC - xD); // 稍后用于计算VMC
-    p->theta = p->phi5 - 0.5 * PI - imu_data->Pitch;
+    p->phi3 = atan2(yC - yD, xC - xD);                              // 稍后用于计算VMC
+    p->theta = p->phi5 - 0.5 * PI - imu_data->Pitch * DEGREE_2_RAD; // 确定方向
     p->height = p->pod_len * arm_cos_f32(p->theta);
 
 #ifdef VELOCITY_DIFF_VMC
@@ -118,11 +127,12 @@ static void Link2Pod(LinkNPodParam *p)
     p->phi2_w = (phi2t - p->phi2) / balance_dt; // 稍后用于修正轮速
     p->pod_w = (phi5t - p->phi5) / balance_dt;
     p->pod_v = (Sqrt(powf(xC - JOINT_DISTANCE / 2, 2) + powf(yC, 2)) - p->pod_len) / balance_dt;
-    p->theta_w = (phi5t - 0.5 * PI - imu_data->Pitch - p->theta) / balance_dt;
-    p->height_v = p->pod_v * arm_cos_f32(p->theta) - p->pod_len * arm_sin_f32(p->theta) * p->theta_w; // 这很酷!PDE!
+    p->theta_w = (phi5t - 0.5 * PI - imu_data->Pitch * DEGREE_2_RAD - balance_dt * imu_data->Gyro[3] - p->theta) / balance_dt; //@todo 确定c板安装方向(BMI088);
+    p->height_v = p->pod_v * arm_cos_f32(p->theta) - p->pod_len * arm_sin_f32(p->theta) * p->theta_w;                          // 这很酷!PDE!
 #endif
-
-    p->wheel_w = (p->wheel_w - p->phi2_w + imu_data->Gyro[3]) * WHEEL_RADIUS; // 修正轮速
+    if (chassis_cmd_recv.wz == 0)                                  // 没有转向控制指令,修正轮速. @todo 确定方向
+        p->wheel_w = (p->wheel_w - p->phi2_w + imu_data->Gyro[3]); // 注意此时单位仍然是rad/s, @todo 确定c板安装方向(BMI088);
+    // 此时使用的是电机编码器反馈的速度
 }
 
 /**
@@ -143,11 +153,13 @@ static void CalcLQR(LinkNPodParam *p, float target_x)
     {
         T[i] = gain_list[i * 6 + 0] * -p->theta +
                gain_list[i * 6 + 1] * -p->theta_w +
-               gain_list[i * 6 + 2] * (target_x - p->wheel_dist) +
-               gain_list[i * 6 + 3] * -p->wheel_w +
-               gain_list[i * 6 + 4] * -imu_data->Pitch +
-               gain_list[i * 6 + 5] * -imu_data->Gyro[3];
-    }
+               gain_list[i * 6 + 4] * -imu_data->Pitch * DEGREE_2_RAD +
+               gain_list[i * 6 + 5] * -imu_data->Gyro[1];              // @todo 待确定c板安装方向
+        if (chassis_cmd_recv.vx == 0 && chassis_cmd_recv.wz == 0)      // 位置闭环仅在目标转向速度和水平速度都为零的情况下起作用
+            T[i] += gain_list[i * 6 + 2] * (target_x - p->wheel_dist); // 若速度为0,则加入位置闭环,以提供对外力更好的抵抗和复位
+        else
+            T[i] += gain_list[i * 6 + 3] * (chassis_cmd_recv.vx - p->wheel_w * WHEEL_RADIUS); // 若目标速度|角速度不为0,则只对速度闭环
+    }                                                                                         // 有转向指令的时候,轮速的来源是IMU,而不是编码器
     p->T_wheel = T[0];
     p->T_pod = T[1];
 }
@@ -170,6 +182,7 @@ static void SynthesizeMotion()
 /**
  * @brief 腿部控制:长度.用PD模拟弹簧的传递函数
  *
+ * @note 实际使用的是机体当前的高度,若使用腿长计算则会导致加速和减速时因腿倾斜故而机体高度变化
  */
 static void LegControl(LinkNPodParam *p, float target_length)
 {
@@ -212,17 +225,21 @@ static void FlyDetect()
 }
 
 /**
- * @brief 功率限制,一般不需要
+ * @brief 功率限制,一般不需要;限制完成之后设定电机输出
  *
  */
-static void WattLimit()
+static void WattLimitSet()
 {
-    HTMotorSetRef(&lf, left_side.T_front);
-    HTMotorSetRef(&lb, left_side.T_back);
-    HTMotorSetRef(&rf, right_side.T_front);
-    HTMotorSetRef(&rb, right_side.T_back);
-    LKMotorSetRef(&l_driven, left_side.T_wheel);
-    LKMotorSetRef(&r_driven, right_side.T_wheel);
+    // code to limit 9025's output
+    // ...
+
+    // 设定电机电流
+    HTMotorSetRef(lf, left_side.T_front);
+    HTMotorSetRef(lb, left_side.T_back);
+    HTMotorSetRef(rf, right_side.T_front);
+    HTMotorSetRef(rb, right_side.T_back);
+    LKMotorSetRef(l_driven, left_side.T_wheel);
+    LKMotorSetRef(r_driven, right_side.T_wheel);
 }
 
 void BalanceInit()
@@ -315,7 +332,7 @@ void BalanceInit()
     };
     chassis_comm = CANCommInit(&chassis_comm_conf);
 
-    // referee_data = RefereeInit(&huart6); // 裁判系统串口
+    referee_data = Referee_Interactive_init(&huart6, &my_uidata); // 裁判系统串口
 
     // ↓↓↓---------------综合运动控制----------------↓↓↓
     PID_Init_Config_s swerving_pid_conf = {
@@ -393,17 +410,17 @@ void BalanceTask()
     // 腿长控制
     LegControl(&left_side, 0);
     LegControl(&right_side, 0);
-
-    SynthesizeMotion(); // 综合运动控制,转向+抗劈叉
-
-    RollCompensate(); // 俯仰角补偿,保持机体水平
+    // 综合运动控制,转向+抗劈叉
+    SynthesizeMotion(); // 两边要一起
+    // 俯仰角补偿,保持机体水平
+    RollCompensate(); // 两边也要一起
     // VMC映射成关节输出
     VMCProject(&left_side);
     VMCProject(&right_side);
 
-    FlyDetect(); // 滞空检测
+    FlyDetect(); // 滞空检测,尝试使用加速度计自由落体时量测值小?
 
-    WattLimit(); // 电机输出限幅
+    WattLimitSet(); // 电机输出限幅
 
     // code to go here... 裁判系统,UI,多机通信
 

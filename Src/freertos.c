@@ -70,8 +70,6 @@ void StartDAEMONTASK(void const *argument);
 
 void StartROBOTTASK(void const *argument);
 
-void StartROBOTTASK(void const *argument);
-
 void StartUITASK(void const *argument);
 /* USER CODE END FunctionPrototypes */
 
@@ -175,7 +173,7 @@ void StartINSTASK(void const *argument)
   while (1)
   {
     // 1kHz
-    //  INS_Task();
+     INS_Task();
     osDelay(1);
   }
 }
@@ -206,7 +204,7 @@ void StartROBOTTASK(void const *argument)
   {
     // 200Hz
     RobotTask();
-    osDelay(5); // syh此处暂时将时间改�?10ms，原因在于未使用缓冲区发送，发�?�时延时5ms
+    osDelay(5); 
   }
 }
 
