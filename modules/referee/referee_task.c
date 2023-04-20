@@ -218,57 +218,21 @@ static void My_UI_Refresh(referee_info_t *referee_recv_info, Referee_Interactive
     // shoot
     if (_Interactive_data->Referee_Interactive_Flag.shoot_flag == 1)
     {
-        switch (_Interactive_data->shoot_mode)
-        {
-        case SHOOT_OFF:
-        {
-            Char_Draw(&UI_State_dyn[2], "sd2", UI_Graph_Change, 8, UI_Color_Orange, 15, 2, 270, 650, "off");
-            break;
-        }
-        case SHOOT_ON:
-        {
-            Char_Draw(&UI_State_dyn[2], "sd2", UI_Graph_Change, 8, UI_Color_Orange, 15, 2, 270, 650, "on ");
-            break;
-        }
-        }
+        Char_Draw(&UI_State_dyn[2], "sd2", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 650, _Interactive_data->shoot_mode == SHOOT_ON ? "on " : "off");
         Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[2]);
         _Interactive_data->Referee_Interactive_Flag.shoot_flag = 0;
     }
     // friction
     if (_Interactive_data->Referee_Interactive_Flag.friction_flag == 1)
     {
-        switch (_Interactive_data->friction_mode)
-        {
-        case FRICTION_OFF:
-        {
-            Char_Draw(&UI_State_dyn[3], "sd3", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 600, "off");
-            break;
-        }
-        case FRICTION_ON:
-        {
-            Char_Draw(&UI_State_dyn[3], "sd3", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 600, "on ");
-            break;
-        }
-        }
+        Char_Draw(&UI_State_dyn[3], "sd3", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 600, _Interactive_data->friction_mode == FRICTION_ON ? "on " : "off");
         Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[3]);
         _Interactive_data->Referee_Interactive_Flag.friction_flag = 0;
     }
     // lid
     if (_Interactive_data->Referee_Interactive_Flag.lid_flag == 1)
     {
-        switch (_Interactive_data->lid_mode)
-        {
-        case LID_CLOSE:
-        {
-            Char_Draw(&UI_State_dyn[4], "sd4", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 550, "close");
-            break;
-        }
-        case LID_OPEN:
-        {
-            Char_Draw(&UI_State_dyn[4], "sd4", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 550, "open ");
-            break;
-        }
-        }
+        Char_Draw(&UI_State_dyn[4], "sd4", UI_Graph_Change, 8, UI_Color_Pink, 15, 2, 270, 550, _Interactive_data->lid_mode == LID_OPEN ? "open " : "close");
         Char_ReFresh(&referee_recv_info->referee_id, UI_State_dyn[4]);
         _Interactive_data->Referee_Interactive_Flag.lid_flag = 0;
     }
@@ -316,7 +280,7 @@ static void Mode_Change_Check(Referee_Interactive_info_t *_Interactive_data)
 
     if (_Interactive_data->lid_mode != _Interactive_data->lid_last_mode)
     {
-        _Interactive_data->Referee_Interactive_Flag.lid_flag = 1;
+        _Interactive_data->Referee_Interactive_Flag.lid_flag= 1;
         _Interactive_data->lid_last_mode = _Interactive_data->lid_mode;
     }
 
