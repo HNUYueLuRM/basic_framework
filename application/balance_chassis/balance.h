@@ -5,7 +5,7 @@
 #define THIGH_LEN 0.15f       // 大腿
 #define JOINT_DISTANCE 0.108f // 关节间距
 #define WHEEL_RADIUS 0.032f   // 轮子半径
-#define LIMIT_LINK_RAD 0.358  //
+#define LIMIT_LINK_RAD 0.15149458  // 初始限位角度,见ParamAssemble
 
 // 计算速度的方式(五连杆到单杆的映射)
 #define VELOCITY_DIFF_VMC // 通过速度计算增量,然后通过差分计算腿长变化率和腿角速度
