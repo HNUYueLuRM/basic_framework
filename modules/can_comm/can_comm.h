@@ -12,6 +12,7 @@
 #define CAN_COMM_H
 
 #include "bsp_can.h"
+#include "daemon.h"
 
 #define MX_CAN_COMM_COUNT 4 // 注意均衡负载,一条总线上不要挂载过多的外设
 
@@ -38,6 +39,8 @@ typedef struct
     uint8_t recv_state;   // 接收状态,
     uint8_t cur_recv_len; // 当前已经接收到的数据长度(包括帧头帧尾datalen和校验和)
     uint8_t update_flag;  // 数据更新标志位,当接收到新数据时,会将此标志位置1,调用CANCommGet()后会将此标志位置0
+
+    DaemonInstance* comm_daemon;
 } CANCommInstance;
 #pragma pack()
 
@@ -47,6 +50,8 @@ typedef struct
     CAN_Init_Config_s can_config; // CAN初始化结构体
     uint8_t send_data_len;        // 发送数据长度
     uint8_t recv_data_len;        // 接收数据长度
+
+    uint16_t daemon_count; // 守护进程计数,用于初始化守护进程
 } CANComm_Init_Config_s;
 
 /**
@@ -75,5 +80,13 @@ void CANCommSend(CANCommInstance *instance, uint8_t *data);
  *            强烈建议通过CANComm传输的数据使用pack(1)
  */
 void *CANCommGet(CANCommInstance *instance);
+
+/**
+ * @brief 检查CANComm是否在线
+ * 
+ * @param instance 
+ * @return uint8_t 
+ */
+uint8_t CANCommIsOnline(CANCommInstance *instance);
 
 #endif // !CAN_COMM_H

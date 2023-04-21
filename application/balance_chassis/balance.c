@@ -284,14 +284,35 @@ void BalanceInit()
 
     Motor_Init_Config_s joint_conf = {
         // 写一个,剩下的修改方向和id即可
-
+        .can_init_config = {
+            .can_handle = &hcan1,
+        },
+        .controller_param_init_config = {
+            .current_PID = {
+                .Kp = 1,
+            },
+        },
+        .controller_setting_init_config = {
+            .close_loop_type = CURRENT_LOOP,
+            .outer_loop_type = CURRENT_LOOP,
+            .motor_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
+            .angle_feedback_source = MOTOR_FEED,
+            .speed_feedback_source = MOTOR_FEED,
+        },
+        .motor_type = HT04,
     };
+
+    joint_conf.can_init_config.tx_id = 1;
+    joint_conf.can_init_config.rx_id = 11;
     lf = HTMotorInit(&joint_conf);
-
-    rf = HTMotorInit(&joint_conf);
-
+    joint_conf.can_init_config.tx_id = 2;
+    joint_conf.can_init_config.rx_id = 12;
     lb = HTMotorInit(&joint_conf);
-
+    joint_conf.can_init_config.tx_id = 3;
+    joint_conf.can_init_config.rx_id = 13;
+    rf = HTMotorInit(&joint_conf);
+    joint_conf.can_init_config.tx_id = 4;
+    joint_conf.can_init_config.rx_id = 14;
     rb = HTMotorInit(&joint_conf);
 
     // ↓↓↓---------------驱动电机初始化----------------↓↓↓
@@ -300,10 +321,7 @@ void BalanceInit()
         .can_init_config.can_handle = &hcan1,
         .controller_param_init_config = {
             .current_PID = {
-                .Kp = 1,
-                .Ki = 0,
-                .Kd = 0,
-                .MaxOut = 500,
+                .Kp = 274.348,
             },
         },
         .controller_setting_init_config = {
@@ -311,12 +329,12 @@ void BalanceInit()
             .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = CURRENT_LOOP,
             .close_loop_type = CURRENT_LOOP,
+            .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
         },
         .motor_type = LK9025,
     };
     driven_conf.can_init_config.tx_id = 1;
     l_driven = LKMotorInit(&driven_conf);
-
     driven_conf.can_init_config.tx_id = 2;
     r_driven = LKMotorInit(&driven_conf);
 

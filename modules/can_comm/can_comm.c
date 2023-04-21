@@ -60,6 +60,7 @@ static void CANCommRxCallback(CANInstance *_instance)
                 { // 数据量大的话考虑使用DMA
                     memcpy(comm->unpacked_recv_data, comm->raw_recvbuf + 2, comm->recv_data_len);
                     comm->update_flag = 1; // 数据更新flag置为1
+                    DaemonReload(comm->comm_daemon); // 重载daemon,避免数据更新后一直不被读取而导致数据更新不及时
                 }
             }
             CANCommResetRx(comm);
@@ -84,6 +85,13 @@ CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
     comm_config->can_config.id = ins; // CANComm的实例指针作为CANInstance的id,回调函数中会用到
     comm_config->can_config.can_module_callback = CANCommRxCallback;
     ins->can_ins = CANRegister(&comm_config->can_config);
+
+    Daemon_Init_Config_s daemon_config = {
+        .callback = NULL,
+        .owner_id = (void *)ins,
+        .reload_count = comm_config->daemon_count,
+    };
+    ins->comm_daemon = DaemonRegister(&daemon_config);
     return ins;
 }
 
@@ -110,4 +118,9 @@ void *CANCommGet(CANCommInstance *instance)
 {
     instance->update_flag = 0; // 读取后将更新flag置为0
     return instance->unpacked_recv_data;
+}
+
+uint8_t CANCommIsOnline(CANCommInstance *instance)
+{
+    return DaemonIsOnline(instance->comm_daemon);
 }
