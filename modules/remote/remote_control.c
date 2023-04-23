@@ -5,6 +5,7 @@
 #include "stdlib.h"
 #include "daemon.h"
 
+#define RC_MOUSE_SMOOTH_COEF 0.9 // 鼠标平滑滤波器的阶数
 #define REMOTE_CONTROL_FRAME_SIZE 18u // 遥控器接收的buffer大小
 // 遥控器数据
 static RC_ctrl_t rc_ctrl[2];     //[0]:当前数据TEMP,[1]:上一次的数据LAST.用于按键持续按下和切换的判断
@@ -48,9 +49,8 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
     rc_ctrl[TEMP].rc.switch_left = ((sbus_buf[5] >> 4) & 0x000C) >> 2; //!< Switch left
 
     // 鼠标解析
-    rc_ctrl[TEMP].mouse.x = sbus_buf[6] | (sbus_buf[7] << 8);   //!< Mouse X axis
-    rc_ctrl[TEMP].mouse.y = sbus_buf[8] | (sbus_buf[9] << 8);   //!< Mouse Y axis
-    rc_ctrl[TEMP].mouse.z = sbus_buf[10] | (sbus_buf[11] << 8); //!< Mouse Z axis
+    rc_ctrl[TEMP].mouse.x = (float)(sbus_buf[6] | (sbus_buf[7] << 8))*RC_MOUSE_SMOOTH_COEF + (1-RC_MOUSE_SMOOTH_COEF)*(float)(rc_ctrl[LAST].mouse.x);   //!< Mouse X axis
+    rc_ctrl[TEMP].mouse.y = (float)(sbus_buf[8] | (sbus_buf[9] << 8))*RC_MOUSE_SMOOTH_COEF + (1-RC_MOUSE_SMOOTH_COEF)*(float)(rc_ctrl[TEMP].mouse.y);   //!< Mouse Y axis
     rc_ctrl[TEMP].mouse.press_l = sbus_buf[12];                 //!< Mouse Left Is Press ?
     rc_ctrl[TEMP].mouse.press_r = sbus_buf[13];                 //!< Mouse Right Is Press ?
 
