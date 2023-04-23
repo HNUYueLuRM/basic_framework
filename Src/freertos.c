@@ -50,15 +50,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
-/* USER CODE END Variables */
-osThreadId defaultTaskHandle;
 osThreadId insTaskHandle;
 osThreadId ledTaskHandle;
 osThreadId robotTaskHandle;
 osThreadId motorTaskHandle;
 osThreadId daemonTaskHandle;
 osThreadId uiTaskHandle;
+/* USER CODE END Variables */
+osThreadId defaultTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -73,13 +72,13 @@ void StartROBOTTASK(void const *argument);
 void StartUITASK(void const *argument);
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void const *argument);
+void StartDefaultTask(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
-void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize);
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
 
 /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
 static StaticTask_t xIdleTaskTCBBuffer;
@@ -95,12 +94,11 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackTyp
 /* USER CODE END GET_IDLE_TASK_MEMORY */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
-void MX_FREERTOS_Init(void)
-{
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -144,6 +142,7 @@ void MX_FREERTOS_Init(void)
   defaultTaskHandle = osThreadCreate(osThread(uitask), NULL);
 
   /* USER CODE END RTOS_THREADS */
+
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -153,16 +152,12 @@ void MX_FREERTOS_Init(void)
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const *argument)
+void StartDefaultTask(void const * argument)
 {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  // for (;;)
-  // {
-  //   osDelay(1);
-  // }
+  vTaskDelete( NULL );
   /* USER CODE END StartDefaultTask */
 }
 
@@ -173,7 +168,7 @@ void StartINSTASK(void const *argument)
   while (1)
   {
     // 1kHz
-     INS_Task();
+    INS_Task();
     osDelay(1);
   }
 }
@@ -204,7 +199,7 @@ void StartROBOTTASK(void const *argument)
   {
     // 200Hz
     RobotTask();
-    osDelay(5); 
+    osDelay(5);
   }
 }
 

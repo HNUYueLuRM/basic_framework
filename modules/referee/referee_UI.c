@@ -22,7 +22,7 @@
 *****************************************************************************************/
 void UIDelete(referee_id_t *_id, uint8_t Del_Operate, uint8_t Del_Layer)
 {
-	UI_delete_t UI_delete_data;
+	static UI_delete_t UI_delete_data;
 	uint8_t temp_datalength = Interactive_Data_LEN_Head + UI_Operate_LEN_Del; // 计算交互数据长度
 
 	UI_delete_data.FrameHeader.SOF = REFEREE_SOF;
@@ -352,7 +352,7 @@ void UI_ReFresh(referee_id_t *_id, int cnt, ...)
 
 	uint8_t temp_datalength = LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head + UI_Operate_LEN_PerDraw * cnt + LEN_TAIL; // 计算交互数据长度
 
-	uint8_t buffer[temp_datalength]; // 交互数据缓存
+	static uint8_t buffer[512]; // 交互数据缓存
 
 	va_list ap;		   // 创建一个 va_list 类型变量
 	va_start(ap, cnt); // 初始化 va_list 变量为一个参数列表
@@ -398,7 +398,7 @@ void UI_ReFresh(referee_id_t *_id, int cnt, ...)
 /************************************************UI推送字符（使更改生效）*********************************/
 void Char_ReFresh(referee_id_t *_id, String_Data_t string_Data)
 {
-	UI_CharReFresh_t UI_CharReFresh_data;
+	static UI_CharReFresh_t UI_CharReFresh_data;
 
 	uint8_t temp_datalength = Interactive_Data_LEN_Head + UI_Operate_LEN_DrawChar; // 计算交互数据长度
 
