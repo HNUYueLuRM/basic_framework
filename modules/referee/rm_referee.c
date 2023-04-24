@@ -14,46 +14,13 @@
 #include "crc_ref.h"
 #include "bsp_usart.h"
 #include "task.h"
+#include "daemon.h"
 
 #define RE_RX_BUFFER_SIZE 200
 
 static USARTInstance *referee_usart_instance; // 裁判系统串口实例
+static DaemonInstance *referee_daemon;		  // 裁判系统守护进程
 static referee_info_t referee_info;			  // 裁判系统数据
-
-static void RefereeRxCallback();
-static void JudgeReadData(uint8_t *buff);
-
-uint8_t UI_Seq = 0; // 包序号，供整个referee文件使用
-
-/* 裁判系统通信初始化 */
-referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
-{
-	USART_Init_Config_s conf;
-	conf.module_callback = RefereeRxCallback;
-	conf.usart_handle = referee_usart_handle;
-	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
-	referee_usart_instance = USARTRegister(&conf);
-	return &referee_info;
-}
-
-
-
-/**
- * @brief 裁判系统数据发送函数,由于使用
- * @param
- */
-void RefereeSend(uint8_t *send, uint16_t tx_len)
-{
-	static TickType_t xLastWakeTime;
-	USARTSend(referee_usart_instance, send, tx_len, USART_TRANSFER_DMA);
-	vTaskDelayUntil(&xLastWakeTime, 120);
-}
-
-/*裁判系统串口接收回调函数,解析数据 */
-static void RefereeRxCallback()
-{
-	JudgeReadData(referee_usart_instance->recv_buff);
-}
 
 /**
  * @brief  读取裁判数据,中断中读取保证速度
@@ -135,4 +102,46 @@ static void JudgeReadData(uint8_t *buff)
 			JudgeReadData(buff + sizeof(xFrameHeader) + LEN_CMDID + referee_info.FrameHeader.DataLength + LEN_TAIL);
 		}
 	}
+}
+
+/*裁判系统串口接收回调函数,解析数据 */
+static void RefereeRxCallback()
+{
+	DaemonReload(referee_daemon);
+	JudgeReadData(referee_usart_instance->recv_buff);
+}
+// 裁判系统丢失回调函数,重新初始化裁判系统串口
+static void RefereeLostCallback(void *arg)
+{
+	USARTServiceInit(referee_usart_instance);
+}
+
+/* 裁判系统通信初始化 */
+referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
+{
+	USART_Init_Config_s conf;
+	conf.module_callback = RefereeRxCallback;
+	conf.usart_handle = referee_usart_handle;
+	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
+	referee_usart_instance = USARTRegister(&conf);
+
+	Daemon_Init_Config_s daemon_conf = {
+		.callback = RefereeLostCallback,
+		.owner_id = referee_usart_instance,
+		.reload_count = 30, // 0.3s没有收到数据,则认为丢失,重启串口接收
+	};
+	referee_daemon = DaemonRegister(&daemon_conf);
+
+	return &referee_info;
+}
+
+/**
+ * @brief 裁判系统数据发送函数
+ * @param
+ */
+void RefereeSend(uint8_t *send, uint16_t tx_len)
+{
+	static TickType_t xLastWakeTime;
+	USARTSend(referee_usart_instance, send, tx_len, USART_TRANSFER_DMA);
+	vTaskDelayUntil(&xLastWakeTime, 120);
 }

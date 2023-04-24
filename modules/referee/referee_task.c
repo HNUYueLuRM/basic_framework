@@ -13,8 +13,10 @@
 #include "rm_referee.h"
 #include "referee_UI.h"
 #include "string.h"
+
 static Referee_Interactive_info_t *Interactive_data; // UI绘制需要的机器人状态数据
 static referee_info_t *referee_recv_info;            // 接收到的裁判系统数据
+uint8_t UI_Seq;                               // 包序号，供整个referee文件使用
 
 /**
  * @brief  判断各种ID，选择客户端ID
@@ -280,7 +282,7 @@ static void Mode_Change_Check(Referee_Interactive_info_t *_Interactive_data)
 
     if (_Interactive_data->lid_mode != _Interactive_data->lid_last_mode)
     {
-        _Interactive_data->Referee_Interactive_Flag.lid_flag= 1;
+        _Interactive_data->Referee_Interactive_Flag.lid_flag = 1;
         _Interactive_data->lid_last_mode = _Interactive_data->lid_mode;
     }
 

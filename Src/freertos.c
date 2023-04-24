@@ -131,7 +131,7 @@ void MX_FREERTOS_Init(void)
   osThreadDef(instask, StartINSTASK, osPriorityNormal, 0, 1024);
   insTaskHandle = osThreadCreate(osThread(instask), NULL);
 
-  osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 512);
+  osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 256);
   motorTaskHandle = osThreadCreate(osThread(motortask), NULL);
 
   osThreadDef(daemontask, StartDAEMONTASK, osPriorityNormal, 0, 128);
@@ -159,10 +159,10 @@ void StartDefaultTask(void const *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-  for (;;)
-  {
-    osDelay(1);
-  }
+  // for (;;)
+  // {
+  //   osDelay(1);
+  // }
   /* USER CODE END StartDefaultTask */
 }
 
