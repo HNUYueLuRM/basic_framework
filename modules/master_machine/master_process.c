@@ -16,9 +16,7 @@
 #include "bsp_log.h"
 
 static Vision_Recv_s recv_data;
-// @todo:由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务,或由IMU采集完成产生的中断唤醒的任务,
-// 后者显然更nice,使得时间戳对齐. 因此,在send_data中设定其他的标志位数据,让ins_task填充姿态值.
-// static Vision_Send_s send_data;
+static Vision_Send_s send_data;
 static USARTInstance *vision_usart_instance;
 static DaemonInstance *vision_daemon_instance;
 
@@ -69,26 +67,36 @@ Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
 
 /**
  * @brief 发送函数
- * @todo 1.提高可读性,将get_protocol_send_data的第6个参数增加一个float buffer
- *       2.添加标志位解码
- *       3.由于后续需要进行IMU-Cam的硬件触发采集控制,因此可能需要将发送设置为定时任务
- *         或由IMU采集完成产生的中断唤醒的任务,使得时间戳对齐.
- *
+ * 
  * @param send 待发送数据
+ * 
  */
-void VisionSend(Vision_Send_s *send)
+void VisionSend()
 {
     // buff和txlen必须为static,才能保证在函数退出后不被释放,使得DMA正确完成发送
     // 析构后的陷阱需要特别注意!
     static uint16_t flag_register;
-    static uint8_t send_buff[VISION_SEND_SIZE]; 
+    static uint8_t send_buff[VISION_SEND_SIZE];
     static uint16_t tx_len;
     // TODO: code to set flag_register
     flag_register = 30 << 8 | 0b00000001;
     // 将数据转化为seasky协议的数据包
-    get_protocol_send_data(0x02, flag_register, &send->yaw, 3, send_buff, &tx_len);
+    get_protocol_send_data(0x02, flag_register, &send_data.yaw, 3, send_buff, &tx_len);
     USARTSend(vision_usart_instance, send_buff, tx_len, USART_TRANSFER_DMA); // 和视觉通信使用IT,防止和接收使用的DMA冲突
     // 此处为HAL设计的缺陷,DMASTOP会停止发送和接收,导致再也无法进入接收中断.
     // 也可在发送完成中断中重新启动DMA接收,但较为复杂.因此,此处使用IT发送.
     // 若使用了daemon,则也可以使用DMA发送.
+}
+
+void VisionSetFlag(Enemy_Color_e enemy_color, Work_Mode_e work_mode, Bullet_Speed_e bullet_speed)
+{
+    send_data.enemy_color = enemy_color;
+    send_data.work_mode = work_mode;
+    send_data.bullet_speed = bullet_speed;
+}
+
+void VisionSetAltitude(float yaw, float pitch)
+{
+    send_data.yaw = yaw;
+    send_data.pitch = pitch;
 }

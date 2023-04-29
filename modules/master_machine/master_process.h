@@ -47,8 +47,9 @@ typedef struct
 
 typedef enum
 {
-	BLUE = 0,
-	RED = 1
+	COLOR_NONE = 0,
+	COLOR_BLUE = 1,
+	COLOR_RED = 2,
 } Enemy_Color_e;
 
 typedef enum
@@ -76,9 +77,6 @@ typedef struct
 
 	float yaw;
 	float pitch;
-	float roll;
-
-	// uint32_t time_stamp; // @todo 用于和相机的时间戳对齐
 } Vision_Send_s;
 #pragma pack()
 
@@ -90,10 +88,26 @@ typedef struct
 Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle);
 
 /**
- * @brief 发送视觉视觉
+ * @brief 发送视觉数据
  *
- * @param send 视觉需要的数据
  */
-void VisionSend(Vision_Send_s *send);
+void VisionSend();
+
+/**
+ * @brief 设置视觉发送标志位
+ *
+ * @param enemy_color
+ * @param work_mode
+ * @param bullet_speed
+ */
+void VisionSetFlag(Enemy_Color_e enemy_color, Work_Mode_e work_mode, Bullet_Speed_e bullet_speed);
+
+/**
+ * @brief 设置发送数据的姿态部分
+ *
+ * @param yaw
+ * @param pitch
+ */
+void VisionSetAltitude(float yaw, float pitch);
 
 #endif // !MASTER_PROCESS_H

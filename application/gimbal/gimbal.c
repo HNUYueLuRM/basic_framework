@@ -15,45 +15,8 @@ static Subscriber_t *gimbal_sub;                  // cmd控制消息订阅者
 static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给cmd的云台状态信息
 static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
-BMI088Instance *imu;
 void GimbalInit()
 {
-    BMI088_Init_Config_s imu_config = {
-        .spi_acc_config = {
-            .GPIOx = CS1_ACCEL_GPIO_Port,
-            .cs_pin = CS1_ACCEL_Pin,
-            .spi_handle = &hspi1,
-        },
-        .spi_gyro_config = {
-            .GPIOx = CS1_GYRO_GPIO_Port,
-            .cs_pin = CS1_GYRO_Pin,
-            .spi_handle = &hspi1,
-        },
-        .acc_int_config = {
-            .exti_mode = EXTI_TRIGGER_FALLING,
-            .GPIO_Pin = INT_ACC_Pin,
-            .GPIOx = INT_ACC_GPIO_Port,
-        },
-        .gyro_int_config = {
-            .exti_mode = EXTI_TRIGGER_FALLING,
-            .GPIO_Pin = INT_GYRO_Pin,
-            .GPIOx = INT_GYRO_GPIO_Port,
-        },
-        .heat_pid_config = {
-            .Kp = 0.0f,
-            .Kd = 0.0f,
-            .Ki = 0.0f,
-            .MaxOut = 0.0f,
-            .DeadBand = 0.0f,
-        },
-        .heat_pwm_config = {
-            .channel = TIM_CHANNEL_1,
-            .htim = &htim1,
-        },
-        .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
-        .work_mode = BMI088_BLOCK_PERIODIC_MODE,
-    };
-    // imu = BMI088Register(&imu_config);
     gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
     // YAW
     Motor_Init_Config_s yaw_config = {

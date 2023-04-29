@@ -316,12 +316,7 @@ void RobotCMDTask()
     EmergencyHandler(); // 处理模块离线和遥控器急停等紧急情况
 
     // 设置视觉发送数据,还需增加加速度和角速度数据
-    vision_send_data.bullet_speed = 15;
-    vision_send_data.enemy_color = 0;
-    vision_send_data.pitch = gimbal_fetch_data.gimbal_imu_data.Pitch;
-    vision_send_data.yaw = gimbal_fetch_data.gimbal_imu_data.Yaw;
-    vision_send_data.roll = gimbal_fetch_data.gimbal_imu_data.Roll;
-    ;
+    // VisionSetFlag(chassis_fetch_data.enemy_color,,chassis_fetch_data.bullet_speed)
 
     // 推送消息,双板通信,视觉通信等
     // 其他应用所需的控制数据在remotecontrolsetmode和mousekeysetmode中完成设置

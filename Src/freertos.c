@@ -29,6 +29,7 @@
 #include "motor_task.h"
 #include "led_task.h"
 #include "referee_task.h"
+#include "master_process.h"
 #include "daemon.h"
 #include "robot.h"
 /* USER CODE END Includes */
@@ -169,6 +170,7 @@ void StartINSTASK(void const *argument)
   {
     // 1kHz
     INS_Task();
+    VisionSend(); // 解算完成后发送视觉数据
     osDelay(1);
   }
 }
