@@ -5,7 +5,7 @@
         {
             "label": "build task",         // 任务标签
             "type": "shell",               // 任务类型,因为要调用mingw32-make,是在终端(CMD)里运行的,所以是shell任务
-            "command": "mingw32-make -j24",// 任务命令,线程数可以根据自己的电脑修改,建议为核数的4~8倍
+            "command": "mingw32-make -j24 -l12",// 任务命令,线程数可以根据自己的电脑修改,建议为核数的4~8倍
             "problemMatcher": [],          
             "group": {
                 "kind": "build",
