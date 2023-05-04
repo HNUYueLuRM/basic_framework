@@ -77,6 +77,7 @@ typedef struct
 
 	float yaw;
 	float pitch;
+	float roll;
 } Vision_Send_s;
 #pragma pack()
 
@@ -108,6 +109,6 @@ void VisionSetFlag(Enemy_Color_e enemy_color, Work_Mode_e work_mode, Bullet_Spee
  * @param yaw
  * @param pitch
  */
-void VisionSetAltitude(float yaw, float pitch);
+void VisionSetAltitude(float yaw, float pitch, float roll);
 
 #endif // !MASTER_PROCESS_H

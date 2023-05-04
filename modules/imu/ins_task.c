@@ -46,7 +46,7 @@ static void IMU_Temperature_Ctrl(void)
 }
 
 // 使用加速度计的数据初始化Roll和Pitch,而Yaw置0,这样可以避免在初始时候的姿态估计误差
-static void InitQuaternion(float* init_q4)
+static void InitQuaternion(float *init_q4)
 {
     float acc_init[3] = {0};
     float gravity_norm[3] = {0, 0, 1}; // 导航系重力加速度矢量,归一化后为(0,0,1)
@@ -68,7 +68,7 @@ static void InitQuaternion(float* init_q4)
     Cross3d(acc_init, gravity_norm, axis_rot);
     Norm3d(axis_rot);
     init_q4[0] = cosf(angle / 2.0f);
-    for(uint8_t i = 0; i < 2; ++i)
+    for (uint8_t i = 0; i < 2; ++i)
         init_q4[i + 1] = axis_rot[i] * sinf(angle / 2.0f); // 轴角公式,第三轴为0(没有z轴分量)
 }
 
@@ -154,8 +154,8 @@ void INS_Task(void)
         INS.Pitch = QEKF_INS.Pitch;
         INS.Roll = QEKF_INS.Roll;
         INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
-        
-        VisionSetAltitude(INS.Yaw,INS.Pitch);
+
+        VisionSetAltitude(INS.Yaw, INS.Pitch, INS.Roll);
     }
 
     // temperature control

@@ -9,14 +9,32 @@
  *
  */
 #include "master_process.h"
-#include "bsp_usart.h"
-#include "usart.h"
 #include "seasky_protocol.h"
-#include "daemon.h"
 #include "bsp_log.h"
+#include "robot_def.h"
 
 static Vision_Recv_s recv_data;
 static Vision_Send_s send_data;
+
+void VisionSetFlag(Enemy_Color_e enemy_color, Work_Mode_e work_mode, Bullet_Speed_e bullet_speed)
+{
+    send_data.enemy_color = enemy_color;
+    send_data.work_mode = work_mode;
+    send_data.bullet_speed = bullet_speed;
+}
+
+void VisionSetAltitude(float yaw, float pitch, float roll)
+{
+    send_data.yaw = yaw;
+    send_data.pitch = pitch;
+    send_data.roll = roll;
+}
+
+#ifdef VISION_USE_UART
+
+#include "bsp_usart.h"
+#include "daemon.h"
+
 static USARTInstance *vision_usart_instance;
 static DaemonInstance *vision_daemon_instance;
 
@@ -45,9 +63,9 @@ static void VisionOfflineCallback(void *id)
     USARTServiceInit(vision_usart_instance);
 }
 
-/* 视觉通信初始化 */
 Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
 {
+#ifdef VISION_USE_UART
     USART_Init_Config_s conf;
     conf.module_callback = DecodeVision;
     conf.recv_buff_size = VISION_RECV_SIZE;
@@ -61,15 +79,16 @@ Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
         .reload_count = 10,
     };
     vision_daemon_instance = DaemonRegister(&daemon_conf);
+#endif // VISION_USE_UART
 
     return &recv_data;
 }
 
 /**
  * @brief 发送函数
- * 
+ *
  * @param send 待发送数据
- * 
+ *
  */
 void VisionSend()
 {
@@ -88,15 +107,40 @@ void VisionSend()
     // 若使用了daemon,则也可以使用DMA发送.
 }
 
-void VisionSetFlag(Enemy_Color_e enemy_color, Work_Mode_e work_mode, Bullet_Speed_e bullet_speed)
+#endif // VISION_USE_UART
+
+#ifdef VISION_USE_VCP
+
+#include "bsp_usb.h"
+static uint8_t *vis_recv_buff;
+
+static void DecodeVision(uint16_t recv_len)
 {
-    send_data.enemy_color = enemy_color;
-    send_data.work_mode = work_mode;
-    send_data.bullet_speed = bullet_speed;
+    uint16_t flag_register;
+    get_protocol_info(vis_recv_buff, &flag_register, (uint8_t *)&recv_data.pitch);
+    // TODO: code to resolve flag_register;
 }
 
-void VisionSetAltitude(float yaw, float pitch)
+/* 视觉通信初始化 */
+Vision_Recv_s *VisionInit(UART_HandleTypeDef *_handle)
 {
-    send_data.yaw = yaw;
-    send_data.pitch = pitch;
+    UNUSED(_handle); // 仅为了消除警告
+    USB_Init_Config_s conf = {0};
+    conf.rx_cbk = DecodeVision;
+    vis_recv_buff = USBInit(conf);
+    return &recv_data;
 }
+
+void VisionSend()
+{
+    static uint16_t flag_register;
+    static uint8_t send_buff[VISION_SEND_SIZE];
+    static uint16_t tx_len;
+    // TODO: code to set flag_register
+    flag_register = 30 << 8 | 0b00000001;
+    // 将数据转化为seasky协议的数据包
+    get_protocol_send_data(0x02, flag_register, &send_data.yaw, 3, send_buff, &tx_len);
+    USBTransmit(send_buff, tx_len);
+}
+
+#endif // VISION_USE_VCP

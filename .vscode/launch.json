@@ -4,29 +4,30 @@
     "configurations": [
         // 使用dap-link(如无线调试器时的参考配置)
         {
-            "name": "Debug-DAP",
+            "name": "DAPlink",
             "cwd": "${workspaceRoot}",
             "executable": "${workspaceRoot}\\build\\basic_framework.elf", // 要下载到调试器的文件,花括号中的是vscode两个预定义的参数
             "request": "launch",
             "type": "cortex-debug",
             //使用J-link GDB Server时必须;其他GBD Server时可选（有可能帮助自动选择SVD文件）
             //支持的设备见 https://www.segger.com/downloads/supported-devices.php
-            "device": "STM32F407IG", 
+            "device": "STM32F407IG",
             //svd文件，有这个文件才能查看寄存器的值，每个单片机都不同。可以在以下地址找到 https://github.com/posborne/cmsis-svd
             //该项目的根目录已经提供了C型开发板使用的外设svd文件
-            "svdFile": "STM32F407.svd", 
+            "svdFile": "STM32F407.svd",
             "servertype": "openocd", //使用的GDB Server
             "configFiles": [
                 "openocd_dap.cfg", // 配置文件已经在根目录提供,若要修改以此类推,openocd的路径下的share/scripts中有各种写好的配置文件
             ],
             "runToEntryPoint": "main", // 调试时在main函数入口停下
+            "rtos": "FreeRTOS",
             //"preLaunchTask": "build task",//先运行Build任务编译项目,取消注释即可使用
             //"preLaunchTask": "log", // 调试时同时开启RTT viewer窗口
             // 若想要在调试前编译并且打开log,可只使用log的prelaunch task并为log任务添加depends on依赖
         },
         // 使用j-link进行调试时的参考配置
         {
-            "name": "Debug-Jlink",
+            "name": "Jlink",
             "cwd": "${workspaceFolder}",
             "executable": "${workspaceRoot}\\build\\basic_framework.elf",
             "request": "launch",
@@ -41,6 +42,32 @@
             // "preLaunchTask": "build task",//先运行Build任务,取消注释即可使用
             //"preLaunchTask": "log", // 调试时同时开启RTT viewer窗口
             // 若想要在调试前编译并且打开log,可只使用log的prelaunch task并为log任务添加depends on依赖
+        },
+        {
+            "name": "DAP-attach",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf", // 要下载到调试器的文件,花括号中的是vscode两个预定义的参数
+            "request": "attach",
+            "type": "cortex-debug",
+            "device": "STM32F407IG",
+            "svdFile": "STM32F407.svd",
+            "servertype": "openocd",
+            "configFiles": [
+                "openocd_dap.cfg",
+            ],
+        },
+        {
+            "name": "Jlink-attach",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceRoot}\\build\\basic_framework.elf",
+            "request": "attach",
+            "type": "cortex-debug",
+            "device": "STM32F407IG",
+            "showDevDebugOutput": "none",
+            "servertype": "jlink",
+            "interface": "swd",
+            "svdFile": "STM32F407.svd",
+            "rtos": "FreeRTOS",
         },
     ],
 }
