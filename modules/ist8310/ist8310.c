@@ -29,8 +29,8 @@ static uint8_t ist8310_write_reg_data_error[IST8310_WRITE_REG_NUM][3] = {
  */
 static void IST8310Decode(IICInstance *iic)
 {
-    int16_t temp[3];             // 用于存储解码后的数据
-    IST8310Instance *ist= (IST8310Instance *)(iic->id); // iic的id保存了IST8310实例的指针(父指针)
+    int16_t temp[3];                                     // 用于存储解码后的数据
+    IST8310Instance *ist = (IST8310Instance *)(iic->id); // iic的id保存了IST8310实例的指针(父指针)
 
     memcpy(temp, ist->iic_buffer, 6 * sizeof(uint8_t)); // 不要强制转换,直接cpy
     for (uint8_t i = 0; i < 3; i++)
@@ -48,7 +48,7 @@ static void IST8310StartTransfer(GPIOInstance *gpio)
     // 先获取IST8310实例的指针(通过gpio实例的父指针id)
     IST8310Instance *ist_for_transfer = (IST8310Instance *)gpio->id;
     // 中断说明ist已经准备好读取数据寄存器;6个字节,读取后会进入IST8310Decode函数
-    IICAccessMem(ist_for_transfer->iic, IST8310_DATA_REG, ist_for_transfer->iic_buffer, 6, IIC_READ_MEM);
+    IICAccessMem(ist_for_transfer->iic, IST8310_DATA_REG, ist_for_transfer->iic_buffer, 6, IIC_READ_MEM, 1);
     // 传输完成后会进入IST8310Decode函数进行数据解析
     IST8310Decode(ist_for_transfer->iic);
 }
@@ -80,15 +80,15 @@ IST8310Instance *IST8310Init(IST8310_Init_Config_s *config)
     HAL_Delay(sleepTime);
 
     // 读取IST8310的ID,如果不是0x10(whoami macro的值),则返回错误
-    IICAccessMem(ist->iic, IST8310_WHO_AM_I, &check_who_i_am, 1, IIC_READ_MEM);
+    IICAccessMem(ist->iic, IST8310_WHO_AM_I, &check_who_i_am, 1, IIC_READ_MEM, 1);
     if (check_who_i_am != IST8310_WHO_AM_I_VALUE)
         return NULL; // while(1)
 
     // 进行初始化配置写入并检查是否写入成功,这里用循环把最上面初始化数组的东西都写进去
     for (uint8_t i = 0; i < IST8310_WRITE_REG_NUM; i++)
     { // 写入配置,写一句就读一下看看ist8310是否仍然在线
-        IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &ist8310_write_reg_data_error[i][1], 1, IIC_WRITE_MEM);
-        IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &check_who_i_am, 1, IIC_READ_MEM); // 读回自身id
+        IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &ist8310_write_reg_data_error[i][1], 1, IIC_WRITE_MEM, 1);
+        IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &check_who_i_am, 1, IIC_READ_MEM, 1); // 读回自身id
         if (check_who_i_am != ist8310_write_reg_data_error[i][1])
             while (1)
                 ist8310_write_reg_data_error[i][2]; // 掉线/写入失败/未知错误,会返回对应的错误码

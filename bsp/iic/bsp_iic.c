@@ -103,15 +103,16 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e s
     }
 }
 
-void IICAccessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mem_mode)
+void IICAccessMem(IICInstance *iic, uint16_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mem_mode, uint8_t mem8bit_flag)
 {
+    uint16_t bit_flag = mem8bit_flag ? I2C_MEMADD_SIZE_8BIT : I2C_MEMADD_SIZE_16BIT;
     if (mem_mode == IIC_WRITE_MEM)
     {
-        HAL_I2C_Mem_Write(iic->handle, iic->dev_address, mem_addr, I2C_MEMADD_SIZE_8BIT, data, size, 100);
+        HAL_I2C_Mem_Write(iic->handle, iic->dev_address, mem_addr, bit_flag, data, size, 100);
     }
     else if (mem_mode == IIC_READ_MEM)
     {
-        HAL_I2C_Mem_Read(iic->handle, iic->dev_address, mem_addr, I2C_MEMADD_SIZE_8BIT, data, size, 100);
+        HAL_I2C_Mem_Read(iic->handle, iic->dev_address, mem_addr, bit_flag, data, size, 100);
     }
     else
     {

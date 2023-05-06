@@ -101,5 +101,6 @@ void IICReceive(IICInstance *iic, uint8_t *data, uint16_t size, IIC_Seq_Mode_e m
  * @param data 要读取或写入的数据首地址指针
  * @param size 要读取或写入的数据长度
  * @param mode 写入或读取模式: IIC_READ_MEM or IIC_WRITE_MEM
+ * @param mem8bit_flag 从机内存地址是否为8位
  */
-void IICAccessMem(IICInstance *iic, uint8_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mode);
+void IICAccessMem(IICInstance *iic, uint16_t mem_addr, uint8_t *data, uint16_t size, IIC_Mem_Mode_e mode, uint8_t mem8bit_flag);

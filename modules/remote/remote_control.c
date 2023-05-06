@@ -142,7 +142,7 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
     return (RC_ctrl_t *)&rc_ctrl;
 }
 
-uint8_t RemotecontrolIsOnline()
+uint8_t RemoteControlIsOnline()
 {
     if (rc_init_flag)
         return DaemonIsOnline(rc_daemon_instance);
