@@ -715,9 +715,11 @@ windows菜单搜索J-link license manager，点击添加license，将注册机�
 
 ## 附录2：在VSCode中启用SEGGER RTT日志
 
-> 待补充。
+若使用Jlink进行调试，只需要在开始调试之前把`log`任务启动，便可以在终端中看到jlink rtt viewer的日志输出。
 
+若使用daplink/cmsis-dap调试，**请使用Jlink调试任务启动**，并且在**调试任务启动之后再打开`log`任务**。
 
+`bsp_log.h`中提供了不同的日志输出接口，包括封装好的三种层级的日志（info warning error），和用户可以自定义输出格式的`PrintLog()`。还提供了一些简单的将浮点数据转化为字符串的函数方便进行日志输出。
 
 
 

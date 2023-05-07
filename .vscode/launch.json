@@ -22,7 +22,7 @@
             "runToEntryPoint": "main", // 调试时在main函数入口停下
             "rtos": "FreeRTOS",
             //"preLaunchTask": "build task",//先运行Build任务编译项目,取消注释即可使用
-            //"preLaunchTask": "log", // 调试时同时开启RTT viewer窗口
+            // dap若要使用log,请使用Jlink调试任务启动,之后再打开log任务
             // 若想要在调试前编译并且打开log,可只使用log的prelaunch task并为log任务添加depends on依赖
         },
         // 使用j-link进行调试时的参考配置
@@ -40,7 +40,7 @@
             "svdFile": "STM32F407.svd",
             "rtos": "FreeRTOS",
             // "preLaunchTask": "build task",//先运行Build任务,取消注释即可使用
-            //"preLaunchTask": "log", // 调试时同时开启RTT viewer窗口
+            //"preLaunchTask": "log", // 调试时同时开启RTT viewer窗口,若daplink使用jlinkGDBserver启动,需要先开始调试再打开log
             // 若想要在调试前编译并且打开log,可只使用log的prelaunch task并为log任务添加depends on依赖
         },
         {
