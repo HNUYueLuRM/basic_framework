@@ -274,22 +274,7 @@ static void EmergencyHandler()
         robot_state = ROBOT_READY;
         shoot_cmd_send.shoot_mode = SHOOT_ON;
     }
-    switch (rc_data[TEMP].key_count[KEY_PRESS_WITH_CTRL][Key_C]%2) //ctrl+c 进入急停
-    {
-    case 0:
-        robot_state = ROBOT_READY;
-        shoot_cmd_send.shoot_mode = SHOOT_ON;
-        break;
-
-    default:
-        robot_state = ROBOT_STOP;
-        gimbal_cmd_send.gimbal_mode = GIMBAL_ZERO_FORCE;
-        chassis_cmd_send.chassis_mode = CHASSIS_ZERO_FORCE;
-        shoot_cmd_send.shoot_mode = SHOOT_OFF;
-        shoot_cmd_send.friction_mode = FRICTION_OFF;
-        shoot_cmd_send.load_mode = LOAD_STOP;
-        break;
-    }
+    
 }
 
 /* 机器人核心控制任务,200Hz频率运行(必须高于视觉发送频率) */

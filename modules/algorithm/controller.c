@@ -97,7 +97,7 @@ static void f_Output_Limit(PIDInstance *pid)
 static void f_PID_ErrorHandle(PIDInstance *pid)
 {
     /*Motor Blocked Handle*/
-    if (pid->Output < pid->MaxOut * 0.001f || fabsf(pid->Ref) < 0.0001f)
+    if (fabsf(pid->Output) < pid->MaxOut * 0.001f || fabsf(pid->Ref) < 0.0001f)
         return;
 
     if ((fabsf(pid->Ref - pid->Measure) / fabsf(pid->Ref)) > 0.95f)

@@ -91,7 +91,7 @@ void LKMotorControl()
             if (setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor->other_angle_feedback_ptr;
             else
-                pid_measure = measure->real_current;
+                pid_measure = measure->total_angle;
             pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
             if (setting->feedforward_flag & SPEED_FEEDFORWARD)
                 pid_ref += *motor->speed_feedforward_ptr;

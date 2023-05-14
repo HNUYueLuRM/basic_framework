@@ -42,10 +42,6 @@ void RobotInit()
     ChassisInit();
 #endif
 
-#ifdef BALANCE_BAORD
-    BalanceInit();
-#endif // BALANCE_BA
-
     // 初始化完成,开启中断
     __enable_irq();
 }
@@ -62,7 +58,4 @@ void RobotTask()
     ChassisTask();
 #endif
 
-#ifdef BALANCE_BAORD
-    BalanceTask();
-#endif // BALANCE_BA
 }
