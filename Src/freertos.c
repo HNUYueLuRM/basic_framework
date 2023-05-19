@@ -170,7 +170,7 @@ void StartINSTASK(void const *argument)
   {
     // 1kHz
     INS_Task();
-    VisionSend(); // 解算完成后发送视觉数据
+    VisionSend(); // 解算完成后发送视觉数�?
     osDelay(1);
   }
 }

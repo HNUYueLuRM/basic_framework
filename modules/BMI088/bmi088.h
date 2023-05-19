@@ -100,7 +100,6 @@ BMI088Instance *BMI088Register(BMI088_Init_Config_s *config);
 
 /**
  * @brief 读取BMI088数据
- * @todo  7个float数据开销较大,后续考虑使用DMA或双缓冲区直接传递指针
  * @param bmi088 BMI088实例指针
  * @return BMI088_Data_t 读取到的数据
  */

@@ -2,7 +2,6 @@
  * @file message_center.h
  * @author NeoZeng neozng1@hnu.edu.cn
  * @brief 这是一个伪pubsub机制,仅对应用之间的通信进行了隔离
- * @todo 实现基于链表-队列的pubsub机制
  * @version 0.1
  * @date 2022-11-30
  *

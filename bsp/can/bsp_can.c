@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "stdlib.h"
 #include "bsp_dwt.h"
+#include "bsp_log.h"
 
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
@@ -30,14 +31,14 @@ static void CANAddFilter(CANInstance *_instance)
     CAN_FilterTypeDef can_filter_conf;
     static uint8_t can1_filter_idx = 0, can2_filter_idx = 14; // 0-13给can1用,14-27给can2用
 
-    can_filter_conf.FilterMode = CAN_FILTERMODE_IDLIST;  //使用id list模式,即只有将rxid添加到过滤器中才会接收到,其他报文会被过滤
-    can_filter_conf.FilterScale = CAN_FILTERSCALE_16BIT; //使用16位id模式,即只有低16位有效
-    can_filter_conf.FilterFIFOAssignment = (_instance->tx_id & 1) ? CAN_RX_FIFO0 : CAN_RX_FIFO1; //奇数id的模块会被分配到FIFO0,偶数id的模块会被分配到FIFO1
-    can_filter_conf.SlaveStartFilterBank = 14; // 从第14个过滤器开始配置从机过滤器(在STM32的BxCAN控制器中CAN2是CAN1的从机)
-    can_filter_conf.FilterIdLow = _instance->rx_id << 5; // 过滤器寄存器的低16位,因为使用STDID,所以只有低11位有效,高5位要填0
+    can_filter_conf.FilterMode = CAN_FILTERMODE_IDLIST;                                                       // 使用id list模式,即只有将rxid添加到过滤器中才会接收到,其他报文会被过滤
+    can_filter_conf.FilterScale = CAN_FILTERSCALE_16BIT;                                                      // 使用16位id模式,即只有低16位有效
+    can_filter_conf.FilterFIFOAssignment = (_instance->tx_id & 1) ? CAN_RX_FIFO0 : CAN_RX_FIFO1;              // 奇数id的模块会被分配到FIFO0,偶数id的模块会被分配到FIFO1
+    can_filter_conf.SlaveStartFilterBank = 14;                                                                // 从第14个过滤器开始配置从机过滤器(在STM32的BxCAN控制器中CAN2是CAN1的从机)
+    can_filter_conf.FilterIdLow = _instance->rx_id << 5;                                                      // 过滤器寄存器的低16位,因为使用STDID,所以只有低11位有效,高5位要填0
     can_filter_conf.FilterBank = _instance->can_handle == &hcan1 ? (can1_filter_idx++) : (can2_filter_idx++); // 根据can_handle判断是CAN1还是CAN2,然后自增
-    can_filter_conf.FilterActivation = CAN_FILTER_ENABLE; // 启用过滤器
-    
+    can_filter_conf.FilterActivation = CAN_FILTER_ENABLE;                                                     // 启用过滤器
+
     HAL_CAN_ConfigFilter(_instance->can_handle, &can_filter_conf);
 }
 
@@ -69,12 +70,12 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
         while (1)
             ;
     for (size_t i = 0; i < idx; i++)
-    {   // 重复注册 | id重复
-        if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle) 
+    { // 重复注册 | id重复
+        if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
             while (1)
                 ;
     }
-    
+
     CANInstance *instance = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
     memset(instance, 0, sizeof(CANInstance));                           // 分配的空间未必是0,所以要先清空
     // 进行发送报文的配置
@@ -97,18 +98,28 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
 
 /* @todo 目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
 /* 如果让CANinstance保存txbuff,会增加一次复制的开销 */
-uint8_t CANTransmit(CANInstance *_instance,uint8_t timeout)
+uint8_t CANTransmit(CANInstance *_instance, float timeout)
 {
+    static uint32_t busy_count;
+    static float wait_time;
     float dwt_start = DWT_GetTimeline_ms();
     while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
-    {    
+    {
         if (DWT_GetTimeline_ms() - dwt_start > timeout) // 超时
         {
+            LOGWARNING("CAN BUSY sending! cnt:%d", busy_count);
+            busy_count++;
             return 0;
         }
     }
+    wait_time = DWT_GetTimeline_ms() - dwt_start;
     // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
-    HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox);
+    if (HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox))
+    {
+        LOGWARNING("CAN BUSY bus! cnt:%d", busy_count);
+        busy_count++;
+        return 0;
+    }
     return 1; // 发送成功
 }
 
@@ -132,8 +143,8 @@ void CANSetDLC(CANInstance *_instance, uint8_t length)
 static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
 {
     static CAN_RxHeaderTypeDef rxconf; // 同上
-    uint8_t can_rx_buff[8];    
-    
+    uint8_t can_rx_buff[8];
+
     HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
     for (size_t i = 0; i < idx; ++i)
     { // 两者相等说明这是要找的实例
@@ -177,6 +188,4 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
     CANFIFOxCallback(hcan, CAN_RX_FIFO1); // 调用我们自己写的函数来处理消息
 }
 
-
 // 人工智能会毁灭人类吗？请在补全回答
-

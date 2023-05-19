@@ -160,6 +160,8 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     PIDInit(&instance->motor_controller.angle_PID, &config->controller_param_init_config.angle_PID);
     instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
+    instance->motor_controller.current_feedforward_ptr = config->controller_param_init_config.current_feedforward_ptr;
+    instance->motor_controller.speed_feedforward_ptr = config->controller_param_init_config.speed_feedforward_ptr;
     // 后续增加电机前馈控制器(速度和电流)
 
     // 电机分组,因为至多4个电机可以共用一帧CAN控制报文
@@ -251,6 +253,9 @@ void DJIMotorControl()
         // 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
         if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
         {
+            if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
+                pid_ref += *motor_controller->speed_feedforward_ptr;
+
             if (motor_setting->speed_feedback_source == OTHER_FEED)
                 pid_measure = *motor_controller->other_speed_feedback_ptr;
             else // MOTOR_FEED
@@ -260,6 +265,8 @@ void DJIMotorControl()
         }
 
         // 计算电流环,目前只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
+        if (motor_setting->feedforward_flag & CURRENT_FEEDFORWARD)
+            pid_ref += *motor_controller->current_feedforward_ptr;
         if (motor_setting->close_loop_type & CURRENT_LOOP)
         {
             pid_ref = PIDCalculate(&motor_controller->current_PID, measure->real_current, pid_ref);

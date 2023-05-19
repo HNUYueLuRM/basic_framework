@@ -156,7 +156,6 @@ application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
 application/cmd/robot_cmd.c \
-application/balance_chassis/balance.c \
 application/robot.c
 
 # ASM sources
@@ -235,7 +234,6 @@ C_INCLUDES =  \
 -Iapplication/shoot \
 -Iapplication/gimbal \
 -Iapplication/cmd \
--Iapplication/balance_chassis \
 -Iapplication \
 -Ibsp/dwt \
 -Ibsp/can \

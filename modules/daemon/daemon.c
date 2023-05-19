@@ -13,7 +13,7 @@ DaemonInstance *DaemonRegister(Daemon_Init_Config_s *config)
     memset(instance, 0, sizeof(DaemonInstance));
 
     instance->owner_id = config->owner_id;
-    instance->reload_count = config->reload_count;
+    instance->reload_count = config->reload_count == 0 ? 100 : config->reload_count;
     instance->callback = config->callback;
 
     daemon_instances[idx++] = instance;

@@ -25,16 +25,6 @@
 #define VISION_USE_VCP  // 使用虚拟串口发送视觉数据
 // #define VISION_USE_UART // 使用串口发送视觉数据
 
-// @todo: 增加机器人类型定义,后续是否要兼容所有机器人?(只兼容步兵英雄哨兵似乎就够了)
-// 通过该宏,你可以直接将所有机器人的参数保存在一处,然后每次只需要修改这个宏就可以替换所有参数
-/* 机器人类型定义 */
-// #define ROBOT_HERO 1     // 英雄机器人
-// #define ROBOT_ENINEER 2  // 工程机器人
-#define ROBOT_INFANTRY 3 // 步兵机器人3
-// #define ROBOT_INFANTRY 4 // 步兵机器人4
-// #define ROBOT_INFANTRY 5 // 步兵机器人5
-// #define ROBOT_SENTRY 6   // 哨兵机器人
-
 /* 机器人重要参数定义,注意根据不同机器人进行修改,浮点数需要以.0或f结尾,无符号以u结尾 */
 // 云台参数
 #define YAW_CHASSIS_ALIGN_ECD 2711  // 云台和底盘对齐指向相同方向时的电机编码器值,若对云台有机械改动需要修改
@@ -188,7 +178,6 @@ typedef struct
  *
  */
 
-/* @todo : 对于平衡底盘,需要新增控制模式和控制数据 */
 typedef struct
 {
 #if defined(CHASSIS_BOARD) || defined(GIMBAL_BOARD) // 非单板的时候底盘还将imu数据回传(若有必要)
@@ -205,7 +194,7 @@ typedef struct
 
 } Chassis_Upload_Data_s;
 
-/* @todo : 对于平衡底盘,需要不同的反馈数据 */
+
 typedef struct
 {
     attitude_t gimbal_imu_data;

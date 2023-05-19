@@ -94,7 +94,6 @@ typedef struct
 	float yaw;
 	float pitch;
 	float roll;
-	// uint32_t time_stamp; // @todo 用于和相机的时间戳对齐
 } Vision_Send_s;
 ```
 

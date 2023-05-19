@@ -7,7 +7,6 @@
  *
  * @todo  1. 给不同的电机设置不同的低通滤波器惯性系数而不是统一使用宏
           2. 为M2006和M3508增加开环的零位校准函数,并在初始化时调用(根据用户配置决定是否调用)
-          3. 完成前馈功能（已经添加了前馈数据指针）
 
  * @copyright Copyright (c) 2022 HNU YueLu EC all rights reserved
  *
@@ -34,7 +33,7 @@ typedef struct
     uint16_t last_ecd;        // 上一次读取的编码器值
     uint16_t ecd;             // 0-8191,刻度总共有8192格
     float angle_single_round; // 单圈角度
-    float speed_aps;          // 角速度,单位为:度/秒 rpm:rounds per minute
+    float speed_aps;          // 角速度,单位为:度/秒
     int16_t real_current;     // 实际电流
     uint8_t temperate;        // 温度 Celsius
 
@@ -100,7 +99,6 @@ void DJIMotorChangeFeed(DJIMotorInstance *motor, Closeloop_Type_e loop, Feedback
 
 /**
  * @brief 该函数被motor_task调用运行在rtos上,motor_stask内通过osDelay()确定控制频率
- * @todo  增加前馈功能
  */
 void DJIMotorControl();
 

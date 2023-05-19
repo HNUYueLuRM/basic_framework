@@ -45,7 +45,7 @@ typedef enum
 /* 反馈来源设定,若设为OTHER_FEED则需要指定数据来源指针,详见Motor_Controller_s*/
 typedef enum
 {
-    MOTOR_FEED=0,
+    MOTOR_FEED = 0,
     OTHER_FEED,
 } Feedback_Source_e;
 
@@ -71,13 +71,13 @@ typedef enum
 /* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
 typedef struct
 {
-    Closeloop_Type_e outer_loop_type;        // 最外层的闭环,未设置时默认为最高级的闭环
-    Closeloop_Type_e close_loop_type;        // 使用几个闭环(串级)
-    Motor_Reverse_Flag_e motor_reverse_flag; // 是否反转
+    Closeloop_Type_e outer_loop_type;              // 最外层的闭环,未设置时默认为最高级的闭环
+    Closeloop_Type_e close_loop_type;              // 使用几个闭环(串级)
+    Motor_Reverse_Flag_e motor_reverse_flag;       // 是否反转
     Feedback_Reverse_Flag_e feedback_reverse_flag; // 反馈是否反向
-    Feedback_Source_e angle_feedback_source; // 角度反馈类型
-    Feedback_Source_e speed_feedback_source; // 速度反馈类型
-    Feedfoward_Type_e feedforward_flag;      // 前馈标志
+    Feedback_Source_e angle_feedback_source;       // 角度反馈类型
+    Feedback_Source_e speed_feedback_source;       // 速度反馈类型
+    Feedfoward_Type_e feedforward_flag;            // 前馈标志
 
 } Motor_Control_Setting_s;
 
@@ -87,8 +87,8 @@ typedef struct
 {
     float *other_angle_feedback_ptr; // 其他反馈来源的反馈数据指针
     float *other_speed_feedback_ptr;
-    // float *speed_foward_ptr;
-    // float *current_foward_ptr;
+    float *speed_feedforward_ptr;
+    float *current_feedforward_ptr;
 
     PIDInstance current_PID;
     PIDInstance speed_PID;

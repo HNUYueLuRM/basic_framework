@@ -227,7 +227,7 @@ static void BMI088GyroINTCallback(GPIOInstance *gpio)
 
 /**
  * @brief
- * @todo 现在要考虑一下数据返回的方式,指针还是结构体? 7个float数据有点费时,不然用DMA? or memcpy
+ * @todo 现在要考虑一下数据返回的方式,指针还是结构体?
  *
  * @param bmi088
  * @return BMI088_Data_t

@@ -104,10 +104,10 @@ void LKMotorControl()
             else
                 pid_measure = measure->speed_rads;
             pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
-            if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
-                pid_ref += *motor->current_feedforward_ptr;
         }
 
+        if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
+            pid_ref += *motor->current_feedforward_ptr;
         if (setting->close_loop_type & CURRENT_LOOP)
         {
             pid_ref = PIDCalculate(&motor->current_PID, measure->real_current, pid_ref);

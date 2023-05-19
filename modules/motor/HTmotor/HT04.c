@@ -1,6 +1,7 @@
 #include "HT04.h"
 #include "memory.h"
 #include "general_def.h"
+#include "bsp_dwt.h"
 
 static uint8_t idx;
 HTMotorInstance *ht_motor_instance[HT_MOTOR_CNT];
@@ -43,19 +44,27 @@ static void HTMotorDecode(CANInstance *motor_can)
     uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
     uint8_t *rxbuff = motor_can->rx_buff;
     HTMotor_Measure_t *measure = &((HTMotorInstance *)motor_can->id)->measure; // 将can实例中保存的id转换成电机实例的指针
+    measure->feedback_dt = DWT_GetDeltaT(&measure->count);
 
     measure->last_angle = measure->total_angle;
-
     tmp = (uint16_t)((rxbuff[1] << 8) | rxbuff[2]);
-    measure->total_angle =  uint_to_float(tmp, P_MIN, P_MAX, 16);
+    measure->total_angle = uint_to_float(tmp, P_MIN, P_MAX, 16) - measure->angle_bias;
 
-    tmp = (uint16_t)((rxbuff[3] << 4) | (rxbuff[4] >> 4));
-    measure->speed_rads = SPEED_SMOOTH_COEF * uint_to_float(tmp, V_MIN, V_MAX, 12) +
-                          (1 - SPEED_SMOOTH_COEF) * measure->speed_rads;
+    measure->speed_rads = // SPEED_SMOOTH_COEF * measure->speed_rads + (1 - SPEED_SMOOTH_COEF) *
+        (measure->total_angle - measure->last_angle) / measure->feedback_dt;
 
-    tmp = (uint16_t)(((rxbuff[4] & 0x0f) << 8) | rxbuff[5]);
-    measure->real_current = CURRENT_SMOOTH_COEF * uint_to_float(tmp, T_MIN, T_MAX, 12) +
-                            (1 - CURRENT_SMOOTH_COEF) * measure->real_current;
+    measure->real_current = uint_to_float(((uint16_t)(rxbuff[3] << 4) | (uint16_t)(rxbuff[4] >> 4)), V_MIN, V_MAX, 12);
+
+    if (!measure->first_feedback_flag) // 初始化的时候设置偏置
+    {
+        measure->first_feedback_flag = 1;
+        measure->angle_bias = measure->total_angle;
+        measure->total_angle = 0;
+        measure->speed_rads = 0;
+        DWT_GetDeltaT(&measure->count);
+    }
+
+    // measure->real_current = uint_to_float((rxbuff[3] << 8) | rxbuff[4], I_MIN, I_MAX, 16);
 }
 
 HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config)
@@ -81,7 +90,7 @@ HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config)
 
 void HTMotorSetRef(HTMotorInstance *motor, float ref)
 {
-    motor->pid_ref = ref;
+    motor->pid_ref = ref * 0.285f;
 }
 
 void HTMotorControl()
@@ -107,7 +116,7 @@ void HTMotorControl()
             if (setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor->other_angle_feedback_ptr;
             else
-                pid_measure = measure->real_current;
+                pid_measure = measure->total_angle;
             // measure单位是rad,ref是角度,统一到angle下计算,方便建模
             pid_ref = PIDCalculate(&motor->angle_PID, pid_measure * RAD_2_DEGREE, pid_ref);
         }
@@ -125,11 +134,10 @@ void HTMotorControl()
             pid_ref = PIDCalculate(&motor->speed_PID, pid_measure * RAD_2_DEGREE, pid_ref);
         }
 
+        if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
+            pid_ref += *motor->current_feedforward_ptr;
         if (setting->close_loop_type & CURRENT_LOOP)
         {
-            if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
-                pid_ref += *motor->current_feedforward_ptr;
-
             pid_ref = PIDCalculate(&motor->current_PID, measure->real_current, pid_ref);
         }
 
@@ -139,30 +147,34 @@ void HTMotorControl()
 
         LIMIT_MIN_MAX(set, T_MIN, T_MAX);           // 限幅,实际上这似乎和pid输出限幅重复了
         tmp = float_to_uint(set, T_MIN, T_MAX, 12); // 数值最后在 -12~+12之间
+        if (motor->stop_flag == MOTOR_STOP)
+            tmp = float_to_uint(0, T_MIN, T_MAX, 12);
         motor_can->tx_buff[6] = (tmp >> 8);
         motor_can->tx_buff[7] = tmp & 0xff;
 
-        if (motor->stop_flag == MOTOR_STOP)
-        { // 若该电机处于停止状态,直接将发送buff置零
-            memset(motor_can->tx_buff + 6, 0, sizeof(uint16_t));
-        }
         CANTransmit(motor_can, 1);
     }
 }
 
 void HTMotorStop(HTMotorInstance *motor)
 {
+    if (motor->stop_flag == MOTOR_STOP)
+        return;
     HTMotorSetMode(CMD_RESET_MODE, motor);
+    HTMotorSetMode(CMD_RESET_MODE, motor); // 发两次,确保电机停止
     motor->stop_flag = MOTOR_STOP;
 }
 
 void HTMotorEnable(HTMotorInstance *motor)
 {
+    if (motor->stop_flag == MOTOR_ENALBED)
+        return;
+    HTMotorSetMode(CMD_MOTOR_MODE, motor);
     HTMotorSetMode(CMD_MOTOR_MODE, motor);
     motor->stop_flag = MOTOR_ENALBED;
 }
 
-void HTMotorCalibEncoder(HTMotorInstance *motor)
-{
-    HTMotorSetMode(CMD_ZERO_POSITION, motor);
-}
+// void HTMotorCalibEncoder(HTMotorInstance *motor)
+// {
+//     HTMotorSetMode(CMD_ZERO_POSITION, motor);
+// }

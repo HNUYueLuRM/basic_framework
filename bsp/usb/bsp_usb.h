@@ -2,7 +2,6 @@
  * @file bsp_usb.h
  * @author your name (you@domain.com)
  * @brief 提供对usb vpc(virtal com port)的操作接口,hid和msf考虑后续添加
- * @todo 与usart的接口统一完成兼容
  * @attention 这一版usb修改了usbd_cdc_if.c中的CDC_Receive_FS函数,若使用cube生成后会被覆盖.后续需要由usbcdciftemplate创建一套自己的模板
  * @version 0.1
  * @date 2023-02-09

@@ -19,10 +19,15 @@
 
 typedef struct // HT04
 {
-    float last_angle;
     float total_angle; // 角度为多圈角度,范围是-95.5~95.5,单位为rad
+    float last_angle;
     float speed_rads;
     float real_current;
+    float angle_bias;
+    uint8_t first_feedback_flag;
+
+    float feedback_dt;
+    uint32_t count;
 } HTMotor_Measure_t;
 
 /* HT电机类型定义*/
@@ -91,11 +96,7 @@ void HTMotorStop(HTMotorInstance *motor);
 void HTMotorEnable(HTMotorInstance *motor);
 
 /**
- * @brief 校准电机编码器
- * @attention 注意,校准时务必将电机和其他机构分离,电机会旋转360°!
- *            注意,校准时务必将电机和其他机构分离,电机会旋转360°!
- *            注意,校准时务必将电机和其他机构分离,电机会旋转360°!
- *            注意,校准时务必将电机和其他机构分离,电机会旋转360°!
+ * @brief 校准电机编码器,设置的当前位置为0
  *
  * @param motor
  */

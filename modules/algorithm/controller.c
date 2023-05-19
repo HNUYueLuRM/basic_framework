@@ -134,6 +134,7 @@ void PIDInit(PIDInstance *pid, PID_Init_Config_s *config)
     // utilize the quality of struct that its memeory is continuous
     memcpy(pid, config, sizeof(PID_Init_Config_s));
     // set rest of memory to 0
+    DWT_GetDeltaT(&pid->DWT_CNT);
 }
 
 /**
