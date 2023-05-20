@@ -9,26 +9,32 @@
  */
 
 #include "bsp_dwt.h"
+#include "cmsis_os.h"
 
 static DWT_Time_t SysTime;
 static uint32_t CPU_FREQ_Hz, CPU_FREQ_Hz_ms, CPU_FREQ_Hz_us;
 static uint32_t CYCCNT_RountCount;
 static uint32_t CYCCNT_LAST;
 static uint64_t CYCCNT64;
+static osMutexId DWT_MUTEX;
 
 /**
  * @brief 私有函数,用于检查DWT CYCCNT寄存器是否溢出,并更新CYCCNT_RountCount
  * @attention 此函数假设两次调用之间的时间间隔不超过一次溢出
- * 
+ *
  */
 static void DWT_CNT_Update(void)
 {
+    if (__get_CONTROL()) // 不在中断中,使用互斥锁;在中断则直接执行即可
+        if (osOK != osMutexWait(DWT_MUTEX, 0))
+            return;
+            
     volatile uint32_t cnt_now = DWT->CYCCNT;
-
     if (cnt_now < CYCCNT_LAST)
         CYCCNT_RountCount++;
 
-    CYCCNT_LAST = cnt_now;
+    CYCCNT_LAST = DWT->CYCCNT;
+    osMutexRelease(DWT_MUTEX);
 }
 
 void DWT_Init(uint32_t CPU_Freq_mHz)
@@ -46,6 +52,9 @@ void DWT_Init(uint32_t CPU_Freq_mHz)
     CPU_FREQ_Hz_ms = CPU_FREQ_Hz / 1000;
     CPU_FREQ_Hz_us = CPU_FREQ_Hz / 1000000;
     CYCCNT_RountCount = 0;
+    osMutexDef(dwt_mutex);
+    DWT_MUTEX = osMutexCreate(osMutex(dwt_mutex));
+    DWT_CNT_Update();
 }
 
 float DWT_GetDeltaT(uint32_t *cnt_last)
@@ -112,7 +121,6 @@ uint64_t DWT_GetTimeline_us(void)
 
     return DWT_Timelinef32;
 }
-
 
 void DWT_Delay(float Delay)
 {
