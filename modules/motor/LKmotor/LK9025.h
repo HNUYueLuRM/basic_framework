@@ -5,6 +5,7 @@
 #include "bsp_can.h"
 #include "controller.h"
 #include "motor_def.h"
+#include "daemon.h"
 
 #define LK_MOTOR_MX_CNT 4 // 最多允许4个LK电机使用多电机指令,挂载在一条总线上
 
@@ -23,11 +24,13 @@ typedef struct // 9025
     float angle_single_round; // 单圈角度
     float speed_rads;         // speed rad/s
     int16_t real_current;     // 实际电流
-    uint8_t temperate;        // 温度,C°
+    uint8_t temperature;      // 温度,C°
 
     float total_angle;   // 总角度
     int32_t total_round; // 总圈数
 
+    float feed_dt;
+    uint32_t feed_dwt_cnt;
 } LKMotor_Measure_t;
 
 typedef struct
@@ -48,6 +51,8 @@ typedef struct
     Motor_Working_Type_e stop_flag; // 启停标志
 
     CANInstance *motor_can_ins;
+
+    DaemonInstance *daemon;
 
 } LKMotorInstance;
 
@@ -87,5 +92,7 @@ void LKMotorStop(LKMotorInstance *motor);
  * @param motor
  */
 void LKMotorEnable(LKMotorInstance *motor);
+
+uint8_t LKMotorIsOnline(LKMotorInstance *motor);
 
 #endif // LK9025_H

@@ -1,6 +1,8 @@
 #include "LK9025.h"
 #include "stdlib.h"
 #include "general_def.h"
+#include "daemon.h"
+#include "bsp_dwt.h"
 
 static uint8_t idx;
 static LKMotorInstance *lkmotor_instance[LK_MOTOR_MX_CNT] = {NULL};
@@ -14,10 +16,12 @@ static CANInstance *sender_instance; // 多电机发送时使用的caninstance(�
  */
 static void LKMotorDecode(CANInstance *_instance)
 {
-    LKMotor_Measure_t *measure;
-    uint8_t *rx_buff;
-    rx_buff = _instance->rx_buff;
-    measure = &(((LKMotorInstance *)_instance->id)->measure); // 通过caninstance保存的id获取对应的motorinstance
+    LKMotorInstance *motor = (LKMotorInstance *)_instance->id; // 通过caninstance保存的father id获取对应的motorinstance
+    LKMotor_Measure_t *measure = &motor->measure;
+    uint8_t *rx_buff = _instance->rx_buff;
+
+    DaemonReload(motor->daemon); // 喂狗
+    measure->feed_dt = DWT_GetDeltaT(&measure->feed_dwt_cnt);
 
     measure->last_ecd = measure->ecd;
     measure->ecd = (uint16_t)((rx_buff[7] << 8) | rx_buff[6]);
@@ -30,12 +34,11 @@ static void LKMotorDecode(CANInstance *_instance)
     measure->real_current = (1 - CURRENT_SMOOTH_COEF) * measure->real_current +
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rx_buff[3] << 8 | rx_buff[2]));
 
-    measure->temperate = rx_buff[1];
+    measure->temperature = rx_buff[1];
 
-    // 计算多圈角度
-    if (measure->ecd - measure->last_ecd > 32678)
+    if (measure->ecd - measure->last_ecd > 32768)
         measure->total_round--;
-    else if (measure->ecd - measure->last_ecd < -32678)
+    else if (measure->ecd - measure->last_ecd < -32768)
         measure->total_round++;
     measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
 }
@@ -66,7 +69,16 @@ LKMotorInstance *LKMotorInit(Motor_Init_Config_s *config)
     }
 
     LKMotorEnable(motor);
+    DWT_GetDeltaT(&motor->measure.feed_dwt_cnt);
     lkmotor_instance[idx++] = motor;
+
+    Daemon_Init_Config_s daemon_config = {
+        .callback = NULL,
+        .owner_id = motor,
+        .reload_count = 5, // 0.05秒
+    };
+    motor->daemon = DaemonRegister(&daemon_config);
+
     return motor;
 }
 
@@ -91,7 +103,7 @@ void LKMotorControl()
             if (setting->angle_feedback_source == OTHER_FEED)
                 pid_measure = *motor->other_angle_feedback_ptr;
             else
-                pid_measure = measure->total_angle;
+                pid_measure = measure->real_current;
             pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
             if (setting->feedforward_flag & SPEED_FEEDFORWARD)
                 pid_ref += *motor->speed_feedforward_ptr;
@@ -104,10 +116,10 @@ void LKMotorControl()
             else
                 pid_measure = measure->speed_rads;
             pid_ref = PIDCalculate(&motor->angle_PID, pid_measure, pid_ref);
+            if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
+                pid_ref += *motor->current_feedforward_ptr;
         }
 
-        if (setting->feedforward_flag & CURRENT_FEEDFORWARD)
-            pid_ref += *motor->current_feedforward_ptr;
         if (setting->close_loop_type & CURRENT_LOOP)
         {
             pid_ref = PIDCalculate(&motor->current_PID, measure->real_current, pid_ref);
@@ -126,9 +138,7 @@ void LKMotorControl()
     }
 
     if (idx) // 如果有电机注册了
-    {
-        CANTransmit(sender_instance, 1);
-    }
+        CANTransmit(sender_instance, 0.2);
 }
 
 void LKMotorStop(LKMotorInstance *motor)
@@ -144,4 +154,9 @@ void LKMotorEnable(LKMotorInstance *motor)
 void LKMotorSetRef(LKMotorInstance *motor, float ref)
 {
     motor->pid_ref = ref;
+}
+
+uint8_t LKMotorIsOnline(LKMotorInstance *motor)
+{
+    return DaemonIsOnline(motor->daemon);
 }

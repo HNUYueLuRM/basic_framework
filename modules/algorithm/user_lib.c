@@ -193,3 +193,17 @@ float Dot3d(float *v1, float *v2)
 {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }
+
+// 均值滤波,删除buffer中的最后一个元素,填入新的元素并求平均值
+float AverageFilter(float new_data, float *buf, uint8_t len)
+{
+    float sum = 0;
+    for (uint8_t i = 0; i < len - 1; i++)
+    {
+        buf[i] = buf[i + 1];
+        sum += buf[i];
+    }
+    buf[len - 1] = new_data;
+    sum += new_data;
+    return sum / len;
+}

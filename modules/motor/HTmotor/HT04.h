@@ -5,10 +5,12 @@
 #include "bsp_can.h"
 #include "controller.h"
 #include "motor_def.h"
+#include "daemon.h"
 
 #define HT_MOTOR_CNT 4
 #define CURRENT_SMOOTH_COEF 0.9f
-#define SPEED_SMOOTH_COEF 0.85f
+#define SPEED_BUFFER_SIZE 5
+#define HT_SPEED_BIAS -0.0109901428f // 电机速度偏差,单位rad/s
 
 #define P_MIN -95.5f // Radians
 #define P_MAX 95.5f
@@ -16,18 +18,23 @@
 #define V_MAX 45.0f
 #define T_MIN -18.0f // N·m
 #define T_MAX 18.0f
+#define KP_MIN 0.0f // N-m/rad
+#define KP_MAX 500.0f
+#define KD_MIN 0.0f // N-m/rad/s
+#define KD_MAX 5.0f
 
 typedef struct // HT04
 {
     float total_angle; // 角度为多圈角度,范围是-95.5~95.5,单位为rad
     float last_angle;
-    float speed_rads;
-    float real_current;
-    float angle_bias;
-    uint8_t first_feedback_flag;
 
-    float feedback_dt;
-    uint32_t count;
+    float speed_rads;
+    float speed_buff[SPEED_BUFFER_SIZE];
+
+    float real_current;
+
+    float feed_dt;
+    uint32_t feed_cnt;
 } HTMotor_Measure_t;
 
 /* HT电机类型定义*/
@@ -49,6 +56,9 @@ typedef struct
     Motor_Working_Type_e stop_flag; // 启停标志
 
     CANInstance *motor_can_instace;
+
+    DaemonInstance *motor_daemon;
+    uint32_t lost_cnt;
 } HTMotorInstance;
 
 /* HT电机模式,初始化时自动进入CMD_MOTOR_MODE*/
@@ -76,10 +86,10 @@ HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config);
 void HTMotorSetRef(HTMotorInstance *motor, float ref);
 
 /**
- * @brief 给所有的HT电机发送控制指令
+ * @brief 初始化电机任务,若要使用,需要在motortask的死循环前调用
  *
  */
-void HTMotorControl();
+void HTMotorControlInit();
 
 /**
  * @brief 停止电机,之后电机不会响应HTMotorSetRef设定的值
@@ -96,7 +106,15 @@ void HTMotorStop(HTMotorInstance *motor);
 void HTMotorEnable(HTMotorInstance *motor);
 
 /**
- * @brief 校准电机编码器,设置的当前位置为0
+ * @brief 修改电机闭环对象
+ *
+ * @param motor
+ * @param type
+ */
+void HTMotorOuterLoop(HTMotorInstance *motor, Closeloop_Type_e type);
+
+/**
+ * @brief 将当前编码器位置置零
  *
  * @param motor
  */

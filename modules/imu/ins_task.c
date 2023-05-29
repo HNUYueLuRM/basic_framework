@@ -99,7 +99,7 @@ attitude_t *INS_Init(void)
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
-    DWT_GetDeltaT64(&INS_DWT_Count);
+    DWT_GetDeltaT(&INS_DWT_Count);
     return (attitude_t *)&INS.Gyro; // @todo: 这里偷懒了,不要这样做! 修改INT_t结构体可能会导致异常,待修复.
 }
 

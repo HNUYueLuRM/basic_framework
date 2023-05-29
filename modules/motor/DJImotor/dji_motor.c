@@ -134,7 +134,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
                          RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float)((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
     measure->real_current = (1.0f - CURRENT_SMOOTH_COEF) * measure->real_current +
                             CURRENT_SMOOTH_COEF * (float)((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
-    measure->temperate = rxbuff[6];
+    measure->temperature = rxbuff[6];
 
     // 多圈角度计算,前提是假设两次采样间电机转过的角度小于180°,自己画个图就清楚计算过程了
     if (measure->ecd - measure->last_ecd > 4096)
@@ -238,6 +238,7 @@ void DJIMotorControl()
         pid_ref = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
         if (motor_setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
             pid_ref *= -1; // 设置反转
+
         // pid_ref会顺次通过被启用的闭环充当数据的载体
         // 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
         if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
@@ -271,6 +272,9 @@ void DJIMotorControl()
         {
             pid_ref = PIDCalculate(&motor_controller->current_PID, measure->real_current, pid_ref);
         }
+
+        if (motor_setting->feedback_reverse_flag == FEEDBACK_DIRECTION_REVERSE)
+            pid_ref *= -1;
 
         // 获取最终输出
         set = (int16_t)pid_ref;

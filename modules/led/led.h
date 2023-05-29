@@ -12,7 +12,7 @@ typedef struct
     uint8_t led_alpha; // 透明度,通过pwm频率改变
     uint8_t led_brightness; // 亮度,通过电压改变(如果可以,使用dac)
     uint8_t led_color; // rgb value,0-255
-    uint8_t led_switch // 开关,on1 off0
+    uint8_t led_switch; // 开关,on1 off0
     // void (*action_callback)(void); // led动作回调函数
 } LEDInstance;
 

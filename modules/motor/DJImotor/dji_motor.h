@@ -35,7 +35,7 @@ typedef struct
     float angle_single_round; // 单圈角度
     float speed_aps;          // 角速度,单位为:度/秒
     int16_t real_current;     // 实际电流
-    uint8_t temperate;        // 温度 Celsius
+    uint8_t temperature;      // 温度 Celsius
 
     float total_angle;   // 总角度,注意方向
     int32_t total_round; // 总圈数,注意方向
@@ -48,7 +48,7 @@ typedef struct
 typedef struct
 {
 
-    DJI_Motor_Measure_s measure;      // 电机测量值
+    DJI_Motor_Measure_s measure;            // 电机测量值
     Motor_Control_Setting_s motor_settings; // 电机设置
     Motor_Controller_s motor_controller;    // 电机控制器
 
