@@ -42,6 +42,7 @@ void DaemonTask()
         else if (dins->callback) // 等于零说明超时了,调用回调函数(如果有的话)
         {
             dins->callback(dins->owner_id); // module内可以将owner_id强制类型转换成自身类型从而调用特定module的offline callback
+            // @todo 为蜂鸣器/led等增加离线报警的功能,非常关键!
         }
     }
 }

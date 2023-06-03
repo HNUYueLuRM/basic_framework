@@ -160,7 +160,7 @@ void StartDefaultTask(void const *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
-  vTaskDelete(NULL);
+  vTaskDelete(NULL); // 删除默认任务,防止占用CPU
   /* USER CODE END StartDefaultTask */
 }
 
@@ -172,15 +172,15 @@ void StartINSTASK(void const *argument)
   {
     // 1kHz
     INS_Task();
-    VisionSend(); // 解算完成后发送视觉数�?
+    VisionSend(); // 解算完成后发送视觉数据,但是当前的实现不太优雅,后续若添加硬件触发需要重新考虑结构的组织
     osDelay(1);
   }
 }
 
 void StartMOTORTASK(void const *argument)
 {
-  // 若使用HT电机则取消本行注释
-  HTMotorControlInit();
+  // 若使用HT电机则取消本行注释,该接口会为注册了的电机设备创建线程
+  // HTMotorControlInit();
   while (1)
   {
     // 500Hz
@@ -203,7 +203,7 @@ void StartROBOTTASK(void const *argument)
 {
   while (1)
   {
-    // 200Hz
+    // 200Hz-500Hz,若有额外的控制任务如平衡步兵可能需要提升至1kHz
     RobotTask();
     osDelay(5);
   }
@@ -214,7 +214,8 @@ void StartUITASK(void const *argument)
   My_UI_init();
   while (1)
   {
-    Referee_Interactive_task();
+    Referee_Interactive_task(); // 每次给裁判系统发送完一包数据后,挂起一次,防止卡在裁判系统发送中,详见Referee_Interactive_task函数的refereeSend();
+    osDelay(1); // 即使没有任何UI需要刷新,也挂起一次,防止卡在UITask中无法切换
   }
 }
 /* USER CODE END Application */

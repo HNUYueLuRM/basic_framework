@@ -25,6 +25,7 @@ CAN comm是用于CAN多机通信的模块。你不需要关心实现的协议，
 CANCommInstance *CANCommInit(CANComm_Init_Config_s* comm_config);
 void CANCommSend(CANCommInstance *instance, uint8_t *data);
 void *CANCommGet(CANCommInstance *instance);
+uint8_t CANCommIsOnline(CANCommInstance *instance);
 ```
 
 第一个函数将会初始化一个CANComm实例，返回其指针。使用CANComm进行通信的应用应该保存返回的指针。初始化需要传入一个初始化结构体。请在应用初始化的时候调用该函数。推荐的结构体配置方式如下：
@@ -138,5 +139,4 @@ CAN comm的通信协议如下：
 接收的流程见代码注释。
 
 流程图如下：![未命名文件](../../assets/CANcomm.png)
-
 
