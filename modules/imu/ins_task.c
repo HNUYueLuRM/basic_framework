@@ -74,6 +74,11 @@ static void InitQuaternion(float *init_q4)
 
 attitude_t *INS_Init(void)
 {
+    if (!INS.init)
+        INS.init = 1;
+    else
+        return (attitude_t *)&INS.Gyro;
+
     while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR)
         ;
     IMU_Param.scale[X] = 1;

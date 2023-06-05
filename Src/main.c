@@ -119,7 +119,7 @@ int main(void)
   MX_CRC_Init();
   MX_DAC_Init();
   /* USER CODE BEGIN 2 */
-	RobotInit();
+	RobotInit(); // 唯一的初始化函数
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

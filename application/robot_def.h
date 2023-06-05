@@ -20,7 +20,6 @@
 #define ONE_BOARD // 单板控制整车
 // #define CHASSIS_BOARD //底盘板
 // #define GIMBAL_BOARD  //云台板
-// #define BALANCE_BOARD //启用平衡底盘,则默认双板且当前板位底盘,目前不支持!请勿使用!
 
 #define VISION_USE_VCP  // 使用虚拟串口发送视觉数据
 // #define VISION_USE_UART // 使用串口发送视觉数据

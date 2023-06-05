@@ -62,6 +62,8 @@ typedef struct
     float Pitch;
     float Yaw;
     float YawTotalAngle;
+
+    uint8_t init;
 } INS_t;
 
 /* 用于修正安装误差的参数 */

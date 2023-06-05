@@ -1,6 +1,7 @@
 #include "bsp_init.h"
 #include "robot.h"
 #include "robot_def.h"
+#include "robot_task.h"
 
 // 编译warning,提醒开发者修改机器人参数
 #ifndef ROBOT_DEF_PARAM_WARNING
@@ -17,10 +18,6 @@
 #include "shoot.h"
 #include "robot_cmd.h"
 #endif
-
-#ifdef BALANCE_BAORD
-#include "balance.h"
-#endif // BALANCE_BOARD
 
 
 void RobotInit()
@@ -41,6 +38,8 @@ void RobotInit()
 #if defined(ONE_BOARD) || defined(CHASSIS_BOARD)
     ChassisInit();
 #endif
+
+    OSTaskInit(); // 创建基础任务
 
     // 初始化完成,开启中断
     __enable_irq();
