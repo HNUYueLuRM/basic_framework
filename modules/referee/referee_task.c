@@ -13,10 +13,12 @@
 #include "rm_referee.h"
 #include "referee_UI.h"
 #include "string.h"
+#include "cmsis_os.h"
 
 static Referee_Interactive_info_t *Interactive_data; // UI绘制需要的机器人状态数据
 static referee_info_t *referee_recv_info;            // 接收到的裁判系统数据
-uint8_t UI_Seq;                               // 包序号，供整个referee文件使用
+uint8_t UI_Seq;                                      // 包序号，供整个referee文件使用
+// @todo 不应该使用全局变量
 
 /**
  * @brief  判断各种ID，选择客户端ID
@@ -43,6 +45,7 @@ referee_info_t *Referee_Interactive_init(UART_HandleTypeDef *referee_usart_handl
 {
     referee_recv_info = RefereeInit(referee_usart_handle); // 初始化裁判系统的串口,并返回裁判系统反馈数据指针
     Interactive_data = UI_data;                            // 获取UI绘制需要的机器人状态数据
+    referee_recv_info->init_flag = 1;
     return referee_recv_info;
 }
 
@@ -60,9 +63,12 @@ static uint32_t shoot_line_location[10] = {540, 960, 490, 515, 565};
 
 void My_UI_init()
 {
+    if (!referee_recv_info->init_flag)
+        vTaskDelete(NULL); // 如果没有初始化裁判系统则直接删除ui任务
     while (referee_recv_info->GameRobotState.robot_id == 0)
-        ;
-    DeterminRobotID();
+        osDelay(100); // 若还未收到裁判系统数据,等待一段时间后再检查
+    
+    DeterminRobotID(); // 确定ui要发送到的目标客户端
     UIDelete(&referee_recv_info->referee_id, UI_Data_Del_ALL, 0); // 清空UI
 
     // 绘制发射基准线

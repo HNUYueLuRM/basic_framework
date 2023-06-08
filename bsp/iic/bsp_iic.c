@@ -15,7 +15,7 @@ IICInstance *IICRegister(IIC_Init_Config_s *conf)
     instance = (IICInstance *)malloc(sizeof(IICInstance));
     memset(instance, 0, sizeof(IICInstance));
 
-    instance->dev_address = conf->dev_address << 1;
+    instance->dev_address = conf->dev_address << 1; // 地址左移一位,最低位为读写位
     instance->callback = conf->callback;
     instance->work_mode = conf->work_mode;
     instance->handle = conf->handle;

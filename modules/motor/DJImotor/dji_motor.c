@@ -1,5 +1,6 @@
 #include "dji_motor.h"
 #include "general_def.h"
+#include "bsp_dwt.h"
 #include "bsp_log.h"
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
@@ -29,15 +30,12 @@ static CANInstance sender_assignment[6] = {
 /**
  * @brief 6个用于确认是否有电机注册到sender_assignment中的标志位,防止发送空帧,此变量将在DJIMotorControl()使用
  *        flag的初始化在 MotorSenderGrouping()中进行
- *
  */
 static uint8_t sender_enable_flag[6] = {0};
 
 /**
  * @brief 根据电调/拨码开关上的ID,根据说明书的默认id分配方式计算发送ID和接收ID,
  *        并对电机进行分组以便处理多电机控制命令
- *
- * @param config
  */
 static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *config)
 {
@@ -124,7 +122,11 @@ static void DecodeDJIMotor(CANInstance *_instance)
     // 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
     // _instance指针指向的id是对应电机instance的地址,通过强制转换为电机instance的指针,再通过->运算符访问电机的成员motor_measure,最后取地址获得指针
     uint8_t *rxbuff = _instance->rx_buff;
-    DJI_Motor_Measure_s *measure = &(((DJIMotorInstance *)_instance->id)->measure); // measure要多次使用,保存指针减小访存开销
+    DJIMotorInstance *motor = (DJIMotorInstance *)_instance->id;
+    DJI_Motor_Measure_s *measure = &motor->measure; // measure要多次使用,保存指针减小访存开销
+
+    DaemonReload(motor->daemon);
+    motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
 
     // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
     measure->last_ecd = measure->ecd;
@@ -142,6 +144,10 @@ static void DecodeDJIMotor(CANInstance *_instance)
     else if (measure->ecd - measure->last_ecd < -4096)
         measure->total_round++;
     measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
+}
+
+static void DJIMotorLostCallback(void *motor_ptr)
+{
 }
 
 // 电机初始化,返回一个电机实例
@@ -171,6 +177,14 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
     config->can_init_config.id = instance;                        // set id,eq to address(it is identity)
     instance->motor_can_instance = CANRegister(&config->can_init_config);
+
+    // 注册守护线程
+    Daemon_Init_Config_s daemon_config = {
+        .callback = DJIMotorLostCallback,
+        .owner_id = instance,
+        .reload_count = 1, // 10ms未收到数据则丢失
+    };
+    instance->daemon = DaemonRegister(&daemon_config);
 
     DJIMotorEnable(instance);
     dji_motor_instance[idx++] = instance;

@@ -41,6 +41,8 @@ typedef struct
 	// 自定义交互数据的接收
 	Communicate_ReceiveData_t ReceiveData;
 
+	uint8_t init_flag;
+
 } referee_info_t;
 
 // 模式是否切换标志位，0为未切换，1为切换，static定义默认为0
@@ -67,11 +69,11 @@ typedef struct
 	Chassis_Power_Data_s Chassis_Power_Data; // 功率控制
 
 	// 上一次的模式，用于flag判断
-	chassis_mode_e chassis_last_mode;	
-	gimbal_mode_e gimbal_last_mode;		
-	shoot_mode_e shoot_last_mode;		
-	friction_mode_e friction_last_mode; 
-	lid_mode_e lid_last_mode;			
+	chassis_mode_e chassis_last_mode;
+	gimbal_mode_e gimbal_last_mode;
+	shoot_mode_e shoot_last_mode;
+	friction_mode_e friction_last_mode;
+	lid_mode_e lid_last_mode;
 	Chassis_Power_Data_s Chassis_last_Power_Data;
 
 } Referee_Interactive_info_t;

@@ -91,8 +91,7 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
  *
  * @param spi_ins spi实例指针
  * @param spi_mode 工作模式,包括阻塞模式(block),中断模式(IT),DMA模式.详见SPI_TXRX_MODE_e的定义
- * @param force_set_flag 强制设置标志,当该标志为1时,强制停止当前spi的收发,并切换到新的工作模式;
- *                       当该标志为0时,如果当前spi正在收发,则不会切换工作模式,等待传输完成后切换.
- * @todo HAL已经提供了防止重入的机制,因此强制设置标志可以去掉,也不需要再判断spi是否正在收发
+ * 
+ * @todo 是否直接将mode作为transmit/recv的参数,而不是作为spi实例的属性?两者各有优劣
  */
 void SPISetMode(SPIInstance *spi_ins, SPI_TXRX_MODE_e spi_mode);

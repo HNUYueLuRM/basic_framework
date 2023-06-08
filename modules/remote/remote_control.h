@@ -40,11 +40,6 @@
 #define switch_is_down(s) (s == RC_SW_DOWN)
 #define switch_is_mid(s) (s == RC_SW_MID)
 #define switch_is_up(s) (s == RC_SW_UP)
-#define LEFT_SW 1  // 左侧开关
-#define RIGHT_SW 0 // 右侧开关
-//键盘状态的宏
-#define key_is_press(s) (s == 1)
-#define key_not_press(s) (s == 0)
 
 /* ----------------------- PC Key Definition-------------------------------- */
 // 对应key[x][0~16],获取对应的键;例如通过key[KEY_PRESS][Key_W]获取W键是否按下,后续改为位域后删除
@@ -67,26 +62,31 @@
 
 /* ----------------------- Data Struct ------------------------------------- */
 // 待测试的位域结构体,可以极大提升解析速度
-typedef struct
+typedef union
 {
-    uint16_t w : 1;
-    uint16_t s : 1;
-    uint16_t d : 1;
-    uint16_t a : 1;
-    uint16_t shift : 1;
-    uint16_t ctrl : 1;
-    uint16_t q : 1;
-    uint16_t e : 1;
-    uint16_t r : 1;
-    uint16_t f : 1;
-    uint16_t g : 1;
-    uint16_t z : 1;
-    uint16_t x : 1;
-    uint16_t c : 1;
-    uint16_t v : 1;
-    uint16_t b : 1;
+    struct // 用于访问键盘状态
+    {
+        uint16_t w : 1;
+        uint16_t s : 1;
+        uint16_t d : 1;
+        uint16_t a : 1;
+        uint16_t shift : 1;
+        uint16_t ctrl : 1;
+        uint16_t q : 1;
+        uint16_t e : 1;
+        uint16_t r : 1;
+        uint16_t f : 1;
+        uint16_t g : 1;
+        uint16_t z : 1;
+        uint16_t x : 1;
+        uint16_t c : 1;
+        uint16_t v : 1;
+        uint16_t b : 1;
+    };
+    uint16_t keys; // 用于memcpy而不需要进行强制类型转换
 } Key_t;
 
+// @todo 当前结构体嵌套过深,需要进行优化
 typedef struct
 {
     struct
@@ -104,12 +104,11 @@ typedef struct
     {
         int16_t x;
         int16_t y;
-        int16_t z;
         uint8_t press_l;
         uint8_t press_r;
     } mouse;
-    
-    Key_t key[3];  // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
+
+    Key_t key[3]; // 改为位域后的键盘索引,空间减少8倍,速度增加16~倍
 
     uint8_t key_count[3][16];
 } RC_ctrl_t;
@@ -126,7 +125,7 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle);
 
 /**
  * @brief 检查遥控器是否在线,若尚未初始化也视为离线
- * 
+ *
  * @return uint8_t 1:在线 0:离线
  */
 uint8_t RemoteControlIsOnline();

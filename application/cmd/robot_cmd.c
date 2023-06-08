@@ -13,7 +13,7 @@
 #define YAW_ALIGN_ANGLE (YAW_CHASSIS_ALIGN_ECD * ECD_ANGLE_COEF_DJI) // 对齐时的角度,0-360
 #define PTICH_HORIZON_ANGLE (PITCH_HORIZON_ECD * ECD_ANGLE_COEF_DJI) // pitch水平时电机的角度,0-360
 
-/* gimbal_cmd应用包含的模块实例指针和交互信息存储*/
+/* cmd应用包含的模块实例指针和交互信息存储*/
 #ifdef GIMBAL_BOARD // 对双板的兼容,条件编译
 #include "can_comm.h"
 static CANCommInstance *cmd_can_comm; // 双板通信
@@ -236,7 +236,7 @@ static void MouseKeySet()
         chassis_cmd_send.chassis_speed_buff = 100;
         break;
     }
-    switch (rc_data[TEMP].key[KEY_PRESS].shift) //待添加 按shift允许超功率 消耗缓冲能量
+    switch (rc_data[TEMP].key[KEY_PRESS].shift) // 待添加 按shift允许超功率 消耗缓冲能量
     {
     case 1:
 
@@ -246,7 +246,6 @@ static void MouseKeySet()
 
         break;
     }
-
 }
 
 /**
@@ -274,7 +273,6 @@ static void EmergencyHandler()
         robot_state = ROBOT_READY;
         shoot_cmd_send.shoot_mode = SHOOT_ON;
     }
-    
 }
 
 /* 机器人核心控制任务,200Hz频率运行(必须高于视觉发送频率) */

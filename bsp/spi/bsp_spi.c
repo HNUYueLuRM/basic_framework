@@ -130,11 +130,9 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
         {
             // 先拉高片选,结束传输,在判断是否有回调函数,如果有则调用回调函数
             HAL_GPIO_WritePin(spi_instance[i]->GPIOx, spi_instance[i]->cs_pin, GPIO_PIN_SET);
+            // @todo 后续添加holdon模式,由用户自行决定何时释放片选,允许进行连续传输
             if (spi_instance[i]->callback != NULL) // 回调函数不为空, 则调用回调函数
-            {
-
                 spi_instance[i]->callback(spi_instance[i]);
-            }
             return;
         }
     }

@@ -19,6 +19,7 @@
 #include "controller.h"
 #include "motor_def.h"
 #include "stdint.h"
+#include "daemon.h"
 
 #define DJI_MOTOR_CNT 12
 
@@ -47,7 +48,6 @@ typedef struct
  */
 typedef struct
 {
-
     DJI_Motor_Measure_s measure;            // 电机测量值
     Motor_Control_Setting_s motor_settings; // 电机设置
     Motor_Controller_s motor_controller;    // 电机控制器
@@ -59,6 +59,10 @@ typedef struct
 
     Motor_Type_e motor_type;        // 电机类型
     Motor_Working_Type_e stop_flag; // 启停标志
+
+    DaemonInstance* daemon;
+    uint32_t feed_cnt;
+    float dt;
 } DJIMotorInstance;
 
 /**
