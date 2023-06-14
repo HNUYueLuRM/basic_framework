@@ -6,7 +6,6 @@
 >
 > 1. 对`CANCommGet()`进行修改，使得其可以返回数据是否更新的相关信息。
 
-
 ## 重要提醒
 
 如果传输过程中出现多次丢包或长度校验不通过，尤其是传输长度较大的时候，请开启CAN的Auto Retransmission，并尝试修改CANComm实例的发送和接受ID（以提高在总线仲裁中的优先级）。
@@ -40,12 +39,12 @@ typedef struct
 } CANComm_Init_Config_s;
 
 CANComm_Init_Config_s cconfig = {
-		.can_config = {
+  .can_config = {
             .can_handle=&hcan1,
             .tx_id=0x02,
             .rx_id=0x03},
-		.send_data_len = sizeof(your_data_structure),
-		.recv_data_len = sizeof(recv_data_structure)
+  .send_data_len = sizeof(your_data_structure),
+  .recv_data_len = sizeof(recv_data_structure)
 };
 ```
 
@@ -65,7 +64,7 @@ typedef struct
 
 只有这样，这个结构体才不会进行padding扩充字节实现字节对齐。你可以尝试一下，如果不使用pack处理，上面的结构体将会占据18个字节以上的空间；开启pack后，会降低至15。更多关于字节对齐的内容，自行查询。
 
->  后期可能更新字节对齐和内存访问相关的教程。
+> 后期可能更新字节对齐和内存访问相关的教程。
 
 `CANCommGet()`是获取来自CANComm接收到的数据的接口，返回值为一个void类型指针，你需要通过**强制类型转换**将其变为你设定的接收类型指针，然后就可以访问其数据了。
 
@@ -92,10 +91,10 @@ static void CANCommRxCallback(can_instance *_instance);
 #pragma pack(1)
 struct test
 {
-	float aa;
-	float bb;
-	float cc;
-	uint16_t dd;
+ float aa;
+ float bb;
+ float cc;
+ uint16_t dd;
 };
 #pragma pack()
 ```
@@ -104,12 +103,12 @@ struct test
 
 ```c
 CANComm_Init_Config_s cconfig = {
-		.can_config = {
+  .can_config = {
             .can_handle=&hcan1,
             .tx_id=0x02,
             .rx_id=0x03},
-		.send_data_len = sizeof(float),
-		.recv_data_len = sizeof(struct test)
+  .send_data_len = sizeof(float),
+  .recv_data_len = sizeof(struct test)
 };
 CANCommInstance* ins = CANCommInit(&cconfig);
 ```
@@ -138,5 +137,4 @@ CAN comm的通信协议如下：
 
 接收的流程见代码注释。
 
-流程图如下：![未命名文件](../../assets/CANcomm.png)
-
+流程图如下：![未命名文件](../../.assets/CANcomm.png)

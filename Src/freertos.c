@@ -123,17 +123,17 @@ void MX_FREERTOS_Init(void)
 void StartDefaultTask(void const *argument)
 {
   /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init(); // USB初始化
+  MX_USB_DEVICE_Init(); // USB???
   /* USER CODE BEGIN StartDefaultTask */
-  vTaskDelete(NULL); // 删除默认任务,防止占用CPU
+  vTaskDelete(NULL); // ??????,????CPU
   /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 /**
- * @brief 注意,为方便统一管理,
- *        所有的机器人任务都在applicatoin/robot_task.h中进行
+ * @brief ??,???????,
+ *        ??????????applicatoin/robot_task.h???
  * 
  */
 /* USER CODE END Application */
