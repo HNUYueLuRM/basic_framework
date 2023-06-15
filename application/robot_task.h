@@ -1,3 +1,4 @@
+/* 注意该文件应只用于任务初始化,只能被robot.c包含*/
 #pragma once
 
 #include "FreeRTOS.h"
@@ -46,8 +47,7 @@ void OSTaskInit()
     osThreadDef(uitask, StartUITASK, osPriorityNormal, 0, 512);
     uiTaskHandle = osThreadCreate(osThread(uitask), NULL);
 
-    // 若使用HT电机则取消本行注释,该接口会为注册了的电机设备创建线程
-    // HTMotorControlInit();
+    HTMotorControlInit(); // 没有注册HT电机则不会执行
 }
 
 void StartINSTASK(void const *argument)
@@ -102,10 +102,11 @@ void StartROBOTTASK(void const *argument)
 
 void StartUITASK(void const *argument)
 {
-    My_UI_init();
+    MyUIInit();
     while (1)
     {
-        Referee_Interactive_task(); // 每次给裁判系统发送完一包数据后,挂起一次,防止卡在裁判系统发送中,详见Referee_Interactive_task函数的refereeSend();
-        osDelay(1);                 // 即使没有任何UI需要刷新,也挂起一次,防止卡在UITask中无法切换
+        // 每给裁判系统发送一包数据会挂起一次,详见UITask函数的refereeSend()
+        UITask();
+        osDelay(1); // 即使没有任何UI需要刷新,也挂起一次,防止卡在UITask中无法切换
     }
 }

@@ -131,9 +131,5 @@ void StartDefaultTask(void const *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-/**
- * @brief ??,???????,
- *        ??????????applicatoin/robot_task.h???
- * 
- */
+
 /* USER CODE END Application */

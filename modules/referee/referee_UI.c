@@ -57,8 +57,8 @@ void UIDelete(referee_id_t *_id, uint8_t Del_Operate, uint8_t Del_Layer)
 		End_x、End_y   终点xy坐标
 **********************************************************************************************************/
 
-void Line_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-			   uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t End_x, uint32_t End_y)
+void UILineDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+				uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t End_x, uint32_t End_y)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++) // 填充至‘0’为止
@@ -91,8 +91,8 @@ void Line_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, u
 		Start_x、Start_y    起点xy坐标
 		End_x、End_y        对角顶点xy坐标
 **********************************************************************************************************/
-void Rectangle_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-					uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t End_x, uint32_t End_y)
+void UIRectangleDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+					 uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t End_x, uint32_t End_y)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++)
@@ -126,8 +126,8 @@ void Rectangle_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Opera
 		Graph_Radius  圆形半径
 **********************************************************************************************************/
 
-void Circle_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-				 uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t Graph_Radius)
+void UICircleDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+				  uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t Graph_Radius)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++)
@@ -159,8 +159,8 @@ void Circle_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate,
 		Start_x、Start_y    圆心xy坐标
 		End_x、End_y        xy半轴长度
 **********************************************************************************************************/
-void Elliptical_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-					 uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t end_x, uint32_t end_y)
+void UIOvalDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+				uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, uint32_t end_x, uint32_t end_y)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++)
@@ -196,9 +196,9 @@ void Elliptical_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Oper
 		x_Length,y_Length   xy半轴长度
 **********************************************************************************************************/
 
-void Arc_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-			  uint32_t Graph_StartAngle, uint32_t Graph_EndAngle, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y,
-			  uint32_t end_x, uint32_t end_y)
+void UIArcDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+			   uint32_t Graph_StartAngle, uint32_t Graph_EndAngle, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y,
+			   uint32_t end_x, uint32_t end_y)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++)
@@ -236,8 +236,8 @@ void Arc_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, ui
 		end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
 
-void Float_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-				uint32_t Graph_Size, uint32_t Graph_Digit, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, int32_t Graph_Float)
+void UIFloatDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+				 uint32_t Graph_Size, uint32_t Graph_Digit, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, int32_t Graph_Float)
 {
 
 	int i;
@@ -274,8 +274,8 @@ void Float_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, 
 		end_x=(a>>10)&0x7FF;
 		end_y=(a>>21)&0x7FF;
 **********************************************************************************************************/
-void Integer_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-				  uint32_t Graph_Size, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, int32_t Graph_Integer)
+void UIIntDraw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+			   uint32_t Graph_Size, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, int32_t Graph_Integer)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++)
@@ -311,8 +311,8 @@ void Integer_Draw(Graph_Data_t *graph, char graphname[3], uint32_t Graph_Operate
 		fmt需要显示的字符串
 		此函数的实现和具体使用类似于printf函数
 **********************************************************************************************************/
-void Char_Draw(String_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
-			   uint32_t Graph_Size, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, char *fmt, ...)
+void UICharDraw(String_Data_t *graph, char graphname[3], uint32_t Graph_Operate, uint32_t Graph_Layer, uint32_t Graph_Color,
+				uint32_t Graph_Size, uint32_t Graph_Width, uint32_t Start_x, uint32_t Start_y, char *fmt, ...)
 {
 	int i;
 	for (i = 0; i < 3 && graphname[i] != '\0'; i++)
@@ -345,7 +345,7 @@ void Char_Draw(String_Data_t *graph, char graphname[3], uint32_t Graph_Operate, 
 			...   图形变量参数
    Tips：：该函数只能推送1，2，5，7个图形，其他数目协议未涉及
  */
-void UI_ReFresh(referee_id_t *_id, int cnt, ...)
+void UIGraphRefresh(referee_id_t *_id, int cnt, ...)
 {
 	UI_GraphReFresh_t UI_GraphReFresh_data;
 	Graph_Data_t graphData;
@@ -390,13 +390,13 @@ void UI_ReFresh(referee_id_t *_id, int cnt, ...)
 		memcpy(buffer + (LEN_HEADER + LEN_CMDID + Interactive_Data_LEN_Head + UI_Operate_LEN_PerDraw * i), (uint8_t *)&graphData, UI_Operate_LEN_PerDraw);
 	}
 	Append_CRC16_Check_Sum(buffer, temp_datalength);
-	RefereeSend(buffer, temp_datalength); 
+	RefereeSend(buffer, temp_datalength);
 
 	va_end(ap); // 结束可变参数的获取
 }
 
 /************************************************UI推送字符（使更改生效）*********************************/
-void Char_ReFresh(referee_id_t *_id, String_Data_t string_Data)
+void UICharRefresh(referee_id_t *_id, String_Data_t string_Data)
 {
 	static UI_CharReFresh_t UI_CharReFresh_data;
 
