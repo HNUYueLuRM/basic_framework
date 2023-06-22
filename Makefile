@@ -119,6 +119,7 @@ bsp/can/bsp_can.c \
 bsp/usart/bsp_usart.c \
 bsp/usb/bsp_usb.c \
 bsp/log/bsp_log.c \
+bsp/log/bsp_flash.c \
 bsp/bsp_init.c \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
