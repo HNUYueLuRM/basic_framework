@@ -4,13 +4,14 @@
 #include "bsp_log.h"
 
 static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注册时使用
-
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
-static DJIMotorInstance *dji_motor_instance[DJI_MOTOR_CNT] = {NULL};
+static DJIMotorInstance *dji_motor_instance[DJI_MOTOR_CNT] = {NULL}; // 会在control任务中遍历该指针数组进行pid计算
 
 /**
  * @brief 由于DJI电机发送以四个一组的形式进行,故对其进行特殊处理,用6个(2can*3group)can_instance专门负责发送
  *        该变量将在 DJIMotorControl() 中使用,分组在 MotorSenderGrouping()中进行
+ *
+ * @note  因为只用于发送,所以不需要在bsp_can中注册
  *
  * C610(m2006)/C620(m3508):0x1ff,0x200;
  * GM6020:0x1ff,0x2ff
@@ -69,9 +70,10 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         {
             if (dji_motor_instance[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_instance[i]->motor_can_instance->rx_id == config->rx_id)
             {
-                LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information."); // 后续可以把id和CAN打印出来
-                while (1)
-                    ; // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
+                LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
+                uint16_t can_bus = config->can_handle == &hcan1 ? 1 : 2;
+                while (1) // 后续可以把id和CAN打印出来 // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
+                    LOGERROR("[dji_motor] id [%d], can_bus [%d]", config->rx_id, can_bus);
             }
         }
         break;
@@ -98,16 +100,16 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
             if (dji_motor_instance[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_instance[i]->motor_can_instance->rx_id == config->rx_id)
             {
                 LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
-                while (1)
-                    ; // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8)
+                uint16_t can_bus = config->can_handle == &hcan1 ? 1 : 2;
+                while (1) // 后续可以把id和CAN打印出来 // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
+                    LOGERROR("[dji_motor] id [%d], can_bus [%d]", config->rx_id, can_bus);
             }
         }
         break;
 
     default: // other motors should not be registered here
-        LOGERROR("You must not register other motors using the API of DJI motor.");
         while (1)
-            ; // 其他电机不应该在这里注册
+            LOGERROR("[dji_motor]You must not register other motors using the API of DJI motor."); // 其他电机不应该在这里注册
     }
 }
 
@@ -148,6 +150,9 @@ static void DecodeDJIMotor(CANInstance *_instance)
 
 static void DJIMotorLostCallback(void *motor_ptr)
 {
+    DJIMotorInstance *motor = (DJIMotorInstance *)motor_ptr;
+    uint16_t can_bus = motor->motor_can_instance->can_handle == &hcan1 ? 1 : 2;
+    LOGWARNING("[dji_motor] Motor lost, can bus [%d] , id [%d]", can_bus, motor->motor_can_instance->tx_id);
 }
 
 // 电机初始化,返回一个电机实例
@@ -182,7 +187,7 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     Daemon_Init_Config_s daemon_config = {
         .callback = DJIMotorLostCallback,
         .owner_id = instance,
-        .reload_count = 1, // 10ms未收到数据则丢失
+        .reload_count = 2, // 20ms未收到数据则丢失
     };
     instance->daemon = DaemonRegister(&daemon_config);
 
@@ -195,17 +200,11 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
 void DJIMotorChangeFeed(DJIMotorInstance *motor, Closeloop_Type_e loop, Feedback_Source_e type)
 {
     if (loop == ANGLE_LOOP)
-    {
         motor->motor_settings.angle_feedback_source = type;
-    }
     else if (loop == SPEED_LOOP)
-    {
         motor->motor_settings.speed_feedback_source = type;
-    }
     else
-    {
         LOGERROR("[dji_motor] loop type error, check memory access and func param"); // 检查是否传入了正确的LOOP类型,或发生了指针越界
-    }
 }
 
 void DJIMotorStop(DJIMotorInstance *motor)
@@ -299,11 +298,9 @@ void DJIMotorControl()
         sender_assignment[group].tx_buff[2 * num] = (uint8_t)(set >> 8);         // 低八位
         sender_assignment[group].tx_buff[2 * num + 1] = (uint8_t)(set & 0x00ff); // 高八位
 
-        // 电机是否停止运行
+        // 若该电机处于停止状态,直接将buff置零
         if (motor->stop_flag == MOTOR_STOP)
-        { // 若该电机处于停止状态,直接将buff置零
             memset(sender_assignment[group].tx_buff + 2 * num, 0, 16u);
-        }
     }
 
     // 遍历flag,检查是否要发送这一帧报文

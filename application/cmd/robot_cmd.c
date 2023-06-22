@@ -8,6 +8,9 @@
 #include "message_center.h"
 #include "general_def.h"
 #include "dji_motor.h"
+// bsp
+#include "bsp_dwt.h"
+#include "bsp_log.h"
 
 // 私有宏,自动将编码器转换成角度值
 #define YAW_ALIGN_ANGLE (YAW_CHASSIS_ALIGN_ECD * ECD_ANGLE_COEF_DJI) // 对齐时的角度,0-360
@@ -266,12 +269,14 @@ static void EmergencyHandler()
         shoot_cmd_send.shoot_mode = SHOOT_OFF;
         shoot_cmd_send.friction_mode = FRICTION_OFF;
         shoot_cmd_send.load_mode = LOAD_STOP;
+        LOGERROR("[CMD] emergency stop!");
     }
     // 遥控器右侧开关为[上],恢复正常运行
     if (switch_is_up(rc_data[TEMP].rc.switch_right))
     {
         robot_state = ROBOT_READY;
         shoot_cmd_send.shoot_mode = SHOOT_ON;
+        LOGINFO("[CMD] reinstate, robot ready");
     }
 }
 

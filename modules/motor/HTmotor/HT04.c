@@ -6,6 +6,7 @@
 #include "string.h"
 #include "daemon.h"
 #include "stdlib.h"
+#include "bsp_log.h"
 
 static uint8_t idx;
 static HTMotorInstance *ht_motor_instance[HT_MOTOR_CNT];
@@ -64,17 +65,14 @@ static void HTMotorDecode(CANInstance *motor_can)
     tmp = (uint16_t)(((rxbuff[4] & 0x0f) << 8) | rxbuff[5]);
     measure->real_current = CURRENT_SMOOTH_COEF * uint_to_float(tmp, T_MIN, T_MAX, 12) +
                             (1 - CURRENT_SMOOTH_COEF) * measure->real_current;
-    
-    
 }
 
 static void HTMotorLostCallback(void *motor_ptr)
 {
     HTMotorInstance *motor = (HTMotorInstance *)motor_ptr;
-    if (motor->stop_flag == MOTOR_STOP)
-        return;
+    LOGWARNING("[ht_motor] motor %d lost\n", motor->motor_can_instace->tx_id);
     if (++motor->lost_cnt % 10 != 0)
-        HTMotorSetMode(CMD_MOTOR_MODE, motor); // 若不在停止模式,尝试重新让电机进入控制模式
+        HTMotorSetMode(CMD_MOTOR_MODE, motor); // 尝试重新让电机进入控制模式
 }
 
 /* 海泰电机一生黑,什么垃圾协议! */
@@ -99,7 +97,7 @@ void HTMotorCalibEncoder(HTMotorInstance *motor)
     memcpy(zero_buff, buf, 6); // 初始化的时候至少调用一次,故将其他指令为0时发送的报文保存一下,详见ht04电机说明
     CANTransmit(motor->motor_can_instace, 1);
     DWT_Delay(0.005);
-    HTMotorSetMode(CMD_ZERO_POSITION, motor);
+    HTMotorSetMode(CMD_ZERO_POSITION, motor); // sb 玩意校准完了编码器也不为0
     DWT_Delay(0.005);
     // HTMotorSetMode(CMD_MOTOR_MODE, motor);
 }
@@ -215,7 +213,7 @@ void HTMotorControlInit()
         char ht_id_buff[2] = {0};
         __itoa(i, ht_id_buff, 10);
         strcat(ht_task_name, ht_id_buff); // 似乎没什么吊用,osthreaddef会把第一个变量当作宏字符串传入,作为任务名
-        // todo 还需要一个更优雅的方案来区分不同的电机任务
+        // @todo 还需要一个更优雅的方案来区分不同的电机任务
         osThreadDef(ht_task_name, HTMotorTask, osPriorityNormal, 0, 128);
         ht_task_handle[i] = osThreadCreate(osThread(ht_task_name), ht_motor_instance[i]);
     }

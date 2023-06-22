@@ -308,6 +308,7 @@ NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:fals
 NVIC.EXTI3_IRQn=true\:5\:0\:true\:false\:true\:true\:true\:true\:true
 NVIC.EXTI4_IRQn=true\:5\:0\:false\:false\:true\:true\:true\:true\:true
 NVIC.EXTI9_5_IRQn=true\:5\:0\:false\:false\:true\:true\:true\:true\:true
+NVIC.FLASH_IRQn=true\:6\:0\:true\:false\:true\:true\:true\:true\:true
 NVIC.ForceEnableDMAVector=true
 NVIC.HardFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:false
 NVIC.I2C2_ER_IRQn=true\:5\:0\:false\:false\:true\:true\:true\:true\:true

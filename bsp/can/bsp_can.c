@@ -65,15 +65,20 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     if (!idx)
     {
         CANServiceInit(); // 第一次注册,先进行硬件初始化
+        LOGINFO("[bsp_can] CAN Service Init");
     }
     if (idx >= CAN_MX_REGISTER_CNT) // 超过最大实例数
+    {
         while (1)
-            ;
+            LOGERROR("[bsp_can] CAN instance exceeded MAX num, consider balance the load of CAN bus");
+    }
     for (size_t i = 0; i < idx; i++)
     { // 重复注册 | id重复
         if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
+        {
             while (1)
-                ;
+                LOGERROR("[}bsp_can] CAN id crash ,tx [%d] or rx [%d] already registered", &config->tx_id, &config->rx_id);
+        }
     }
 
     CANInstance *instance = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
@@ -107,7 +112,7 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
     {
         if (DWT_GetTimeline_ms() - dwt_start > timeout) // 超时
         {
-            LOGWARNING("CAN BUSY sending! cnt:%d", busy_count);
+            LOGWARNING("[bsp_can] CAN MAILbox full! failed to add msg to mailbox. Cnt [%d]", busy_count);
             busy_count++;
             return 0;
         }
@@ -116,7 +121,7 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
     // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
     if (HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox))
     {
-        LOGWARNING("CAN BUSY bus! cnt:%d", busy_count);
+        LOGWARNING("[bsp_can] CAN bus BUS! cnt:%d", busy_count);
         busy_count++;
         return 0;
     }
@@ -125,9 +130,10 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
 
 void CANSetDLC(CANInstance *_instance, uint8_t length)
 {
+    // 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
     if (length > 8 || length == 0) // 安全检查
         while (1)
-            ; // 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
+            LOGERROR("[bsp_can] CAN DLC error! check your code or wild pointer");
     _instance->txconf.DLC = length;
 }
 
