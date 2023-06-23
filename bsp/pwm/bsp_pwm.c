@@ -15,7 +15,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
     for (uint8_t i = 0; i < idx; i++)
     { // 来自同一个定时器的中断且通道相同
-        if (pwm_instance[i]->htim == htim && htim->Channel == pwm_instance[i]->channel)
+        if (pwm_instance[i]->htim == htim && htim->Channel == (1<<(pwm_instance[i]->channel/4)))
         {
             if (pwm_instance[i]->callback) // 如果有回调函数
                 pwm_instance[i]->callback(pwm_instance[i]);
@@ -39,7 +39,7 @@ PWMInstance *PWMRegister(PWM_Init_Config_s *config)
     pwm->callback = config->callback;
     pwm->id = config->id;
     // 启动PWM
-    HAL_TIM_PWM_Start(pwm->htim, pwm->channel);                
+    HAL_TIM_PWM_Start_IT(pwm->htim, pwm->channel);                
     __HAL_TIM_SetCompare(pwm->htim, pwm->channel, pwm->pulse); // 设置占空比
 
     pwm_instance[idx++] = pwm;
@@ -65,7 +65,11 @@ void PWMSetPulse(PWMInstance *pwm, uint32_t pulse)
     pwm->pulse = pulse;
     __HAL_TIM_SetCompare(pwm->htim, pwm->channel, pwm->pulse);
 }
-
+void PWMSetPeriod(PWMInstance *pwm, uint32_t period)
+{
+    pwm->period = period;
+    __HAL_TIM_PRESCALER(pwm->htim, pwm->period);
+}
 /* 只是对HAL的函数进行了形式上的封装 */
 void PWMStartDMA(PWMInstance *pwm, uint32_t *pData, uint32_t Size)
 {

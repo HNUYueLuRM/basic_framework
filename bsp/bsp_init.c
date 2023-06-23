@@ -2,7 +2,7 @@
 #include "bsp_log.h"
 #include "bsp_dwt.h"
 #include "bsp_usb.h"
-#include "bsp_buzzer.h"
+#include "buzzer.h"
 #include "bsp_led.h"
 #include "bsp_temperature.h"
 
@@ -16,5 +16,5 @@ void BSPInit()
     // legacy support，待删除,将在实现了led/tempctrl/buzzer的module之后移动到app层进行XXXRegister()
     LEDInit();
     IMUTempInit();
-    BuzzerInit();
+    buzzer_init();
 }
