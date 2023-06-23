@@ -382,7 +382,7 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
 BMI088Instance *BMI088Register(BMI088_Init_Config_s *config)
 {
     // 申请内存
-    BMI088Instance *bmi088_instance = (BMI088Instance *)zero_malloc(sizeof(BMI088Instance));
+    BMI088Instance *bmi088_instance = (BMI088Instance *)zmalloc(sizeof(BMI088Instance));
     // 从右向左赋值,让bsp instance保存指向bmi088_instance的指针(父指针),便于在底层中断中访问bmi088_instance
     config->acc_int_config.id =
         config->gyro_int_config.id =

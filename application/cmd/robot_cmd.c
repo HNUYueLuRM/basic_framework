@@ -132,16 +132,8 @@ static void RemoteControlSet()
     { // 按照摇杆的输出大小进行角度增量,增益系数需调整
         gimbal_cmd_send.yaw += 0.005f * (float)rc_data[TEMP].rc.rocker_l_;
         gimbal_cmd_send.pitch += 0.001f * (float)rc_data[TEMP].rc.rocker_l1;
-        // 摇杆控制的软件限位
-        //  if (gimbal_cmd_send.pitch <= PITCH_MIN_ECD)
-        //  {
-        //      gimbal_cmd_send.pitch = PITCH_MIN_ECD;
-        //  }
-        //  else if (gimbal_cmd_send.pitch >= PITCH_MAX_ECD)
-        //  {
-        //      gimbal_cmd_send.pitch = PITCH_MAX_ECD;
-        //  }
     }
+    // 云台软件限位
 
     // 底盘参数,目前没有加入小陀螺(调试似乎暂时没有必要),系数需要调整
     chassis_cmd_send.vx = 10.0f * (float)rc_data[TEMP].rc.rocker_r_; // _水平方向

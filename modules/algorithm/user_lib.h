@@ -23,8 +23,6 @@
 #define mcos(x) (arm_cos_f32(x))
 
 
-extern uint8_t GlobalDebugMode;
-
 #ifndef user_malloc
 #ifdef _CMSIS_OS_H
 #define user_malloc pvPortMalloc
@@ -89,7 +87,7 @@ extern uint8_t GlobalDebugMode;
  * @param size 分配大小
  * @return void*
  */
-void *zero_malloc(size_t size);
+void *zmalloc(size_t size);
 
 // ���ٿ���
 float Sqrt(float x);

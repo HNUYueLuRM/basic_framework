@@ -23,9 +23,7 @@
 #define user_malloc malloc
 #endif
 
-uint8_t GlobalDebugMode = 7;
-
-void *zero_malloc(size_t size)
+void *zmalloc(size_t size)
 {
     void *ptr = malloc(size);
     memset(ptr, 0, size);
@@ -207,3 +205,4 @@ float AverageFilter(float new_data, float *buf, uint8_t len)
     sum += new_data;
     return sum / len;
 }
+
