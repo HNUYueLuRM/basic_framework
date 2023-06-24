@@ -206,3 +206,9 @@ float AverageFilter(float new_data, float *buf, uint8_t len)
     return sum / len;
 }
 
+void MatInit(mat *m, uint8_t row, uint8_t col)
+{
+    m->numCols = col;
+    m->numRows = row;
+    m->pData = (float *)zmalloc(row * col * sizeof(float));
+}

@@ -8,6 +8,8 @@ static PWMInstance *pwm_instance[PWM_DEVICE_CNT] = {NULL}; // 所有的pwm insta
 
 /**
  * @brief pwm dma传输完成回调函数
+ * @attention 由于HAL库的设计问题,当一个pulse完成(即tim的计数超过比较寄存器)也会调用此函数
+ *            故对于那些开启了PWM的TIM,务必关闭其全局中断,仅保持DMA传输完成中断打开
  * 
  * @param htim 发生中断的定时器句柄
  */

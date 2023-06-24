@@ -13,14 +13,11 @@
 #ifndef _USER_LIB_H
 #define _USER_LIB_H
 
-
 #include "stdint.h"
 #include "main.h"
 #include "cmsis_os.h"
-
-
-#define msin(x) (arm_sin_f32(x))
-#define mcos(x) (arm_cos_f32(x))
+#include "stm32f407xx.h"
+#include "arm_math.h"
 
 
 #ifndef user_malloc
@@ -31,6 +28,18 @@
 #endif
 #endif
 
+#define msin(x) (arm_sin_f32(x))
+#define mcos(x) (arm_cos_f32(x))
+
+typedef arm_matrix_instance_f32 mat;
+// 若运算速度不够,可以使用q31代替f32,但是精度会降低
+#define MatAdd arm_mat_add_f32
+#define MatSubtract arm_mat_sub_f32
+#define MatMultiply arm_mat_mult_f32
+#define MatTranspose arm_mat_trans_f32
+#define MatInverse arm_mat_inverse_f32
+void MatInit(mat *m, uint8_t row, uint8_t col);
+
 /* boolean type definitions */
 #ifndef TRUE
 #define TRUE 1 /**< boolean true  */
@@ -38,12 +47,6 @@
 
 #ifndef FALSE
 #define FALSE 0 /**< boolean fails */
-#endif
-
-/* math relevant */
-/* radian coefficient */
-#ifndef RADIAN_COEF
-#define RADIAN_COEF 57.295779513f
 #endif
 
 /* circumference ratio */
