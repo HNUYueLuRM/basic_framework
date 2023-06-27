@@ -15,8 +15,9 @@
 #include "bsp_usart.h"
 #include "task.h"
 #include "daemon.h"
+#include "bsp_log.h"
 
-#define RE_RX_BUFFER_SIZE 200
+#define RE_RX_BUFFER_SIZE 255u // 裁判系统接收缓冲区大小
 
 static USARTInstance *referee_usart_instance; // 裁判系统串口实例
 static DaemonInstance *referee_daemon;		  // 裁判系统守护进程
@@ -114,6 +115,7 @@ static void RefereeRxCallback()
 static void RefereeLostCallback(void *arg)
 {
 	USARTServiceInit(referee_usart_instance);
+	LOGWARNING("[rm_ref] lost referee data");
 }
 
 /* 裁判系统通信初始化 */
@@ -122,7 +124,7 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
 	USART_Init_Config_s conf;
 	conf.module_callback = RefereeRxCallback;
 	conf.usart_handle = referee_usart_handle;
-	conf.recv_buff_size = RE_RX_BUFFER_SIZE;
+	conf.recv_buff_size = RE_RX_BUFFER_SIZE; // mx 255(u8)
 	referee_usart_instance = USARTRegister(&conf);
 
 	Daemon_Init_Config_s daemon_conf = {
@@ -143,5 +145,5 @@ void RefereeSend(uint8_t *send, uint16_t tx_len)
 {
 	static TickType_t xLastWakeTime;
 	USARTSend(referee_usart_instance, send, tx_len, USART_TRANSFER_DMA);
-	vTaskDelayUntil(&xLastWakeTime, 120);
+	vTaskDelayUntil(&xLastWakeTime, 120); // 裁判系统接收ui数据和多机通信最大支持频率为10Hz
 }

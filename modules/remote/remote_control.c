@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "stdlib.h"
 #include "daemon.h"
+#include "bsp_log.h"
 
 #define REMOTE_CONTROL_FRAME_SIZE 18u // 遥控器接收的buffer大小
 
@@ -104,6 +105,7 @@ static void RCLostCallback(void *id)
 {
     memset(rc_ctrl, 0, sizeof(rc_ctrl)); // 清空遥控器数据
     USARTServiceInit(rc_usart_instance); // 尝试重新启动接收
+    LOGWARNING("[rc] remote control lost");
 }
 
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)

@@ -2,11 +2,6 @@
 
 <p align='right'>neozng1@hnu.edu.cn</p>
 
-> TODO:
->
-> 1. 在未接入调试器的时候，将日志写入flash中，并提供接口读取
-> 2. 增加日志分级，提供info、warning、error三个等级的日志
-
 ## 使用说明
 
 bsp_log是基于segger RTT实现的日志打印模块。
@@ -19,11 +14,11 @@ bsp_log是基于segger RTT实现的日志打印模块。
 #define LOGERROR(format,...)
 ```
 
-分别用于输出不同等级的日志。
+分别用于输出不同等级的日志。注意RTT不支持直接使用`%f`进行浮点格式化,要使用`void Float2Str(char *str, float va);`转化成字符串之后再发送。
 
-**若想启用RTT，必须通过`launch.json`的`debug-jlink`启动调试（不论使用什么调试器）。**
+**若想启用RTT，必须通过`launch.json`的`debug-jlink`启动调试（不论使用什么调试器）。** 按照`VSCode+Ozone环境配置`完成配置之后的cmsis dap和daplink是可以支持Jlink全家桶的。
 
-注意，若你使用的是cmsis-dap和daplink，**请在调试任务启动之后再打开`log`任务。**（均在项目文件夹下的.vsocde/task.json中，有注释自行查看）。
+另外，若你使用的是cmsis-dap和daplink，**请在 *jlink* 调试任务启动之后再打开`log`任务。**（均在项目文件夹下的.vsocde/task.json中，有注释自行查看）。否则可能出线RTT viewer无法连接客户端的情况。
 
 在ozone中查看log输出，直接打开console调试任务台和terminal调试中断便可看到调试输出。
 
@@ -35,7 +30,7 @@ bsp_log是基于segger RTT实现的日志打印模块。
 
 ```c
 int printf_log(const char *fmt, ...);
-void Float2Str(char *str, float va);
+void Float2Str(char *str, float va); // 输出浮点需要先用此函数进行转换
 ```
 
 调用第一个函数，可以通过jlink或dap-link向调试器连接的上位机发送信息，格式和printf相同，示例如下：
@@ -53,8 +48,3 @@ char* str_buff[64];
 Float2Str(str_buff,current_feedback);
 printf_log("Motor %d met some problem, error code %d!\n",3,1);
 ```
-
-或直接通过`%f`格式符直接使用`printf_log()`发送日志，可以设置小数点位数以降低带宽开销。
-
-
-

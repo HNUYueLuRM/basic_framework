@@ -55,9 +55,7 @@ static void BMI088GyroRead(BMI088Instance *bmi088, uint8_t reg, uint8_t *dataptr
  */
 static void BMI088AccelWriteSingleReg(BMI088Instance *bmi088, uint8_t reg, uint8_t data)
 {
-    static uint8_t tx[2];
-    tx[0] = reg;
-    tx[1] = data;
+    uint8_t tx[2] = {reg, data};
     SPITransmit(bmi088->spi_acc, tx, 2);
 }
 
@@ -71,17 +69,15 @@ static void BMI088AccelWriteSingleReg(BMI088Instance *bmi088, uint8_t reg, uint8
  */
 static void BMI088GyroWriteSingleReg(BMI088Instance *bmi088, uint8_t reg, uint8_t data)
 {
-    static uint8_t tx[2];
-    tx[0] = reg;
-    tx[1] = data;
+    uint8_t tx[2] = {reg, data};
     SPITransmit(bmi088->spi_gyro, tx, 2);
 }
 // -------------------------以上为私有函数,封装了BMI088寄存器读写函数,blocking--------------------------------//
 
 // -------------------------以下为私有函数,用于初始化BMI088acc和gyro的硬件和配置--------------------------------//
-#define REG 0
-#define DATA 1
-#define ERROR 2
+#define BMI088REG 0
+#define BMI088DATA 1
+#define BMI088ERROR 2
 // BMI088初始化配置数组for accel,第一列为reg地址,第二列为写入的配置值,第三列为错误码(如果出错)
 static uint8_t BMI088_Accel_Init_Table[BMI088_WRITE_ACCEL_REG_NUM][3] =
     {
@@ -106,7 +102,7 @@ static uint8_t BMI088_Gyro_Init_Table[BMI088_WRITE_GYRO_REG_NUM][3] =
  * @brief 初始化BMI088加速度计,提高可读性分拆功能
  *
  * @param bmi088 待初始化的BMI088实例
- * @return uint8_t ERROR CODE if any problems here
+ * @return uint8_t BMI088ERROR CODE if any problems here
  */
 static uint8_t BMI088AccelInit(BMI088Instance *bmi088)
 {
@@ -130,14 +126,14 @@ static uint8_t BMI088AccelInit(BMI088Instance *bmi088)
     // 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
     for (uint8_t i = 0; i < sizeof(BMI088_Accel_Init_Table) / sizeof(BMI088_Accel_Init_Table[0]); i++)
     {
-        reg = BMI088_Accel_Init_Table[i][REG];
-        data = BMI088_Accel_Init_Table[i][DATA];
+        reg = BMI088_Accel_Init_Table[i][BMI088REG];
+        data = BMI088_Accel_Init_Table[i][BMI088DATA];
         BMI088AccelWriteSingleReg(bmi088, reg, data); // 写入寄存器
         DWT_Delay(0.01);
         BMI088AccelRead(bmi088, reg, &data, 1); // 写完之后立刻读回检查
         DWT_Delay(0.01);
-        if (data != BMI088_Accel_Init_Table[i][DATA])
-            error |= BMI088_Accel_Init_Table[i][ERROR];
+        if (data != BMI088_Accel_Init_Table[i][BMI088DATA])
+            error |= BMI088_Accel_Init_Table[i][BMI088ERROR];
         //{i--;} 可以设置retry次数,如果retry次数用完了,则返回error
     }
     return error;
@@ -147,7 +143,7 @@ static uint8_t BMI088AccelInit(BMI088Instance *bmi088)
  * @brief 初始化BMI088陀螺仪,提高可读性分拆功能
  *
  * @param bmi088 待初始化的BMI088实例
- * @return uint8_t ERROR CODE
+ * @return uint8_t BMI088ERROR CODE
  */
 static uint8_t BMI088GyroInit(BMI088Instance *bmi088)
 {
@@ -169,14 +165,14 @@ static uint8_t BMI088GyroInit(BMI088Instance *bmi088)
     // 使用sizeof而不是magic number,这样如果修改了数组大小,不用修改这里的代码;或者使用宏定义
     for (uint8_t i = 0; i < sizeof(BMI088_Gyro_Init_Table) / sizeof(BMI088_Gyro_Init_Table[0]); i++)
     {
-        reg = BMI088_Gyro_Init_Table[i][REG];
-        data = BMI088_Gyro_Init_Table[i][DATA];
+        reg = BMI088_Gyro_Init_Table[i][BMI088REG];
+        data = BMI088_Gyro_Init_Table[i][BMI088DATA];
         BMI088GyroWriteSingleReg(bmi088, reg, data); // 写入寄存器
         DWT_Delay(0.001);
         BMI088GyroRead(bmi088, reg, &data, 1); // 写完之后立刻读回对应寄存器检查是否写入成功
         DWT_Delay(0.001);
-        if (data != BMI088_Gyro_Init_Table[i][DATA])
-            error |= BMI088_Gyro_Init_Table[i][ERROR];
+        if (data != BMI088_Gyro_Init_Table[i][BMI088DATA])
+            error |= BMI088_Gyro_Init_Table[i][BMI088ERROR];
         //{i--;} 可以设置retry次数,尝试重新写入.如果retry次数用完了,则返回error
     }
 
@@ -386,7 +382,7 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
 BMI088Instance *BMI088Register(BMI088_Init_Config_s *config)
 {
     // 申请内存
-    BMI088Instance *bmi088_instance = (BMI088Instance *)zero_malloc(sizeof(BMI088Instance));
+    BMI088Instance *bmi088_instance = (BMI088Instance *)zmalloc(sizeof(BMI088Instance));
     // 从右向左赋值,让bsp instance保存指向bmi088_instance的指针(父指针),便于在底层中断中访问bmi088_instance
     config->acc_int_config.id =
         config->gyro_int_config.id =

@@ -119,6 +119,7 @@ bsp/can/bsp_can.c \
 bsp/usart/bsp_usart.c \
 bsp/usb/bsp_usb.c \
 bsp/log/bsp_log.c \
+bsp/flash/bsp_flash.c \
 bsp/bsp_init.c \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
@@ -152,6 +153,7 @@ modules/can_comm/can_comm.c \
 modules/message_center/message_center.c \
 modules/daemon/daemon.c \
 modules/vofa/vofa.c \
+modules/alarm/buzzer.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
 application/shoot/shoot.c \
@@ -197,7 +199,7 @@ FPU = -mfpu=fpv4-sp-d16
 FLOAT-ABI = -mfloat-abi=hard
 
 # mcu
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+MCU = $(CPU) -mthumb -mthumb-interwork $(FPU) $(FLOAT-ABI)
 
 # macros for gcc
 # AS defines
@@ -209,7 +211,9 @@ C_DEFS =  \
 -DSTM32F407xx \
 -DARM_MATH_CM4 \
 -DARM_MATH_MATRIX_CHECK \
--DARM_MATH_ROUNDING 
+-DARM_MATH_ROUNDING \
+-DARM_MATH_LOOPUNROLL \
+-DISABLEFLOAT16
 
 # AS includes
 AS_INCLUDES =  \
@@ -244,6 +248,7 @@ C_INCLUDES =  \
 -Ibsp/spi \
 -Ibsp/iic \
 -Ibsp/log \
+-Ibsp/flash \
 -Ibsp/pwm \
 -Ibsp/bsp_legacy_support \
 -Ibsp \
@@ -268,13 +273,14 @@ C_INCLUDES =  \
 -Imodules/message_center \
 -Imodules/daemon \
 -Imodules/vofa \
+-Imodules/alarm \
 -Imodules 
 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -fdata-sections -ffunction-sections -fmessage-length=0
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -296,7 +302,7 @@ LIBS = -lc -lm -lnosys  \
 -l:libCMSISDSP.a
 LIBDIR =  \
 -LMiddlewares/ST/ARM/DSP/Lib
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -flto
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -336,7 +342,7 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	rd /s/q $(BUILD_DIR)
+	rd $(BUILD_DIR) /s/q
 
 
 #######################################

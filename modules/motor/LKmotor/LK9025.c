@@ -3,6 +3,7 @@
 #include "general_def.h"
 #include "daemon.h"
 #include "bsp_dwt.h"
+#include "bsp_log.h"
 
 static uint8_t idx;
 static LKMotorInstance *lkmotor_instance[LK_MOTOR_MX_CNT] = {NULL};
@@ -43,6 +44,12 @@ static void LKMotorDecode(CANInstance *_instance)
     measure->total_angle = measure->total_round * 360 + measure->angle_single_round;
 }
 
+static void LKMotorLostCallback(void *motor_ptr)
+{
+    LKMotorInstance *motor = (LKMotorInstance *)motor_ptr;
+    LOGWARNING("[LKMotor] motor lost, id: %d", motor->motor_can_ins->tx_id);
+}
+
 LKMotorInstance *LKMotorInit(Motor_Init_Config_s *config)
 {
     LKMotorInstance *motor = (LKMotorInstance *)malloc(sizeof(LKMotorInstance));
@@ -75,7 +82,7 @@ LKMotorInstance *LKMotorInit(Motor_Init_Config_s *config)
     Daemon_Init_Config_s daemon_config = {
         .callback = NULL,
         .owner_id = motor,
-        .reload_count = 5, // 0.05秒
+        .reload_count = 5, // 50ms
     };
     motor->daemon = DaemonRegister(&daemon_config);
 

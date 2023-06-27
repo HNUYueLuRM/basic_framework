@@ -8,6 +8,9 @@
 #include "message_center.h"
 #include "general_def.h"
 #include "dji_motor.h"
+// bsp
+#include "bsp_dwt.h"
+#include "bsp_log.h"
 
 // 私有宏,自动将编码器转换成角度值
 #define YAW_ALIGN_ANGLE (YAW_CHASSIS_ALIGN_ECD * ECD_ANGLE_COEF_DJI) // 对齐时的角度,0-360
@@ -129,16 +132,8 @@ static void RemoteControlSet()
     { // 按照摇杆的输出大小进行角度增量,增益系数需调整
         gimbal_cmd_send.yaw += 0.005f * (float)rc_data[TEMP].rc.rocker_l_;
         gimbal_cmd_send.pitch += 0.001f * (float)rc_data[TEMP].rc.rocker_l1;
-        // 摇杆控制的软件限位
-        //  if (gimbal_cmd_send.pitch <= PITCH_MIN_ECD)
-        //  {
-        //      gimbal_cmd_send.pitch = PITCH_MIN_ECD;
-        //  }
-        //  else if (gimbal_cmd_send.pitch >= PITCH_MAX_ECD)
-        //  {
-        //      gimbal_cmd_send.pitch = PITCH_MAX_ECD;
-        //  }
     }
+    // 云台软件限位
 
     // 底盘参数,目前没有加入小陀螺(调试似乎暂时没有必要),系数需要调整
     chassis_cmd_send.vx = 10.0f * (float)rc_data[TEMP].rc.rocker_r_; // _水平方向
@@ -266,12 +261,14 @@ static void EmergencyHandler()
         shoot_cmd_send.shoot_mode = SHOOT_OFF;
         shoot_cmd_send.friction_mode = FRICTION_OFF;
         shoot_cmd_send.load_mode = LOAD_STOP;
+        LOGERROR("[CMD] emergency stop!");
     }
     // 遥控器右侧开关为[上],恢复正常运行
     if (switch_is_up(rc_data[TEMP].rc.switch_right))
     {
         robot_state = ROBOT_READY;
         shoot_cmd_send.shoot_mode = SHOOT_ON;
+        LOGINFO("[CMD] reinstate, robot ready");
     }
 }
 

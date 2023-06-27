@@ -2,6 +2,7 @@
 #include "bsp_dwt.h" // 后续通过定时器来计时?
 #include "stdlib.h"
 #include "memory.h"
+#include "buzzer.h"
 
 // 用于保存所有的daemon instance
 static DaemonInstance *daemon_instances[DAEMON_MX_CNT] = {NULL};
@@ -13,9 +14,13 @@ DaemonInstance *DaemonRegister(Daemon_Init_Config_s *config)
     memset(instance, 0, sizeof(DaemonInstance));
 
     instance->owner_id = config->owner_id;
-    instance->reload_count = config->reload_count == 0 ? 100 : config->reload_count;
+    instance->reload_count = config->reload_count == 0 ? 100 : config->reload_count; // 默认值为100
     instance->callback = config->callback;
+    instance->temp_count = config->init_count == 0 ? 100 : config->init_count; // 默认值为100,初始计数
 
+    instance->alarm_state = config->alarm_state;
+    instance->alarm_level = config->alarm_level;
+    instance->temp_count = config->reload_count;
     daemon_instances[idx++] = instance;
     return instance;
 }
@@ -36,6 +41,7 @@ void DaemonTask()
     DaemonInstance *dins; // 提高可读性同时降低访存开销
     for (size_t i = 0; i < idx; ++i)
     {
+
         dins = daemon_instances[i];
         if (dins->temp_count > 0) // 如果计数器还有值,说明上一次喂狗后还没有超时,则计数器减一
             dins->temp_count--;
@@ -43,6 +49,11 @@ void DaemonTask()
         {
             dins->callback(dins->owner_id); // module内可以将owner_id强制类型转换成自身类型从而调用特定module的offline callback
             // @todo 为蜂鸣器/led等增加离线报警的功能,非常关键!
+            if(dins->alarm_state == ALARM_ON)
+            {
+                BuzzerPlay(dins->alarm_level);
+            }
+
         }
     }
 }

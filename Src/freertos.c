@@ -123,9 +123,9 @@ void MX_FREERTOS_Init(void)
 void StartDefaultTask(void const *argument)
 {
   /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init(); // USB???
+  MX_USB_DEVICE_Init(); // 默认usb启动任务的位置
   /* USER CODE BEGIN StartDefaultTask */
-  vTaskDelete(NULL); // ??????,????CPU
+  vTaskDelete(NULL); // 避免空置和切换占用cpu
   /* USER CODE END StartDefaultTask */
 }
 

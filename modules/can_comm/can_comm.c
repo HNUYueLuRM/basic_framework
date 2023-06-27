@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "crc8.h"
 #include "bsp_dwt.h"
+#include "bsp_log.h"
 
 /**
  * @brief 重置CAN comm的接收状态和buffer
@@ -59,7 +60,7 @@ static void CANCommRxCallback(CANInstance *_instance)
                 if (comm->raw_recvbuf[comm->recv_buf_len - 2] == crc_8(comm->raw_recvbuf + 2, comm->recv_data_len))
                 { // 数据量大的话考虑使用DMA
                     memcpy(comm->unpacked_recv_data, comm->raw_recvbuf + 2, comm->recv_data_len);
-                    comm->update_flag = 1; // 数据更新flag置为1
+                    comm->update_flag = 1;           // 数据更新flag置为1
                     DaemonReload(comm->comm_daemon); // 重载daemon,避免数据更新后一直不被读取而导致数据更新不及时
                 }
             }
@@ -67,6 +68,13 @@ static void CANCommRxCallback(CANInstance *_instance)
             return; // 重置状态然后返回
         }
     }
+}
+
+static void CANCommLostCallback(void *cancomm)
+{
+    CANCommInstance *comm = (CANCommInstance *)cancomm;
+    CANCommResetRx(comm);
+    LOGWARNING("[can_comm] can comm rx[%d] lost, reset rx state.", &comm->can_ins->rx_id);
 }
 
 CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)

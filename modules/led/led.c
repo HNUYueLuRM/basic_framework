@@ -8,7 +8,7 @@ static LEDInstance *bsp_led_ins[LED_MAX_NUM] = {NULL};
 
 LEDInstance *LEDRegister(LED_Init_Config_s *led_config)
 {
-    LEDInstance *led_ins = (LEDInstance *)zero_malloc(sizeof(LEDInstance));
+    LEDInstance *led_ins = (LEDInstance *)zmalloc(sizeof(LEDInstance));
     // 剩下的值暂时都被置零
     led_ins->led_pwm = PWMRegister(&led_config->pwm_config);
     led_ins->led_switch = led_config->init_swtich;

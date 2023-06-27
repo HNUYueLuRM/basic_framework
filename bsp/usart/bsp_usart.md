@@ -11,9 +11,9 @@
 
 需要在串口实例下设定接收的数据包的长度，实例对应的串口硬件（通过`UART_HandleTypeDef`指定，如`&huart1`），解析接收数据对应的回调函数这三个参数。然后，调用`USARTRegister()`并传入配置好的`usart_instance`指针即可。
 
-若要发送数据，调用`USARTSend()`。注意buffsize务必小于buff的大小，否则造成指针越界后果未知。
+若要发送数据，调用`USARTSend()`。注意buffsize务必小于你创建的buff的大小，否则造成指针越界后果未知。
 
-串口硬件收到数据时，会将其存入`usart_instance.recv_buff[]`中，当收到完整一包数据，会调用设定的回调函数`module_callback`（即你提供的解析函数）。在此函数中，你可以通过`usart_instance.recv_buff[]`访问串口收到的数据。
+串口硬件收到数据时，会将其存入`usart_instance.recv_buff[]`中，当收到完整一包数据，会调用设定的回调函数`module_callback`（即你注册时提供的解析函数）。在此函数中，你可以通过`usart_instance.recv_buff[]`访问串口收到的数据。
 
 ## 代码结构
 

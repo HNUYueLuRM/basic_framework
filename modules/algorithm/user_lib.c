@@ -23,9 +23,7 @@
 #define user_malloc malloc
 #endif
 
-uint8_t GlobalDebugMode = 7;
-
-void *zero_malloc(size_t size)
+void *zmalloc(size_t size)
 {
     void *ptr = malloc(size);
     memset(ptr, 0, size);
@@ -206,4 +204,11 @@ float AverageFilter(float new_data, float *buf, uint8_t len)
     buf[len - 1] = new_data;
     sum += new_data;
     return sum / len;
+}
+
+void MatInit(mat *m, uint8_t row, uint8_t col)
+{
+    m->numCols = col;
+    m->numRows = row;
+    m->pData = (float *)zmalloc(row * col * sizeof(float));
 }
