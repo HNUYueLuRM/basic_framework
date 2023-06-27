@@ -12,7 +12,6 @@ void BSPInit()
     DWT_Init(168);
     BSPLogInit();
 
-
     // legacy support，待删除,将在实现了led/tempctrl/buzzer的module之后移动到app层进行XXXRegister()
     LEDInit();
     IMUTempInit();

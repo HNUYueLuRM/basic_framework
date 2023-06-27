@@ -227,7 +227,8 @@ C_INCLUDES =  \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
--IMiddlewares/ST/ARM/DSP/Inc \
+-IMiddlewares/ST/ARM/DSP/Include/dsp \
+-IMiddlewares/ST/ARM/DSP/Include \
 -IMiddlewares/Third_Party/SEGGER/RTT \
 -IMiddlewares/Third_Party/SEGGER/Config \
 -Iapplication/chassis \
@@ -292,7 +293,7 @@ LDSCRIPT = STM32F407IGHx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys  \
--l:libarm_cortexM4lf_math.a
+-l:libCMSISDSP.a
 LIBDIR =  \
 -LMiddlewares/ST/ARM/DSP/Lib
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
