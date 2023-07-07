@@ -4,7 +4,6 @@
  * @brief 
  * @version 0.1
  * @date 2023-02-14
- * @todo 目前的实现有比较大的问题,是否允许module修改tim的分频器和自动重装载寄存器?
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -15,7 +14,8 @@
 
 #include "tim.h"
 #include "stdint.h"
-
+#include "stm32f4xx_hal_rcc.h"
+#include "stm32f407xx.h"
 #define PWM_DEVICE_CNT 16 // 最大支持的PWM实例数量
 
 /* pwm实例结构体 */
@@ -23,21 +23,19 @@ typedef struct pwm_ins_temp
 {
     TIM_HandleTypeDef *htim;                 // TIM句柄
     uint32_t channel;                        // 通道
-    uint32_t period;                         // 周期
-    uint32_t pulse;                          // 脉宽
+    uint32_t tclk;                           // 时钟频率
+    float period;                         // 周期
+    float dutyratio;                      // 占空比
     void (*callback)(struct pwm_ins_temp *); // DMA传输完成回调函数
     void *id;                                // 实例ID
-
-    // 后续还要添加更多的参数,以提供更直观的封装,比如直接按照百分比设置占空比,直接设置频率等
-    // ...
 } PWMInstance;
 
 typedef struct
 {
     TIM_HandleTypeDef *htim;                 // TIM句柄
     uint32_t channel;                        // 通道
-    uint32_t period;                         // 周期
-    uint32_t pulse;                          // 脉宽
+    float period;                         // 周期
+    float dutyratio;                      // 占空比
     void (*callback)(PWMInstance*); // DMA传输完成回调函数
     void *id;                                // 实例ID
 } PWM_Init_Config_s;
@@ -56,7 +54,14 @@ PWMInstance *PWMRegister(PWM_Init_Config_s *config);
  * @param pwm pwm实例
  */
 void PWMStart(PWMInstance *pwm);
+/**
+ * @brief 设置pwm占空比
+ *
+ * @param pwm pwm实例
+ * @param dutyratio 占空比 0~1
+ */
 
+void PWMSetDutyRatio(PWMInstance *pwm, float dutyratio);
 /**
  * @brief 停止pwm
  *
@@ -64,17 +69,13 @@ void PWMStart(PWMInstance *pwm);
  */
 void PWMStop(PWMInstance *pwm);
 
-
-// @todo 这三个函数还需要进一步封装,务必协调好三者之间的关系
 /**
- * @brief 设置pwm脉宽
+ * @brief 设置pwm周期
  *
  * @param pwm pwm实例
- * @param pulse 脉宽
+ * @param period 周期 单位 s
  */
-void PWMSetPulse(PWMInstance *pwm, uint32_t pulse);
-void PWMSetPeriod(PWMInstance *pwm, uint32_t period);       // 未实现
-void PWMSetPrescaler(PWMInstance *pwm, uint32_t prescaler); // 未实现
+void PWMSetPeriod(PWMInstance *pwm, float period);
 
 /**
  * @brief 启动pwm dma传输

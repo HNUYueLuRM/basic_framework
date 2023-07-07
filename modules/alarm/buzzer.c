@@ -1,87 +1,96 @@
 #include "bsp_pwm.h"
 #include "buzzer.h"
 #include "bsp_dwt.h"
-
+#include "string.h"
 static PWMInstance *buzzer;
-
-static alarm_level_e now_alarm_level = ALARM_OFFLINE;
-
-void BuzzerOn(PWMInstance *buzzer );
-/**
-*
-* @brief 蜂鸣器报警函数
-* @param alarm_level 报警级别
-*/
-void BuzzerPlay(alarm_level_e alarm_level)
-{
-    static alarm_level_e last_alarm_level = ALARM_LEVEL_LOW;
-    
-    if(((int)DWT_GetTimeline_s() % 5)<1) //每5秒检查一次
-    {
-        last_alarm_level = ALARM_LEVEL_LOW;
-        now_alarm_level = ALARM_OFFLINE;
-    }
-    
-    if(last_alarm_level <= now_alarm_level) //如果当前报警级别大于等于上一次报警级别,则更新报警级别
-    {
-        now_alarm_level = alarm_level;
-    }
-    last_alarm_level = alarm_level;
-
-}
+static uint8_t idx;
+static BuzzzerInstance *buzzer_list[BUZZER_DEVICE_CNT] = {0};
 
 /**
  * @brief 蜂鸣器初始化
- * 
+ *
  */
 void buzzer_init()
 {
     PWM_Init_Config_s buzzer_config = {
-        .htim = &htim4,
-        .channel= TIM_CHANNEL_3,
-        .period = 1,
-        .pulse = 10000,
-        .callback = BuzzerOn,
+            .htim = &htim4,
+            .channel= TIM_CHANNEL_3,
+            .dutyratio = 0,
+            .period = 0.001,
     };
     buzzer = PWMRegister(&buzzer_config);
 }
-/**
- * @brief 开启蜂鸣器
- * 
- * @param buzzer 
- */
-//*@todo: 优化报警声，应类似D__,DDD,B__,BBB等报警声
-void BuzzerOn(PWMInstance *buzzer )
+
+BuzzzerInstance *BuzzerRegister(Buzzer_config_s *config)
 {
-    switch (now_alarm_level)
-    {
-    case ALARM_LEVEL_LOW:
-        PWMSetPeriod(buzzer, 1);
-        PWMSetPulse(buzzer, 10000);
-        break;
-    case ALARM_LEVEL_BELOW_MEDIUM:
-        PWMSetPeriod(buzzer, 2);
-        PWMSetPulse(buzzer, 10000);
-        break;
-    case ALARM_LEVEL_MEDIUM:
-        PWMSetPeriod(buzzer, 3);
-        PWMSetPulse(buzzer, 10000);
-        break;
-    case ALARM_LEVEL_ABOVE_MEDIUM:
-        PWMSetPeriod(buzzer, 4);
-        PWMSetPulse(buzzer, 10000);
-        break;
-    case ALARM_LEVEL_HIGH:
-        PWMSetPeriod(buzzer, 5);
-        PWMSetPulse(buzzer, 10000);
-        break;
-    
-    default:
-        PWMSetPulse(buzzer, 0);
-        break;
-    }
+    if (config->alarm_level > BUZZER_DEVICE_CNT) // 超过最大实例数,考虑增加或查看是否有内存泄漏
+        while (1)
+            ;
+    BuzzzerInstance *buzzer_temp = (BuzzzerInstance *)malloc(sizeof(BuzzzerInstance));
+    memset(buzzer_temp, 0, sizeof(BuzzzerInstance));
+
+    buzzer_temp->alarm_level = config->alarm_level;
+    buzzer_temp->loudness = config->loudness;
+    buzzer_temp->octave = config->octave;
+    buzzer_temp->alarm_state = ALARM_OFF;
+
+    buzzer_list[config->alarm_level] = buzzer_temp;
+    return buzzer_temp;
+
 }
 
+void AlarmSetStatus(BuzzzerInstance *buzzer, AlarmState_e state)
+{
+    buzzer->alarm_state = state;
+}
+
+void BuzzerTask()
+{
+    BuzzzerInstance *buzz;
+    for (size_t i = 0; i < BUZZER_DEVICE_CNT; ++i)
+    {
+        buzz = buzzer_list[i];
+        if(buzz->alarm_level > ALARM_LEVEL_LOW)
+        {
+            continue;
+        }
+        if(buzz->alarm_state == ALARM_OFF)
+        {
+            PWMSetDutyRatio(buzzer, 0);
+        }
+        else
+        {
+            PWMSetDutyRatio(buzzer, buzz->loudness);
+            switch (buzz->octave)
+            {
+                case OCTAVE_1:
+                    PWMSetPeriod(buzzer, (float)1/DoFreq);
+                    break;
+                case OCTAVE_2:
+                    PWMSetPeriod(buzzer, (float)1/ReFreq);
+                    break;
+                case OCTAVE_3:
+                    PWMSetPeriod(buzzer, (float)1/MiFreq);
+                    break;
+                case OCTAVE_4:
+                    PWMSetPeriod(buzzer, (float)1/FaFreq);
+                    break;
+                case OCTAVE_5:
+                    PWMSetPeriod(buzzer, (float)1/SoFreq);
+                    break;
+                case OCTAVE_6:
+                    PWMSetPeriod(buzzer, (float)1/LaFreq);
+                    break;
+                case OCTAVE_7:
+                    PWMSetPeriod(buzzer, (float)1/SiFreq);
+                    break;
+            }
+            break;
+        }
+
+    }
+
+}
 
 
 
