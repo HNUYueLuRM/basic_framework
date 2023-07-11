@@ -8,28 +8,13 @@
 
 /* 模块离线处理函数指针 */
 typedef void (*offline_callback)(void *);
-typedef enum
-{
-    ALARM_OFF = 0,
-    ALARM_ON = 1,
-}alarm_state_e;
-typedef enum
-{
-    ALARM_LEVEL_LOW = 0,
-    ALARM_LEVEL_BELOW_MEDIUM = 1,
-    ALARM_LEVEL_MEDIUM = 2,
-    ALARM_LEVEL_ABOVE_MEDIUM = 3,
-    ALARM_LEVEL_HIGH = 4,
-    ALARM_OFFLINE = 5,
-}alarm_level_e;
+
 /* daemon结构体定义 */
 typedef struct daemon_ins
 {
     uint16_t reload_count;     // 重载值
     offline_callback callback; // 异常处理函数,当模块发生异常时会被调用
-    alarm_state_e alarm_state; // 蜂鸣器状态
-    alarm_level_e alarm_level;      //警报级别
-    
+
     uint16_t temp_count; // 当前值,减为零说明模块离线或异常
     void *owner_id;      // daemon实例的地址,初始化的时候填入
 } DaemonInstance;
@@ -40,9 +25,7 @@ typedef struct
     uint16_t reload_count;     // 实际上这是app唯一需要设置的值?
     uint16_t init_count;       // 上线等待时间,有些模块需要收到主控的指令才会反馈报文,或pc等需要开机时间
     offline_callback callback; // 异常处理函数,当模块发生异常时会被调用
-    alarm_state_e alarm_state; // 蜂鸣器状态
-    alarm_level_e alarm_level;      //警报级别
-    
+
     void *owner_id;            // id取拥有daemon的实例的地址,如DJIMotorInstance*,cast成void*类型
 } Daemon_Init_Config_s;
 

@@ -18,8 +18,6 @@ DaemonInstance *DaemonRegister(Daemon_Init_Config_s *config)
     instance->callback = config->callback;
     instance->temp_count = config->init_count == 0 ? 100 : config->init_count; // 默认值为100,初始计数
 
-    instance->alarm_state = config->alarm_state;
-    instance->alarm_level = config->alarm_level;
     instance->temp_count = config->reload_count;
     daemon_instances[idx++] = instance;
     return instance;
@@ -49,11 +47,6 @@ void DaemonTask()
         {
             dins->callback(dins->owner_id); // module内可以将owner_id强制类型转换成自身类型从而调用特定module的offline callback
             // @todo 为蜂鸣器/led等增加离线报警的功能,非常关键!
-            if(dins->alarm_state == ALARM_ON)
-            {
-                BuzzerPlay(dins->alarm_level);
-            }
-
         }
     }
 }

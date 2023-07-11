@@ -12,6 +12,7 @@
 #include "master_process.h"
 #include "daemon.h"
 #include "HT04.h"
+#include "buzzer.h"
 
 #include "bsp_log.h"
 
@@ -88,12 +89,14 @@ void StartMOTORTASK(void const *argument)
 void StartDAEMONTASK(void const *argument)
 {
     static float daemon_dt, daemon_start;
+    buzzer_init();
     LOGINFO("[freeRTOS] Daemon Task Start");
     while (1)
     {
         // 100Hz
         daemon_start = DWT_GetTimeline_ms();
         DaemonTask();
+        BuzzerTask();
         daemon_dt = DWT_GetTimeline_ms() - daemon_start;
         if (daemon_dt > 10)
             LOGERROR("[freeRTOS] Daemon Task is being DELAY! dt = [%f]", &daemon_dt);
