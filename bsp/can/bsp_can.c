@@ -150,19 +150,21 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
 {
     static CAN_RxHeaderTypeDef rxconf; // 同上
     uint8_t can_rx_buff[8];
-
-    HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
-    for (size_t i = 0; i < idx; ++i)
-    { // 两者相等说明这是要找的实例
-        if (_hcan == can_instance[i]->can_handle && rxconf.StdId == can_instance[i]->rx_id)
-        {
-            if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
+    while (HAL_CAN_GetRxFifoFillLevel(_hcan, fifox)) // FIFO不为空,有可能在其他中断时有多帧数据进入
+    {
+        HAL_CAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff); // 从FIFO中获取数据
+        for (size_t i = 0; i < idx; ++i)
+        { // 两者相等说明这是要找的实例
+            if (_hcan == can_instance[i]->can_handle && rxconf.StdId == can_instance[i]->rx_id)
             {
-                can_instance[i]->rx_len = rxconf.DLC;                      // 保存接收到的数据长度
-                memcpy(can_instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
-                can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
+                if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
+                {
+                    can_instance[i]->rx_len = rxconf.DLC;                      // 保存接收到的数据长度
+                    memcpy(can_instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
+                    can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
+                }
+                return;
             }
-            return;
         }
     }
 }

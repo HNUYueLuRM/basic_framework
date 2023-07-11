@@ -16,6 +16,7 @@
 #include "task.h"
 #include "daemon.h"
 #include "bsp_log.h"
+#include "cmsis_os.h"
 
 #define RE_RX_BUFFER_SIZE 255u // 裁判系统接收缓冲区大小
 
@@ -143,7 +144,6 @@ referee_info_t *RefereeInit(UART_HandleTypeDef *referee_usart_handle)
  */
 void RefereeSend(uint8_t *send, uint16_t tx_len)
 {
-	static TickType_t xLastWakeTime;
 	USARTSend(referee_usart_instance, send, tx_len, USART_TRANSFER_DMA);
-	vTaskDelayUntil(&xLastWakeTime, 120); // 裁判系统接收ui数据和多机通信最大支持频率为10Hz
+	osDelay(115);
 }
