@@ -35,13 +35,20 @@ void BSPLogInit();
 /**
  *  有颜色格式日志输出,建议使用这些宏来输出日志
  *  @attention 注意这些接口不支持浮点格式化输出,若有需要,请使用Float2Str()函数进行转换后再打印
+ *  @note 在release版本上车使用时,与makefile中添加的宏DISABLE_LOG_SYSTEM一起使用,可以关闭日志系统
  */
+#if DISABLE_LOG_SYSTEM
+#define LOGINFO(format, ...) __unused
+#define LOGWARNING(format, ...) __unused
+#define LOGERROR(format, ...) __unused
+#else
 // information level
 #define LOGINFO(format, ...) LOG_PROTO("I:", RTT_CTRL_TEXT_BRIGHT_GREEN, format, ##__VA_ARGS__)
 // warning level
 #define LOGWARNING(format, ...) LOG_PROTO("W:", RTT_CTRL_TEXT_BRIGHT_YELLOW, format, ##__VA_ARGS__)
 // error level
 #define LOGERROR(format, ...) LOG_PROTO("E:", RTT_CTRL_TEXT_BRIGHT_RED, format, ##__VA_ARGS__)
+#endif //  DISABLE_LOG_SYSTEM
 
 /**
  * @brief 通过segger RTT打印日志,支持格式化输出,格式化输出的实现参考printf.

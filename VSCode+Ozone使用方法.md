@@ -383,6 +383,9 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 
 > 和KEIL新增文件的方式很相似，但是更方便。
 
+
+- **另外**，如果你使用的时linux/Unix like/MacOS，则可以直接使用根目录下的Makefile.upgrade（复制替换到Makefile中），我们在其中定义了递归添加源文件和头文件目录的规则，不再需要手动添加新增的源文件和头文件路径。如果你使用windows+mingw/Msys2，则需要在mingw环境下执行编译指令，否则报错（因为makefile中使用了一些shell指令是cmd和powershell不支持的，后续考虑在makefile中添加os判断规则以自动替换目录查找指令）
+
 ### 简单的调试配置
 
 > 在VSCode中调试不能像Keil一样查看变量动态变化，但是支持以外的所有操作，如查看外设和反汇编代码，设置断点触发方式等。
@@ -785,9 +788,7 @@ AS_DEFS = # 汇编的一些宏定义
 C_DEFS =  \  # C语言的宏定义
 -DUSE_HAL_DRIVER \ # 使用HAL库.HAL库的许多头文件和源文件里会判断是否定义了这个宏
 -DSTM32F407xx \    # HAL库会根据使用的MCU的不同进行条件编译,这是一个很好的封装技术
--DARM_MATH_CM4 \   # 启用ARM MATH运算库,我们在卡尔曼滤波和最小二乘法的时候会用到矩阵运算
--DARM_MATH_MATRIX_CHECK \ # 启用矩阵乘法库
--DARM_MATH_ROUNDING       # 对数学库的输出结果进行取整防止溢出?
+-DARM_MATH_CM4     # 启用ARM MATH运算库,我们在卡尔曼滤波和最小二乘法的时候会用到矩阵运算
 
 # AS includes
 AS_INCLUDES = -IHAL_N_Middlewares/Inc
