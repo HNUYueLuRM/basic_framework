@@ -384,7 +384,7 @@ Makefile的大部分内容在CubeMX初始化的时候就会帮你生成。如果
 > 和KEIL新增文件的方式很相似，但是更方便。
 
 
-- **另外**，如果你使用的时linux/Unix like/MacOS，则可以直接使用根目录下的Makefile.upgrade（复制替换到Makefile中），我们在其中定义了递归添加源文件和头文件目录的规则，不再需要手动添加新增的源文件和头文件路径。如果你使用windows+mingw/Msys2，则需要在mingw环境下执行编译指令，否则报错（因为makefile中使用了一些shell指令是cmd和powershell不支持的，后续考虑在makefile中添加os判断规则以自动替换目录查找指令）
+- **另外**，如果你使用的时linux/Unix like/MacOS，则可以直接使用根目录下的Makefile.upgrade（复制替换到Makefile中），我们在其中定义了递归添加源文件和头文件目录的规则，不再需要手动添加新增的源文件和头文件路径。如果你使用windows+mingw/Msys2，则需要在mingw环境下执行编译指令，否则报错（因为makefile中使用了一些shell指令是cmd和powershell不支持的，后续考虑在makefile中添加os判断规则以自动替换目录查找指令）。若你坚持使用cmd/powershell，请参照`Makefile.upgrade`中的注释将makefile修改为对应指令格式以支持该环境下的使用。
 
 ### 简单的调试配置
 

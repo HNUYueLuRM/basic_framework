@@ -35,8 +35,7 @@ BUILD_DIR = build
 ######################################
 # source
 ######################################
-# 快速递归搜索当前目录下的.c文件,需在msys2环境下使用(Windows下),linux/macOS则可以直接使用
-# 如果一定要在powershell或cmd下使用,请自行修改查找子目录的命令find为对应值
+
 PROJ_DIR = Src \
 Inc \
 application \
@@ -44,7 +43,18 @@ modules \
 bsp \
 Drivers \
 Middlewares
+
+# 快速递归搜索当前目录下的.c文件,需在msys2/MinGW环境使用(Windows下),linux/macOS则可以直接使用
+# windows下使用命令行(cmd)或powershell时,替换注释的内容.
+
+# for unix/linux/macOS or Msys2/MinGW bash:
 ALL_DIRS := $(foreach dire, $(PROJ_DIR), $(shell find $(dire) -maxdepth 10 -type d))
+# for windows cmd/pwsh:
+# SHELL = cmd
+# ALL_DIRS := $(foreach dire, $(PROJ_DIR), $(shell dir $(dire) /s /b /a:d))
+# ALL_DIRS += $(PROJ_DIR)
+
+
 C_SOURCES := $(foreach dire, $(ALL_DIRS), $(wildcard $(dire)/*.c))
 
 # ASM sources

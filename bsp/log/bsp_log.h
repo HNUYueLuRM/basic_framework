@@ -38,9 +38,9 @@ void BSPLogInit();
  *  @note 在release版本上车使用时,与makefile中添加的宏DISABLE_LOG_SYSTEM一起使用,可以关闭日志系统
  */
 #if DISABLE_LOG_SYSTEM
-#define LOGINFO(format, ...) __unused
-#define LOGWARNING(format, ...) __unused
-#define LOGERROR(format, ...) __unused
+#define LOGINFO(format, ...) 
+#define LOGWARNING(format, ...) 
+#define LOGERROR(format, ...) 
 #else
 // information level
 #define LOGINFO(format, ...) LOG_PROTO("I:", RTT_CTRL_TEXT_BRIGHT_GREEN, format, ##__VA_ARGS__)
