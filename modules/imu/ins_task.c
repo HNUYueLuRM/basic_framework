@@ -14,8 +14,8 @@
 #include "ins_task.h"
 #include "controller.h"
 #include "QuaternionEKF.h"
-#include "bsp_temperature.h"
 #include "spi.h"
+#include "tim.h"
 #include "user_lib.h"
 #include "general_def.h"
 #include "master_process.h"
@@ -34,6 +34,11 @@ static float dt = 0, t = 0;
 static float RefTemp = 40; // 恒温设定温度
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
+
+static void IMUPWMSet(uint16_t pwm)
+{
+    __HAL_TIM_SetCompare(&htim10, TIM_CHANNEL_1, pwm);
+}
 
 /**
  * @brief 温度控制
@@ -78,6 +83,8 @@ attitude_t *INS_Init(void)
         INS.init = 1;
     else
         return (attitude_t *)&INS.Gyro;
+
+    HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
 
     while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR)
         ;

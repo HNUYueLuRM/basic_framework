@@ -34,6 +34,13 @@ void LEDSwitch(LEDInstance *_led, uint8_t led_switch)
     }
 }
 
-void LEDShow()
+void LEDShow(uint32_t aRGB)
 {
+    static uint8_t alpha;
+    static uint16_t red, green, blue;
+
+    alpha = (aRGB & 0xFF000000) >> 24;
+    red = ((aRGB & 0x00FF0000) >> 16) * alpha;
+    green = ((aRGB & 0x0000FF00) >> 8) * alpha;
+    blue = ((aRGB & 0x000000FF) >> 0) * alpha;
 }

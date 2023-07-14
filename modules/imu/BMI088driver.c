@@ -5,7 +5,7 @@
 #include "bsp_log.h"
 #include <math.h>
 
-#warning this is a legacy support. test the new BMI088 module as soon as possible.
+#pragma message "this is a legacy support. test the new BMI088 module as soon as possible."
 
 float BMI088_ACCEL_SEN = BMI088_ACCEL_6G_SEN;
 float BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN;

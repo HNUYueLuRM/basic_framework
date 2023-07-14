@@ -109,9 +109,6 @@ Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT_printf.c \
 Middlewares/Third_Party/SEGGER/RTT/SEGGER_RTT.c \
 bsp/dwt/bsp_dwt.c \
 bsp/pwm/bsp_pwm.c \
-bsp/bsp_legacy_support/bsp_temperature.c \
-bsp/bsp_legacy_support/bsp_buzzer.c \
-bsp/bsp_legacy_support/bsp_led.c \
 bsp/gpio/bsp_gpio.c \
 bsp/spi/bsp_spi.c \
 bsp/iic/bsp_iic.c \
@@ -120,7 +117,6 @@ bsp/usart/bsp_usart.c \
 bsp/usb/bsp_usb.c \
 bsp/log/bsp_log.c \
 bsp/flash/bsp_flash.c \
-bsp/bsp_init.c \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
 modules/algorithm/QuaternionEKF.c \
@@ -132,7 +128,6 @@ modules/imu/BMI088driver.c \
 modules/imu/BMI088Middleware.c \
 modules/imu/ins_task.c \
 modules/ist8310/ist8310.c \
-modules/led_task/led_task.c \
 modules/led/led.c \
 modules/master_machine/master_process.c \
 modules/master_machine/seasky_protocol.c \
@@ -247,14 +242,12 @@ C_INCLUDES =  \
 -Ibsp/log \
 -Ibsp/flash \
 -Ibsp/pwm \
--Ibsp/bsp_legacy_support \
 -Ibsp \
 -Imodules/algorithm \
 -Imodules/BMI088 \
 -Imodules/imu \
 -Imodules/ist8310 \
 -Imodules/led \
--Imodules/led_task \
 -Imodules/master_machine \
 -Imodules/motor/DJImotor \
 -Imodules/motor/LKmotor \
@@ -271,13 +264,14 @@ C_INCLUDES =  \
 -Imodules/daemon \
 -Imodules/vofa \
 -Imodules/alarm \
--Imodules 
+-Imodules  \
+-IMiddlewares/ST/ARM/DSP/Inc
 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -fdata-sections -ffunction-sections -fmessage-length=0
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -fdata-sections -ffunction-sections -fmessage-length=0 -Werror
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -299,7 +293,7 @@ LIBS = -lc -lm -lnosys  \
 -l:libCMSISDSP.a
 LIBDIR =  \
 -LMiddlewares/ST/ARM/DSP/Lib
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -flto
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -flto -Wl,--no-warn-rwx-segments -Wl,--print-memory-usage
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin

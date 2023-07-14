@@ -2,6 +2,7 @@
 #include "buzzer.h"
 #include "bsp_dwt.h"
 #include "string.h"
+
 static PWMInstance *buzzer;
 static uint8_t idx;
 static BuzzzerInstance *buzzer_list[BUZZER_DEVICE_CNT] = {0};
@@ -10,13 +11,13 @@ static BuzzzerInstance *buzzer_list[BUZZER_DEVICE_CNT] = {0};
  * @brief 蜂鸣器初始化
  *
  */
-void buzzer_init()
+void BuzzerInit()
 {
     PWM_Init_Config_s buzzer_config = {
-            .htim = &htim4,
-            .channel= TIM_CHANNEL_3,
-            .dutyratio = 0,
-            .period = 0.001,
+        .htim = &htim4,
+        .channel = TIM_CHANNEL_3,
+        .dutyratio = 0,
+        .period = 0.001,
     };
     buzzer = PWMRegister(&buzzer_config);
 }
@@ -36,7 +37,6 @@ BuzzzerInstance *BuzzerRegister(Buzzer_config_s *config)
 
     buzzer_list[config->alarm_level] = buzzer_temp;
     return buzzer_temp;
-
 }
 
 void AlarmSetStatus(BuzzzerInstance *buzzer, AlarmState_e state)
@@ -50,11 +50,11 @@ void BuzzerTask()
     for (size_t i = 0; i < BUZZER_DEVICE_CNT; ++i)
     {
         buzz = buzzer_list[i];
-        if(buzz->alarm_level > ALARM_LEVEL_LOW)
+        if (buzz->alarm_level > ALARM_LEVEL_LOW)
         {
             continue;
         }
-        if(buzz->alarm_state == ALARM_OFF)
+        if (buzz->alarm_state == ALARM_OFF)
         {
             PWMSetDutyRatio(buzzer, 0);
         }
@@ -63,35 +63,29 @@ void BuzzerTask()
             PWMSetDutyRatio(buzzer, buzz->loudness);
             switch (buzz->octave)
             {
-                case OCTAVE_1:
-                    PWMSetPeriod(buzzer, (float)1/DoFreq);
-                    break;
-                case OCTAVE_2:
-                    PWMSetPeriod(buzzer, (float)1/ReFreq);
-                    break;
-                case OCTAVE_3:
-                    PWMSetPeriod(buzzer, (float)1/MiFreq);
-                    break;
-                case OCTAVE_4:
-                    PWMSetPeriod(buzzer, (float)1/FaFreq);
-                    break;
-                case OCTAVE_5:
-                    PWMSetPeriod(buzzer, (float)1/SoFreq);
-                    break;
-                case OCTAVE_6:
-                    PWMSetPeriod(buzzer, (float)1/LaFreq);
-                    break;
-                case OCTAVE_7:
-                    PWMSetPeriod(buzzer, (float)1/SiFreq);
-                    break;
+            case OCTAVE_1:
+                PWMSetPeriod(buzzer, (float)1 / DoFreq);
+                break;
+            case OCTAVE_2:
+                PWMSetPeriod(buzzer, (float)1 / ReFreq);
+                break;
+            case OCTAVE_3:
+                PWMSetPeriod(buzzer, (float)1 / MiFreq);
+                break;
+            case OCTAVE_4:
+                PWMSetPeriod(buzzer, (float)1 / FaFreq);
+                break;
+            case OCTAVE_5:
+                PWMSetPeriod(buzzer, (float)1 / SoFreq);
+                break;
+            case OCTAVE_6:
+                PWMSetPeriod(buzzer, (float)1 / LaFreq);
+                break;
+            case OCTAVE_7:
+                PWMSetPeriod(buzzer, (float)1 / SiFreq);
+                break;
             }
             break;
         }
-
     }
-
 }
-
-
-
-

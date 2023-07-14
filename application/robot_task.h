@@ -89,7 +89,7 @@ void StartMOTORTASK(void const *argument)
 void StartDAEMONTASK(void const *argument)
 {
     static float daemon_dt, daemon_start;
-    buzzer_init();
+    BuzzerInit();
     LOGINFO("[freeRTOS] Daemon Task Start");
     while (1)
     {

@@ -53,7 +53,7 @@ typedef struct
 }BuzzzerInstance;
 
 
-void buzzer_init();
+void BuzzerInit();
 void BuzzerTask();
 BuzzzerInstance *BuzzerRegister(Buzzer_config_s *config);
 void AlarmSetStatus(BuzzzerInstance *buzzer, AlarmState_e state);
