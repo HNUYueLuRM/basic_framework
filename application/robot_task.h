@@ -58,7 +58,7 @@ void StartINSTASK(void const *argument)
     static float ins_start, ins_dt;
     INS_Init(); // 确保BMI088被正确初始化.
     LOGINFO("[freeRTOS] INS Task Start");
-    while (1)
+    for (;;)
     {
         // 1kHz
         ins_start = DWT_GetTimeline_ms();
@@ -75,7 +75,7 @@ void StartMOTORTASK(void const *argument)
 {
     static float motor_dt, motor_start;
     LOGINFO("[freeRTOS] MOTOR Task Start");
-    while (1)
+    for (;;)
     {
         motor_start = DWT_GetTimeline_ms();
         MotorControlTask();
@@ -91,7 +91,7 @@ void StartDAEMONTASK(void const *argument)
     static float daemon_dt, daemon_start;
     BuzzerInit();
     LOGINFO("[freeRTOS] Daemon Task Start");
-    while (1)
+    for (;;)
     {
         // 100Hz
         daemon_start = DWT_GetTimeline_ms();
@@ -109,7 +109,7 @@ void StartROBOTTASK(void const *argument)
     static float robot_dt, robot_start;
     LOGINFO("[freeRTOS] ROBOT core Task Start");
     // 200Hz-500Hz,若有额外的控制任务如平衡步兵可能需要提升至1kHz
-    while (1)
+    for (;;)
     {
         robot_start = DWT_GetTimeline_ms();
         RobotTask();
@@ -125,7 +125,7 @@ void StartUITASK(void const *argument)
     LOGINFO("[freeRTOS] UI Task Start");
     MyUIInit();
     LOGINFO("[freeRTOS] UI Init Done, communication with ref has established");
-    while (1)
+    for (;;)
     {
         // 每给裁判系统发送一包数据会挂起一次,详见UITask函数的refereeSend()
         UITask();

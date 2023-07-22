@@ -72,7 +72,7 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
             {
                 LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
                 uint16_t can_bus = config->can_handle == &hcan1 ? 1 : 2;
-                while (1) // 后续可以把id和CAN打印出来 // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
+                while (1) // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
                     LOGERROR("[dji_motor] id [%d], can_bus [%d]", config->rx_id, can_bus);
             }
         }
@@ -101,7 +101,7 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
             {
                 LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
                 uint16_t can_bus = config->can_handle == &hcan1 ? 1 : 2;
-                while (1) // 后续可以把id和CAN打印出来 // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
+                while (1) // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
                     LOGERROR("[dji_motor] id [%d], can_bus [%d]", config->rx_id, can_bus);
             }
         }

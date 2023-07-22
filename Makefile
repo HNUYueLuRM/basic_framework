@@ -117,6 +117,7 @@ bsp/usart/bsp_usart.c \
 bsp/usb/bsp_usb.c \
 bsp/log/bsp_log.c \
 bsp/flash/bsp_flash.c \
+bsp/bsp_tools.c \
 modules/algorithm/controller.c \
 modules/algorithm/kalman_filter.c \
 modules/algorithm/QuaternionEKF.c \
