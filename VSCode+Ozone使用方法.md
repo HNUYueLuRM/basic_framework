@@ -180,7 +180,7 @@ typedef struct
 
 > 2022-12-01更新：
 >
-> ​ **VSCode上线了一款新的插件：**
+>  **VSCode上线了一款新的插件：**
 >
 > ![image-20221201134906999](.assets/image-20221201134906999.png)
 >
@@ -245,6 +245,8 @@ typedef struct
   打开命令行，输入`arm-none-eabi-gcc -v`，如果没有报错，并输出了一堆路径和参数说明安装成功。
 
 > 添加到环境变量PATH的意思是，当一些程序需要某些依赖或者要打开某些程序时，系统会自动前往PATH下寻找对应项。**一般需要重启使环境变量生效。**
+
+**若你不希望扰乱系统的环境变量，可以参照附录5将Msys2/MinGW64的终端集成到VSCode中方便开发**。
 
 - **将OpenOCD解压到一个文件夹里**，稍后需要在VSCode的插件中设置这个路径。（will be deprecated soon，请注意这种方法将会在主分支发布正式版的时候删除）
 
@@ -444,6 +446,8 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 
    ![image-20221113133624273](.assets/image-20221113133624273.png)
 
+   > **现在Cortex-Debug插件也已经支持live watch（变量动态监视）**，最高可设置的刷新频率为4Hz，足堪大用，我们可以宣告KEIL的时代已经落幕！但是更复杂，更高频率的变量观测以及可视化功能还是需要通过ozone完成。
+
 3. 调用栈。表明在进入当前代码块之前调用了哪些函数，称之为栈也是因为调用的顺序从下至上。当前函数结束之后栈指针会减小，控制权会返还给上一级的调用者。通过调用栈可以确认程序是**如何**（按怎样的顺序）运行到当前位置的。
 
 4. 片上外设。这里可以查看外设的**控制寄存器**和**状态寄存器**的值，如果通过断点无法定位bug，则需要查找数据手册和Cortex M4指南的相关内容，根据寄存器值来判断程序当前的情况。
@@ -471,6 +475,8 @@ VSCode `ctrl+,`进入设置，通过`搜索`找到cortex-debug插件的设置。
 > 如果想直接下载代码不想调试，参阅[附录4](##附录4：VSCode直接烧录代码)。
 
 ### RTT Viewer日志功能
+
+> 2023/07/23：补充，Cortex-Debug插件最近似乎集成了RTT Viewer的支持，只需要设置好RTT client的路径，便可以一键启动RTT终端，查看串行调试器中发送的内容。还支持以一定的格式将RTT发来的内容进行可视化（示波器），但支持程度不如Ozone。可以自行查看插件的wiki和文档进行配置。
 
 本框架添加了vscode下Segger RTT client的支持。在`.vscode/task.json`中已经添加了启动rtt viewer client的任务。你也可以将此任务作为附加启动任务和调试一起启动，方便查看日志。要使用日志，请包含`bsp_log.h`。注意，需要将jlink的安装目录添加到环境变量中。
 
@@ -602,7 +608,7 @@ Project.SetOSPlugin(“plugin_name”)
 
    **注意，如果添加到动态调试窗口中没有反应，请在窗口8中修改一下”Sample Freq“为100Hz或200Hz即可**。
 
-8. 窗口8和7配合。在窗口8中会实时显示变量值，并且统计平均值和最大最小值，**而且还会将所有采样值保存到一个csv文件当中**，如果需要进一步分析可以导出这个数据文件。
+8. 窗口8和7配合。在窗口8中会实时显示变量值，并且统计平均值和最大最小值，**而且还会将所有采样值保存到一个csv文件当中**，如果需要进一步分析可以导出这个数据文件。若要进行系统辨识、前馈设计等，这无疑是最好的方法。这还可以方便我们观察采样值的异常，进一步提升debug的效率。
 
 9. 内存视图。可以直接查看任意内存位置的值。
 
@@ -881,12 +887,15 @@ clean:
   
 #######################################
 # dependencies
-#######################################
+#################################
+######
 -include $(wildcard $(BUILD_DIR)/*.d) # 包含所有的依赖文件(d=dependency),这是编译产生的中间文件,当hello.c包含hello.h而后者又包含了其他头文件时,会产生一个hello.d,它包含了hello.h中包括的其他的头文件的信息,提供给hello.c使用.
 
 # *** EOF ***
 
 ```
+
+另外，我们还在仓库的根目录提供了Makefile.upgrade文件，在该makefile中，我们提供了一些基于命令行的更高级的特性，例如自动源文件索引和头文件目录包含等，使用之后若添加了新的源文件就不再需要手动添加路径了。这里面还增加了一些为嵌入式选择的gcc优化参数。要启用高级特性，将其内容复制到你的makefile即可。
 
 - **编译优化等级**:
 
@@ -918,6 +927,8 @@ download_jlink:
 ```
 
 首先设定了flash烧录区的起始地址，下面两个构建目标分别用于daplink和jlink的下载。我们统一使用openocd进行烧录。命令中，`-c`表明的是启动openocd之后要执行的命令，openocd作为一个gdbserver是用作调试的，因此这里我们在`flash write_image`之后直接`reset`让单片机复位开始运行程序，然后立刻退出调试，从而达到下载程序运行但不调试的目的。
+
+> 若你认为在makefile中使用伪构建任务不合适，也可以自行在`task.json`中编写一个任务。
 
 接下来我们希望能够直接下载，不要在命令行里面输入`make download_dap`这么复杂的指令，我们可以利用make构建伪造目标来实现命令行命令执行，因此在tasks.json中添加如下两个任务：
 
@@ -951,7 +962,7 @@ download_jlink:
 
 之所以要使用Linux进行C++开发，是因为在开发环境中配置依赖包、依赖应用和库非常的方便。Debian系有apt，Fedora和Redhat系有yum，他们都可以方便地帮助我们下载开发软件必须的一些文件和工具。在windows的宇宙最强IDEVisual Studio中配置头文件和动态链接库可以称得上是最折磨的事。好在，现在Windows下也有可以使用的包管理工具了：[MSYS2](https://www.msys2.org/)。
 
-安装包已经上传到了网盘的`EC/VSCode+Ozone环境配置/msys2-x86_64-20221028.exe`下。安装之后，打开MSYS2 MSYS软件，他是一个类shell的界面：
+安装包已经上传到了网盘的`EC/VSCode+Ozone环境配置/msys2-x86_64-20221028.exe`下，你也可以在msys2的官网直接下载，如果没有ladder速度可能会稍慢，镜像站的下载速度会快许多。安装之后，打开MSYS2 MSYS软件，他是一个类shell的界面，实际上它提供了包括mingw64、ucrt64、clang64等多种不同编译环境在内的一组类linux开发工具合集：
 
 ![image-20221119222946103](.assets/image-20221119222946103.png)
 
@@ -973,6 +984,33 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-arm-none-eabi-toolchain mi
 注意，如果选用此安装方式，**OpenOCD的可执行文件也会被放在上面这个路径下**，记得稍后在VSCode中配置的时候找到这里。相应的scripts放在`D:\Msys2\mingw64\share\openocd`下。
 
 通过这种方式安装之后，还可以选用ccache加速编译。ccache会根据之前的编译输出建立缓存，使得之后编译时可以直接读取缓存。要开启这个功能，直接在Makefile中搜索PREFIX，将下面一行的内容替代原有内容（即增加ccache在arm-none-eabi-之前）。
+
+
+
+- **将msys2的各种终端集成到vscode当中**
+
+当你的系统中存在各种不同的编译环境时，将他们的路径一同添加到系统环境变量PATH中可能导致错误的工具和指令调用，也有可能在编译中匹配错误的库和头文件。为了防止这种事情发生，最好是只在特定的工具集中添加它们需要的环境变量。Msys2提供了各种子环境的终端（shell），你可以将它们集成到Vscode的终端中，当要进行对应的开发时，就新建一个你需要的环境的终端。
+
+`ctrl+,`打开vscode设置或直接打开vscode设置的.json文件，添加以下内容便会将对应的环境终端集成在vscode中：
+
+```json
+  "terminal.integrated.defaultProfile.windows": "mysys2-mingw64", // 若希望为默认终端可以加入这一句
+  "terminal.integrated.profiles.windows": {
+    "mysys2-mingw64": {
+      "path": "cmd.exe", // 意思是使用cmd作为父进程启动终端
+      "args": ["/c","C:\\msys64\\msys2_shell.cmd -defterm -mingw64 -no-start -here"]
+        // msys2_shell.cmd在msys的安装目录下，这里要改为你自己的目录
+    }
+  }
+```
+
+修改好之后，便可以在vscode中使用了：
+
+![image-20230723132711865](.assets/image-20230723132711865.png)
+
+linux下熟悉的ls/mkdir/find/ld/cat等命令和工具也一应俱全了。
+
+不过，这时配置的build task和其他download task仍然在powershell或cmd中启动，若没有添加环境变量它们无法找到对应的可执行文件，这时候你就要修改`task.json`，将使用的shell改为mingw64即可（若你使用ucrt或clang同理）。
 
 ## 附录6：Windows修改用户名为英文
 
