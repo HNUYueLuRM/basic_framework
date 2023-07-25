@@ -7,11 +7,16 @@
 	<p>
 		<img src="https://img.shields.io/badge/version-beta-blue"/>
 		<img src="https://img.shields.io/badge/license-MIT-green"/>
+    	<img src="https://github.com/HNUYueLuRM/basic_framework/actions/workflows/c-cpp.yml/badge.svg"/>
+    </p>
+   	<p>
 		<img src="https://gitee.com/HNUYueLuRM/basic_framework/badge/star.svg"/>
 		<img src="https://gitee.com/HNUYueLuRM/basic_framework/badge/fork.svg"/>
 	</p>
-    <h4><p><font face="仿宋">最棒的嵌入式电控开源？！</p></h>
+    <h5><p><font face="consolas">Best RoboMaster embedded EC open-source code ever?</p></h>
 </div>
+
+
 
 > ***也许不是最好的？但一定是最完整最详细最适合上手的电控开源！***
 
