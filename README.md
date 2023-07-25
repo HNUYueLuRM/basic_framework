@@ -1,8 +1,19 @@
 # YueLu2022/2023 EC basic_framework-dev
 
-> ***可能是最完整最详细最好的电控开源！***
-
 湖南大学RoboMaster跃鹿战队2022-2023电控通用嵌入式框架。
+
+<div align=center>
+	<img src=".assets/yuelu_badge.png"/>
+	<p>
+		<img src="https://img.shields.io/badge/version-beta-blue"/>
+		<img src="https://img.shields.io/badge/license-MIT-green"/>
+		<img src="https://gitee.com/HNUYueLuRM/basic_framework/badge/star.svg"/>
+		<img src="https://gitee.com/HNUYueLuRM/basic_framework/badge/fork.svg"/>
+	</p>
+    <h4><p><font face="仿宋">最棒的嵌入式电控开源？！</p></h>
+</div>
+
+> ***也许不是最好的？但一定是最完整最详细最适合上手的电控开源！***
 
 [TOC]
 
@@ -16,10 +27,6 @@
 
 
 ---
-
-
-
-
 
 
 
