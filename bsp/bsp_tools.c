@@ -21,11 +21,11 @@ static osThreadId cbkid_list[MX_SIG_LIST_SIZE];
 static CallbackTask_t cbkinfo_list[MX_SIG_LIST_SIZE];
 
 // 死循环任务,执行cbk函数指针,每次执行完毕后等待sig信号
-static void CallbackTaskBase(const void *cbk)
+__attribute__((noreturn)) static void CallbackTaskBase(void const *cbk)
 {
-    void (*cbk_func)(void *) = (void (*)(void *))((CallbackTask_t *)cbk)->callback;
-    void *ins = ((CallbackTask_t *)cbk)->ins;
-    uint32_t sig = ((CallbackTask_t *)cbk)->sig;
+    void (*cbk_func)(void const *) = (void (*)(void const *))((CallbackTask_t const *)cbk)->callback;
+    void const *ins = ((CallbackTask_t const *)cbk)->ins;
+    uint32_t sig = ((CallbackTask_t const *)cbk)->sig;
 
     for (;;)
     {
@@ -46,7 +46,7 @@ uint32_t CreateCallbackTask(char *name, void *cbk, void *ins, osPriority priorit
 
     osThreadDef_t threadDef;
     threadDef.name = name;
-    threadDef.pthread = CallbackTaskBase;
+    threadDef.pthread = &CallbackTaskBase;
     threadDef.tpriority = priority;
     threadDef.instances = 0;
     threadDef.stacksize = 128;

@@ -48,7 +48,7 @@ static float uint_to_float(int x_int, float x_min, float x_max, int bits)
 static void HTMotorDecode(CANInstance *motor_can)
 {
     uint16_t tmp; // 用于暂存解析值,稍后转换成float数据,避免多次创建临时变量
-    uint8_t *rxbuff = motor_can->rx_buff;
+    uint8_t const *rxbuff = motor_can->rx_buff;
     HTMotorInstance *motor = (HTMotorInstance *)motor_can->id;
     HTMotor_Measure_t *measure = &(motor->measure); // 将can实例中保存的id转换成电机实例的指针
 
@@ -127,9 +127,9 @@ HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config)
 
     HTMotorEnable(motor);
     HTMotorSetMode(CMD_MOTOR_MODE, motor); // 确保电机已经上电并执行电机模式
-    DWT_Delay(0.05);
+    DWT_Delay(0.05f);
     HTMotorCalibEncoder(motor); // 将当前编码器位置作为零位
-    DWT_Delay(0.05);            // 保证下一个电机发送时CAN是空闲的,注意应用在初始化模块的时候不应该进入中断
+    DWT_Delay(0.05f);           // 保证下一个电机发送时CAN是空闲的,注意应用在初始化模块的时候不应该进入中断
     ht_motor_instance[idx++] = motor;
     return motor;
 }
@@ -143,7 +143,7 @@ void HTMotorSetRef(HTMotorInstance *motor, float ref)
  * @brief 为了避免总线堵塞,为每个电机创建一个发送任务
  * @param argument 传入的电机指针
  */
-void HTMotorTask(void const *argument)
+__attribute__((noreturn)) void HTMotorTask(void const *argument)
 {
     float set, pid_measure, pid_ref;
     HTMotorInstance *motor = (HTMotorInstance *)argument;

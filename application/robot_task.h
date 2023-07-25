@@ -6,6 +6,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 
+#include "robot.h"
 #include "ins_task.h"
 #include "motor_task.h"
 #include "referee_task.h"
@@ -53,9 +54,10 @@ void OSTaskInit()
     HTMotorControlInit(); // 没有注册HT电机则不会执行
 }
 
-void StartINSTASK(void const *argument)
+__attribute__((noreturn)) void StartINSTASK(void const *argument)
 {
-    static float ins_start, ins_dt;
+    static float ins_start;
+    static float ins_dt;
     INS_Init(); // 确保BMI088被正确初始化.
     LOGINFO("[freeRTOS] INS Task Start");
     for (;;)
@@ -71,9 +73,10 @@ void StartINSTASK(void const *argument)
     }
 }
 
-void StartMOTORTASK(void const *argument)
+__attribute__((noreturn)) void StartMOTORTASK(void const *argument)
 {
-    static float motor_dt, motor_start;
+    static float motor_dt;
+    static float motor_start;
     LOGINFO("[freeRTOS] MOTOR Task Start");
     for (;;)
     {
@@ -86,9 +89,10 @@ void StartMOTORTASK(void const *argument)
     }
 }
 
-void StartDAEMONTASK(void const *argument)
+__attribute__((noreturn)) void StartDAEMONTASK(void const *argument)
 {
-    static float daemon_dt, daemon_start;
+    static float daemon_dt;
+    static float daemon_start;
     BuzzerInit();
     LOGINFO("[freeRTOS] Daemon Task Start");
     for (;;)
@@ -104,9 +108,10 @@ void StartDAEMONTASK(void const *argument)
     }
 }
 
-void StartROBOTTASK(void const *argument)
+__attribute__((noreturn)) void StartROBOTTASK(void const *argument)
 {
-    static float robot_dt, robot_start;
+    static float robot_dt;
+    static float robot_start;
     LOGINFO("[freeRTOS] ROBOT core Task Start");
     // 200Hz-500Hz,若有额外的控制任务如平衡步兵可能需要提升至1kHz
     for (;;)
@@ -120,7 +125,7 @@ void StartROBOTTASK(void const *argument)
     }
 }
 
-void StartUITASK(void const *argument)
+__attribute__((noreturn)) void StartUITASK(void const *argument)
 {
     LOGINFO("[freeRTOS] UI Task Start");
     MyUIInit();
