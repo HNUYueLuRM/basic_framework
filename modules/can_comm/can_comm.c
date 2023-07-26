@@ -95,7 +95,7 @@ CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
     ins->can_ins = CANRegister(&comm_config->can_config);
 
     Daemon_Init_Config_s daemon_config = {
-        .callback = NULL,
+        .callback = CANCommLostCallback,
         .owner_id = (void *)ins,
         .reload_count = comm_config->daemon_count,
     };

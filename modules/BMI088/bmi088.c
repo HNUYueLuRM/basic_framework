@@ -188,31 +188,31 @@ static uint8_t BMI088GyroInit(BMI088Instance *bmi088)
  */
 static void BMI088AccSPIFinishCallback(SPIInstance *spi)
 {
-    static BMI088Instance *bmi088;
-    bmi088 = (BMI088Instance *)(spi->id);
+    // static BMI088Instance *bmi088;
+    // bmi088 = (BMI088Instance *)(spi->id);
     // 若第一次读取加速度,则在这里启动温度读取
     // 如果使用异步姿态更新,此处唤醒量测更新的任务
 }
 
 static void BMI088GyroSPIFinishCallback(SPIInstance *spi)
 {
-    static BMI088Instance *bmi088;
-    bmi088 = (BMI088Instance *)(spi->id);
+    // static BMI088Instance *bmi088;
+    // bmi088 = (BMI088Instance *)(spi->id);
     // 若不是异步,啥也不做;否则启动姿态的预测步(propagation)
 }
 
 static void BMI088AccINTCallback(GPIOInstance *gpio)
 {
-    static BMI088Instance *bmi088;
-    bmi088 = (BMI088Instance *)(gpio->id);
+    // static BMI088Instance *bmi088;
+    // bmi088 = (BMI088Instance *)(gpio->id);
     // 启动加速度计数据读取(和温度读取,如果有必要),并转换为实际值
     // 读取完毕会调用BMI088AccSPIFinishCallback
 }
 
 static void BMI088GyroINTCallback(GPIOInstance *gpio)
 {
-    static BMI088Instance *bmi088;
-    bmi088 = (BMI088Instance *)(gpio->id);
+    // static BMI088Instance *bmi088;
+    // bmi088 = (BMI088Instance *)(gpio->id);
     // 启动陀螺仪数据读取,并转换为实际值
     // 读取完毕会调用BMI088GyroSPIFinishCallback
 }
@@ -258,6 +258,7 @@ uint8_t BMI088Acquire(BMI088Instance *bmi088, BMI088_Data_t *data_store)
     // 如果数据还没准备好,则返回空数据?或者返回上一次的数据?或者返回错误码? @todo
     if (bmi088->update_flag.imu_ready == 0)
         return 0;
+    return 1;
 }
 
 /* pre calibrate parameter to go here */
@@ -286,7 +287,6 @@ void BMI088CalibrateIMU(BMI088Instance *_bmi088)
         // 一次性参数用完就丢,不用static
         float startTime;                     // 开始标定时间,用于确定是否超时
         uint16_t CaliTimes = 6000;           // 标定次数(6s)
-        uint8_t buf[6] = {0};                // buffer
         float gyroMax[3], gyroMin[3];        // 保存标定过程中读取到的数据最大值判断是否满足标定环境
         float gNormTemp, gNormMax, gNormMin; // 同上,计算矢量范数(模长)
         float gyroDiff[3], gNormDiff;        // 每个轴的最大角速度跨度及其模长

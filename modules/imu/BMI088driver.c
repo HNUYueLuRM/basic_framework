@@ -18,8 +18,6 @@ float gyroDiff[3], gNormDiff;
 uint8_t caliOffset = 1;
 int16_t caliCount = 0;
 
-static uint32_t offset_cal_DWT_Count = 0;
-
 IMU_Data_t BMI088;
 
 #if defined(BMI088_USE_SPI)
@@ -333,17 +331,7 @@ void BMI088_Read(IMU_Data_t *bmi088)
 {
     static uint8_t buf[8] = {0};
     static int16_t bmi088_raw_temp;
-    static float dt = 1.0;
-    static uint8_t first_read_flag = 0;
-    if (!first_read_flag)
-    {
-        first_read_flag = 1;
-        DWT_GetDeltaT(&offset_cal_DWT_Count);
-    }
-    else
-    {
-        dt = DWT_GetDeltaT(&offset_cal_DWT_Count) * 1000.0;
-    }
+
     BMI088_accel_read_muli_reg(BMI088_ACCEL_XOUT_L, buf, 6);
 
     bmi088_raw_temp = (int16_t)((buf[1]) << 8) | buf[0];

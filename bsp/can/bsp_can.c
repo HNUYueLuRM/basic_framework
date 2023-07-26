@@ -106,7 +106,7 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
 uint8_t CANTransmit(CANInstance *_instance, float timeout)
 {
     static uint32_t busy_count;
-    static float wait_time;
+    static volatile float wait_time __attribute__((unused)); // for cancel warning
     float dwt_start = DWT_GetTimeline_ms();
     while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
     {

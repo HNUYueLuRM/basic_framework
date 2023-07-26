@@ -1,7 +1,8 @@
 #include "bsp_dwt.h"
 #include "ist8310.h"
-#include "memory.h"
-#include "stdlib.h"
+#include "bsp_log.h"
+#include <memory.h>
+#include <stdlib.h>
 
 // 一般这个模块只有一个实例,所以直接保存在这里,实际上不保存也可以,application可以自己保存
 static IST8310Instance *ist8310_instance = NULL; // 用于存储IST8310实例的指针
@@ -91,7 +92,7 @@ IST8310Instance *IST8310Init(IST8310_Init_Config_s *config)
         IICAccessMem(ist->iic, ist8310_write_reg_data_error[i][0], &check_who_i_am, 1, IIC_READ_MEM, 1); // 读回自身id
         if (check_who_i_am != ist8310_write_reg_data_error[i][1])
             while (1)
-                ist8310_write_reg_data_error[i][2]; // 掉线/写入失败/未知错误,会返回对应的错误码
+                LOGERROR("[ist8310] init error, code %d", ist8310_write_reg_data_error[i][2]); // 掉线/写入失败/未知错误,会返回对应的错误码
     }
 
     ist8310_instance = ist; // 保存ist8310实例的指针

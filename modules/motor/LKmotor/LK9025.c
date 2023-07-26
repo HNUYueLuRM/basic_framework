@@ -80,7 +80,7 @@ LKMotorInstance *LKMotorInit(Motor_Init_Config_s *config)
     lkmotor_instance[idx++] = motor;
 
     Daemon_Init_Config_s daemon_config = {
-        .callback = NULL,
+        .callback = LKMotorLostCallback,
         .owner_id = motor,
         .reload_count = 5, // 50ms
     };
