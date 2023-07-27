@@ -241,7 +241,7 @@ app、module和bsp都有相应的rtos任务。其中bsp为创建任务提供了�
 
 框架中的三层结构都有详尽的注释帮助阅读和二次开发，三个抽象层都有各自总览的说明文档，而每个bsp/module/app都配有对应的个性化说明文档，提供了接口说明和改进或进一步开发的建议。
 
-建议以自上而下的方式阅读代码，app-》module-》bsp，我们还提供了框架的说明视频，分别讲解每个抽象层和总体的设计思路，还有一些杂碎的开发相关知识：[basic_framework教程]()
+建议以自上而下的方式阅读代码，app-》module-》bsp，为此我们还提供了框架的说明视频，分别讲解每个抽象层和总体的设计思路，介绍了bsp的依赖HAL，还有一些杂碎的开发相关知识：[basic_framework教程](https://space.bilibili.com/522795884/channel/collectiondetail)
 
 ### 运行单个bsp/module测试
 
