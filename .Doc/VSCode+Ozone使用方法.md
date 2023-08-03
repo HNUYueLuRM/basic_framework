@@ -232,7 +232,9 @@ typedef struct
 
   打开命令行（win+R，cmd，回车），输入`gcc -v`，如果没有报错，并输出了一堆路径和参数说明安装成功。
   
-  安装完之后，建议将ming的bin文件夹下的ming32-make.exe复制一份，并将copy更名为make.exe
+  安装完之后，建议将ming的bin文件夹下的mingw32-make.exe复制一份，并将copy更名为make.exe
+
+  > 当然，更推荐的方式是将MinGW终端集成到VSCode中，防止类linux环境和Win的环境冲突，特别是你的电脑中安装了其他工具链的时候，如MSVC、LLVM等。
 
 - 配置gcc-arm-none-eabi环境变量，**把压缩包解压以后放在某个地方**，然后同上，将工具链的bin添加到PATH：（will be deprecated soon，请注意这种方法将会在主分支发布正式版的时候删除）
 
