@@ -4,11 +4,6 @@
 
 [TOC]
 
-> TODO：
->
-> 1. 添加一键编译+启用ozone调试脚本，使得整个进一步流程自动化
-> 2. 增加更多的背景知识介绍
-
 ## 前言
 
 了解过嵌入式开发的你一定接触过Keil，这款20世纪风格UI的IDE伴随很多人度过了学习单片机的岁月。然而由于其缺少代码补全、高亮和静态检查的支持，以及为人诟病的一系列逆天的设置、极慢的编译速度（特别是在开发HAL库时），很多开发者开始转向其他IDE。
@@ -42,31 +37,15 @@ CubeMX进行初始化 --> VSCode编写代/进行编译/简单调试 --> Ozone变
 
 3. C语言基础：[程序设计入门——C语言](https://www.icourse163.org/course/ZJU-199001?from=searchPage&outVendor=zw_mooc_pcssjg_)
 
-***务必学完以上课程再开始本教程的学习。***
+***务必学完以上课程再开始本教程的学习，以及后续的开发。***
+
+万丈高楼不可平地而起，地基不牢只会导致递归学习。
 
 > 如果有可能，还应该学习：[哈佛大学公开课：计算机科学cs50](https://open.163.com/newview/movie/courseintro?newurl=%2Fspecial%2Fopencourse%2Fcs50.html)。你将会对单片机和计算机有不同的理解。
 
 ## 预备知识
 
-1. 软件安装(队伍NAS和资料硬盘内提供了所有必要的依赖,安装包和插件，目录是`/EC/VSCode+Ozone环境配置`)，请以公共账号登陆网盘，ip地址为`49.123.113.2:5212`，账号`public@rm.cloud`,密码`public`。
-
-   所有安装包也可以在此百度网盘链接下获得：[archive.zip](https://pan.baidu.com/s/1sO_EI4cToyIAcScOQx-JSg?pwd=6666)
-
-   ```shell
-   # 网盘中的文件:
-   basic_framework.zip    # 本仓库文件,注意,可能不为最新,建议从仓库clone并定时pull
-   daplink_register_license.rar # daplink license注册机
-   gcc-arm-none-eabi-10.3-2021.10-win32.zip # arm-gnu-toolchain
-   JLinkARM.dll # 修改过的jlink运行链接库
-   JLink_Windows_V722b.exe  # JLink软件包
-   mingw-get-setup.exe  # mingw工具链
-   OpenOCD.zip  # OpenOCD
-   Ozone_doc.pdf  # Ozone使用手册
-   Ozone_Windows_V324_x86.exe  # Ozone安装包
-   VSCodeUserSetup-x64-1.73.1.exe  # VSCode安装包
-   ```
-
-2. C语言从源代码到.bin和.hex等机器代码的编译和链接过程
+1. C语言从源代码到.bin和.hex等机器代码的编译和链接过程
 
 3. C语言的内存模型
 
@@ -178,6 +157,28 @@ typedef struct
 
 > ***所有需要编辑的配置文件都已经在basic_framework的仓库中提供，如果不会写，照猫画虎。***
 
+- **软件安装**
+
+队伍NAS和资料硬盘内提供了所有必要的依赖,安装包和插件，目录是`/EC/VSCode+Ozone环境配置`，请以公共账号登陆网盘，ip地址为`49.123.113.2:5212`，账号`public@rm.cloud`,密码`public`。
+
+对于非队内的开发者，我们提供了网盘下载方式。所有安装包也可以在此百度网盘链接下获得：[archive.zip](https://pan.baidu.com/s/1sO_EI4cToyIAcScOQx-JSg?pwd=6666)
+
+```shell
+# 网盘中的文件:
+basic_framework.zip    # 本仓库文件,注意为了保证最新,建议从仓库clone并定时pull（或自动fetch）
+daplink_register_license.rar # daplink license注册机
+gcc-arm-none-eabi-10.3-2021.10-win32.zip # arm-gnu-toolchain，注意，这个版本太老，编译最新的框架可能出现一些编译参数不支持的情况。请通过Msys2直接安装或到arm官网下载最新的12.x版本。
+JLinkARM.dll # 修改过的jlink运行链接库
+JLink_Windows_V722b.exe  # JLink软件包
+mingw-get-setup.exe  # mingw工具链（更推荐的方式是使用msys2安装）
+OpenOCD.zip  # OpenOCD
+Ozone_doc.pdf  # Ozone使用手册
+Ozone_Windows_V324_x86.exe  # Ozone安装包
+VSCodeUserSetup-x64-1.73.1.exe  # VSCode安装包
+# 最佳实践是下载msys2并在mingw64中安装软件包！！！
+# 如果你喜欢clang，可以使用clang下的arm工具链。
+```
+
 > 2022-12-01更新：
 >
 >  **VSCode上线了一款新的插件：**
@@ -197,8 +198,8 @@ typedef struct
   - **C/C++**：提供C/C++的调试和代码高亮支持
   - **Better C++ Syntax**：提供更丰富的代码高亮和智能提示
   - **C/C++ Snippets**：提供代码块（关键字）补全
-  - **Cortex-Debug**，**Cortex-Debug: Device Support Pack - STM32F4**：提供调试支持。cortex debug还会自动帮助你安装一些调试相关的插件。
-  - **IntelliCode**，**Makfile Tools**：提供代码高亮支持
+  - **Cortex-Debug**，**Cortex-Debug: Device Support Pack - STM32F4**：提供调试支持。cortex debug还会自动帮助你安装一些调试相关的插件，包括RTOS支持和内存查看等。
+  - **IntelliCode**，**Makfile Tools**：提供代码高亮支持。喜欢clang的同学可以使用clangd。
 
   ![image-20221112172157533](../.assets/image-20221112172157533.png)
 
