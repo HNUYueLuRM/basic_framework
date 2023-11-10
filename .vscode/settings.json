@@ -57,6 +57,9 @@
         "bsp_can.h": "c",
         "can.h": "c"
     },
+    // "clangd.arguments": [
+    //     "-query-driver=C:/msys64/mingw64/bin/arm-none-eabi-*.exe",
+    // ],
     "cortex-debug.variableUseNaturalFormat": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
     // "C_Cpp.default.compilerPath": "D:\\Msys2\\mingw64\\bin\\arm-none-eabi-gcc.exe"
