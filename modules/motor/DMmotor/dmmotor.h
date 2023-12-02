@@ -8,11 +8,11 @@
 
 #define DM_MOTOR_CNT 4
 
-#define DM_P_MIN  -12.5f
+#define DM_P_MIN  (-12.5f)
 #define DM_P_MAX  12.5f
-#define DM_V_MIN  -45.0f
+#define DM_V_MIN  (-45.0f)
 #define DM_V_MAX  45.0f
-#define DM_T_MIN  -18.0f
+#define DM_T_MIN  (-18.0f)
 #define DM_T_MAX   18.0f
 
 typedef struct 

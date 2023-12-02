@@ -123,7 +123,7 @@ void Calibrate_MPU_Offset(IMU_Data_t *bmi088)
     uint8_t buf[8] = {0, 0, 0, 0, 0, 0};
     int16_t bmi088_raw_temp;
     float gyroMax[3], gyroMin[3];
-    float gNormTemp, gNormMax, gNormMin;
+    float gNormTemp = 0.0f, gNormMax = 0.0f, gNormMin = 0.0f;
 
     startTime = DWT_GetTimeline_s();
     do

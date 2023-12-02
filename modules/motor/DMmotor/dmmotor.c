@@ -115,14 +115,16 @@ void DMMotorOuterLoop(DMMotorInstance *motor, Closeloop_Type_e type)
     motor->motor_settings.outer_loop_type = type;
 }
 
+
+//@Todo: 目前只实现了力控，更多位控PID等请自行添加
 void DMMotorTask(void const *argument)
 {
-    float pid_measure, pid_ref, set;
+    float  pid_ref, set;
     DMMotorInstance *motor = (DMMotorInstance *)argument;
-    DM_Motor_Measure_s *measure = &motor->measure;
+   //DM_Motor_Measure_s *measure = &motor->measure;
     Motor_Control_Setting_s *setting = &motor->motor_settings;
-    CANInstance *motor_can = motor->motor_can_instace;
-    uint16_t tmp;
+    //CANInstance *motor_can = motor->motor_can_instace;
+    //uint16_t tmp;
     DMMotor_Send_s motor_send_mailbox;
     while (1)
     {

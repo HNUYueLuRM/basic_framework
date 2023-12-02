@@ -4,7 +4,7 @@
 #include "ins_task.h"
 #include "message_center.h"
 #include "general_def.h"
-
+#include "bmi088.h"
 #include "bmi088.h"
 
 static attitude_t *gimba_IMU_data; // 云台IMU数据
@@ -15,9 +15,12 @@ static Subscriber_t *gimbal_sub;                  // cmd控制消息订阅者
 static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给cmd的云台状态信息
 static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
+//static BMI088Instance *bmi088; // 云台IMU
 void GimbalInit()
-{
+{   
     gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+
+   // bmi088=BMI088Register(&imu_config);
     // YAW
     Motor_Init_Config_s yaw_config = {
         .can_init_config = {
@@ -146,7 +149,7 @@ void GimbalTask()
     // ...
 
     // 设置反馈数据,主要是imu和yaw的ecd
-    gimbal_feedback_data.gimbal_imu_data = *gimba_IMU_data;
+    //gimbal_feedback_data.gimbal_imu_data = *gimba_IMU_data;
     gimbal_feedback_data.yaw_motor_single_round_angle = yaw_motor->measure.angle_single_round;
 
     // 推送消息

@@ -124,12 +124,12 @@ modules/algorithm/QuaternionEKF.c \
 modules/algorithm/crc8.c \
 modules/algorithm/crc16.c \
 modules/algorithm/user_lib.c \
+modules/bluetooth/HC05.c \
 modules/BMI088/bmi088.c \
 modules/imu/BMI088driver.c \
 modules/imu/BMI088Middleware.c \
 modules/imu/ins_task.c \
 modules/ist8310/ist8310.c \
-modules/led/led.c \
 modules/master_machine/master_process.c \
 modules/master_machine/seasky_protocol.c \
 modules/motor/DJImotor/dji_motor.c \
@@ -149,7 +149,6 @@ modules/super_cap/super_cap.c \
 modules/can_comm/can_comm.c \
 modules/message_center/message_center.c \
 modules/daemon/daemon.c \
-modules/vofa/vofa.c \
 modules/alarm/buzzer.c \
 application/gimbal/gimbal.c \
 application/chassis/chassis.c \
@@ -246,10 +245,10 @@ C_INCLUDES =  \
 -Ibsp/pwm \
 -Ibsp \
 -Imodules/algorithm \
+-Imodules/bluetooth \
 -Imodules/BMI088 \
 -Imodules/imu \
 -Imodules/ist8310 \
--Imodules/led \
 -Imodules/master_machine \
 -Imodules/motor/DJImotor \
 -Imodules/motor/LKmotor \
@@ -265,7 +264,6 @@ C_INCLUDES =  \
 -Imodules/can_comm \
 -Imodules/message_center \
 -Imodules/daemon \
--Imodules/vofa \
 -Imodules/alarm \
 -Imodules  \
 -IMiddlewares/ST/ARM/DSP/Inc

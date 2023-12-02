@@ -21,7 +21,5 @@ void MotorControlTask()
     // HTMotorControl();
     // 将所有的CAN设备集中在一处发送,最高反馈频率仅能达到500Hz,为了更好的控制效果,应使用新的HTMotorControlInit()接口
 
-    ServeoMotorControl();
-
     // StepMotorControl();
 }

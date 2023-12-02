@@ -55,7 +55,8 @@
         "stm32f4xx_hal_conf.h": "c",
         "master_process.h": "c",
         "bsp_can.h": "c",
-        "can.h": "c"
+        "can.h": "c",
+        "servo_motor.h": "c"
     },
     // "clangd.arguments": [
     //     "-query-driver=C:/msys64/mingw64/bin/arm-none-eabi-*.exe",
