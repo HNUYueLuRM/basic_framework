@@ -5,7 +5,6 @@
 #include "message_center.h"
 #include "general_def.h"
 #include "bmi088.h"
-#include "bmi088.h"
 
 static attitude_t *gimba_IMU_data; // 云台IMU数据
 static DJIMotorInstance *yaw_motor, *pitch_motor;
@@ -15,12 +14,32 @@ static Subscriber_t *gimbal_sub;                  // cmd控制消息订阅者
 static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给cmd的云台状态信息
 static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
-//static BMI088Instance *bmi088; // 云台IMU
+static BMI088Instance *bmi088; // 云台IMU
 void GimbalInit()
 {   
-    gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+    //gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+    BMI088_Init_Config_s imu_config = {
+      .work_mode = BMI088_BLOCK_PERIODIC_MODE,
+      .spi_acc_config = {
+        .spi_handle = &hspi1,
+        .GPIOx = GPIOA,
+        .cs_pin = GPIO_PIN_4,
+        .spi_work_mode = SPI_BLOCK_MODE,
+      },
+      .spi_gyro_config = {
+        .spi_handle = &hspi1,
+        .GPIOx = GPIOA,
+        .cs_pin = GPIO_PIN_4,
+        .spi_work_mode = SPI_BLOCK_MODE,
+      },
+      .heat_pwm_config = {
+        .htim = &htim10,
+        .channel = TIM_CHANNEL_1,
+        .period = 1,
+      }
 
-   // bmi088=BMI088Register(&imu_config);
+    };
+    bmi088=BMI088Register(&imu_config);
     // YAW
     Motor_Init_Config_s yaw_config = {
         .can_init_config = {
@@ -149,7 +168,7 @@ void GimbalTask()
     // ...
 
     // 设置反馈数据,主要是imu和yaw的ecd
-    //gimbal_feedback_data.gimbal_imu_data = *gimba_IMU_data;
+    gimbal_feedback_data.gimbal_imu_data = *gimba_IMU_data;
     gimbal_feedback_data.yaw_motor_single_round_angle = yaw_motor->measure.angle_single_round;
 
     // 推送消息
