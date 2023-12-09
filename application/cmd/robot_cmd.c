@@ -46,7 +46,7 @@ static Shoot_Upload_Data_s shoot_fetch_data; // 从发射获取的反馈信息
 
 static Robot_Status_e robot_state; // 机器人整体工作状态
 
-BMI088Instance *bmi088; // 云台IMU
+BMI088Instance *bmi088_test; // 云台IMU
 BMI088_Data_t bmi088_data;
 void RobotCMDInit()
 {
@@ -57,7 +57,7 @@ void RobotCMDInit()
             .spi_handle = &hspi1,
             .GPIOx = GPIOA,
             .cs_pin = GPIO_PIN_4,
-            .spi_work_mode = SPI_IT_MODE,
+            .spi_work_mode = SPI_DMA_MODE,
         },
         .acc_int_config = {
             .GPIOx = GPIOC,
@@ -68,7 +68,7 @@ void RobotCMDInit()
             .spi_handle = &hspi1,
             .GPIOx = GPIOB,
             .cs_pin = GPIO_PIN_0,
-            .spi_work_mode = SPI_IT_MODE,
+            .spi_work_mode = SPI_DMA_MODE,
         },
         .gyro_int_config = {
             .GPIO_Pin = GPIO_PIN_5,
@@ -90,7 +90,7 @@ void RobotCMDInit()
             .MaxOut = 100,
         },
     };
-    bmi088 = BMI088Register(&bmi088_config);
+    bmi088_test = BMI088Register(&bmi088_config);
     rc_data = RemoteControlInit(&huart3);   // 修改为对应串口,注意如果是自研板dbus协议串口需选用添加了反相器的那个
     vision_recv_data = VisionInit(&huart1); // 视觉通信串口
 
@@ -319,7 +319,7 @@ static void EmergencyHandler()
 /* 机器人核心控制任务,200Hz频率运行(必须高于视觉发送频率) */
 void RobotCMDTask()
 {
-    BMI088Acquire(bmi088,&bmi088_data) ;
+    BMI088Acquire(bmi088_test,&bmi088_data) ;
     // 从其他应用获取回传数据
 #ifdef ONE_BOARD
     SubGetMessage(chassis_feed_sub, (void *)&chassis_fetch_data);

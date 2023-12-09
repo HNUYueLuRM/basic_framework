@@ -17,13 +17,13 @@
 
 #include "bsp_log.h"
 
-osThreadId insTaskHandle;
+// osThreadId insTaskHandle;
 osThreadId robotTaskHandle;
 osThreadId motorTaskHandle;
 osThreadId daemonTaskHandle;
 osThreadId uiTaskHandle;
 
-void StartINSTASK(void const *argument);
+// void StartINSTASK(void const *argument);
 void StartMOTORTASK(void const *argument);
 void StartDAEMONTASK(void const *argument);
 void StartROBOTTASK(void const *argument);
@@ -35,9 +35,9 @@ void StartUITASK(void const *argument);
  */
 void OSTaskInit()
 {
-    osThreadDef(instask, StartINSTASK, osPriorityAboveNormal, 0, 1024);
-    insTaskHandle = osThreadCreate(osThread(instask), NULL); // 由于是阻塞读取传感器,为姿态解算设置较高优先级,确保以1khz的频率执行
-    // 后续修改为读取传感器数据准备好的中断处理,
+    // osThreadDef(instask, StartINSTASK, osPriorityAboveNormal, 0, 1024);
+    // insTaskHandle = osThreadCreate(osThread(instask), NULL); // 由于是阻塞读取传感器,为姿态解算设置较高优先级,确保以1khz的频率执行
+    // // 后续修改为读取传感器数据准备好的中断处理,
 
     osThreadDef(motortask, StartMOTORTASK, osPriorityNormal, 0, 256);
     motorTaskHandle = osThreadCreate(osThread(motortask), NULL);
@@ -54,24 +54,24 @@ void OSTaskInit()
     HTMotorControlInit(); // 没有注册HT电机则不会执行
 }
 
-__attribute__((noreturn)) void StartINSTASK(void const *argument)
-{
-    static float ins_start;
-    static float ins_dt;
-    INS_Init(); // 确保BMI088被正确初始化.
-    LOGINFO("[freeRTOS] INS Task Start");
-    for (;;)
-    {
-        // 1kHz
-        ins_start = DWT_GetTimeline_ms();
-        INS_Task();
-        ins_dt = DWT_GetTimeline_ms() - ins_start;
-        if (ins_dt > 1)
-            LOGERROR("[freeRTOS] INS Task is being DELAY! dt = [%f]", &ins_dt);
-        VisionSend(); // 解算完成后发送视觉数据,但是当前的实现不太优雅,后续若添加硬件触发需要重新考虑结构的组织
-        osDelay(1);
-    }
-}
+// __attribute__((noreturn)) void StartINSTASK(void const *argument)
+// {
+//     static float ins_start;
+//     static float ins_dt;
+//     INS_Init(); // 确保BMI088被正确初始化.
+//     LOGINFO("[freeRTOS] INS Task Start");
+//     for (;;)
+//     {
+//         // 1kHz
+//         ins_start = DWT_GetTimeline_ms();
+//         //INS_Task();
+//         ins_dt = DWT_GetTimeline_ms() - ins_start;
+//         if (ins_dt > 1)
+//             LOGERROR("[freeRTOS] INS Task is being DELAY! dt = [%f]", &ins_dt);
+//         VisionSend(); // 解算完成后发送视觉数据,但是当前的实现不太优雅,后续若添加硬件触发需要重新考虑结构的组织
+//         osDelay(1);
+//     }
+// }
 
 __attribute__((noreturn)) void StartMOTORTASK(void const *argument)
 {
