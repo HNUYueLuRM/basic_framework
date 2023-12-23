@@ -4,6 +4,7 @@
 #include "daemon.h"
 
 static DaemonInstance *bmi088_daemon_instance;
+
 // ---------------------------以下私有函数,用于读写BMI088寄存器封装,blocking--------------------------------//
 /**
  * @brief 读取BMI088寄存器Accel. BMI088要求在不释放CS的情况下连续读取
@@ -42,12 +43,9 @@ static void BMI088GyroRead(BMI088Instance *bmi088, uint8_t reg, uint8_t *dataptr
     // 一次读取最多6个字节,加上一个dummy data  ,第一个字节的第一个位是读写位,1为读,0为写,1-7bit是寄存器地址
     static uint8_t tx[7] = {0x80}; // 读取,第一个字节为0x80 | reg ,之后是dummy data
     static uint8_t rx[7];          // 第一个是dummy data,第三个开始是真正的数据
+    
     tx[0] = 0x80 | reg;
-    //SPITransRecv(bmi088->spi_gyro, rx, tx, len + 1);
-    do
-    {
-        SPITransRecv(bmi088->spi_gyro, rx, tx, len + 1);
-    }while (rx[1] == 0 && rx[2] == 128 && rx[6] == 129); //@todo我也不知道哪来的错误帧 先这样吧。。。。。
+    SPITransRecv(bmi088->spi_gyro, rx, tx, len + 1);
     memcpy(dataptr, rx + 1, len); // @todo : memcpy有额外开销,后续可以考虑优化,在SPI中加入接口或模式,使得在一次传输结束后不释放CS,直接接着传输
 }
 
@@ -97,7 +95,7 @@ static uint8_t BMI088_Accel_Init_Table[BMI088_WRITE_ACCEL_REG_NUM][3] =
 static uint8_t BMI088_Gyro_Init_Table[BMI088_WRITE_GYRO_REG_NUM][3] =
     {
         {BMI088_GYRO_RANGE, BMI088_GYRO_2000, BMI088_GYRO_RANGE_ERROR},
-        {BMI088_GYRO_BANDWIDTH, BMI088_GYRO_2000_230_HZ | BMI088_GYRO_BANDWIDTH_MUST_Set, BMI088_GYRO_BANDWIDTH_ERROR},
+        {BMI088_GYRO_BANDWIDTH, BMI088_GYRO_1000_116_HZ | BMI088_GYRO_BANDWIDTH_MUST_Set, BMI088_GYRO_BANDWIDTH_ERROR},
         {BMI088_GYRO_LPM1, BMI088_GYRO_NORMAL_MODE, BMI088_GYRO_LPM1_ERROR},
         {BMI088_GYRO_CTRL, BMI088_DRDY_ON, BMI088_GYRO_CTRL_ERROR},
         {BMI088_GYRO_INT3_INT4_IO_CONF, BMI088_GYRO_INT3_GPIO_PP | BMI088_GYRO_INT3_GPIO_LOW, BMI088_GYRO_INT3_INT4_IO_CONF_ERROR},
@@ -224,18 +222,18 @@ static void BMI088AccINTCallback(GPIOInstance *gpio)
 
 static void BMI088GyroINTCallback(GPIOInstance *gpio)
 {
+    
     static BMI088Instance *bmi088;
     static uint8_t buf[6] = {0}; // 最多读取6个byte(gyro/acc,temp是2)
     bmi088 = (BMI088Instance *)(gpio->id);
     bmi088->update_flag.imu_ready = 1;
     bmi088->update_flag.gyro = 1;
+    uint8_t whoami_check = 0;
+    //do{BMI088GyroRead(bmi088, BMI088_GYRO_CHIP_ID, &whoami_check, 1);}while(whoami_check != BMI088_GYRO_CHIP_ID_VALUE);
+
     BMI088GyroRead(bmi088, BMI088_GYRO_X_L, buf, 6);
     for (uint8_t i = 0; i < 3; i++)
             bmi088->gyro[i] = bmi088->BMI088_GYRO_SEN * (float)(int16_t)(((buf[2 * i + 1]) << 8) | buf[2 * i]);
-    if(bmi088->gyro[0] < -20)
-    {
-        bmi088->update_flag.temp = 1;
-    }
     // 启动陀螺仪数据读取,并转换为实际值
     // 读取完毕会调用BMI088GyroSPIFinishCallback
 }
@@ -277,13 +275,15 @@ uint8_t BMI088Acquire(BMI088Instance *bmi088, BMI088_Data_t *data_store)
         {
             memcpy(data_store->acc,bmi088->acc,3*sizeof(float));
             bmi088->update_flag.acc = 0;
+            bmi088->update_flag.imu_ready = 0;
         }
         if(bmi088->update_flag.gyro == 1)
         {
             memcpy(data_store->gyro,bmi088->gyro,3*sizeof(float));
             bmi088->update_flag.gyro = 0;
+            bmi088->update_flag.imu_ready = 0;
         }
-        bmi088->update_flag.imu_ready = 0;
+
         return 1;
     }
 

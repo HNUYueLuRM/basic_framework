@@ -24,7 +24,8 @@ typedef struct spi_ins_temp
     SPI_TXRX_MODE_e spi_work_mode; // 传输工作模式
     uint8_t rx_size;               // 本次接收的数据长度
     uint8_t *rx_buffer;            // 本次接收的数据缓冲区
-
+    uint8_t CS_State;              // 片选信号状态,用于中断模式下的片选控制
+    uint8_t * cs_pin_state;        // 片选信号状态,用于中断模式下的片选控制
     void (*callback)(struct spi_ins_temp *); // 接收回调函数
     void *id;                                // 模块指针
 } SPIInstance;

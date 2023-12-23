@@ -4,7 +4,8 @@
 
 /* 所有的spi instance保存于此,用于callback时判断中断来源*/
 static SPIInstance *spi_instance[SPI_DEVICE_CNT] = {NULL};
-static uint8_t idx = 0; // 配合中断以及初始化
+static uint8_t idx = 0;                         // 配合中断以及初始化
+uint8_t SPIDeviceOnGoing[SPI_DEVICE_CNT] = {1}; // 用于判断当前spi是否正在传输,防止多个模块同时使用一个spi总线 (0: 正在传输, 1: 未传输)
 
 SPIInstance *SPIRegister(SPI_Init_Config_s *conf)
 {
@@ -20,7 +21,19 @@ SPIInstance *SPIRegister(SPI_Init_Config_s *conf)
     instance->spi_work_mode = conf->spi_work_mode;
     instance->callback = conf->callback;
     instance->id = conf->id;
-
+    if (instance->spi_handle->Instance == SPI1)
+    {
+        instance->cs_pin_state = &SPIDeviceOnGoing[0];
+    }
+    else if (instance->spi_handle->Instance == SPI2)
+    {
+        instance->cs_pin_state = &SPIDeviceOnGoing[1];
+    }
+    else
+    {
+        while (1)
+            ;
+    }
     spi_instance[idx++] = instance;
     return instance;
 }
@@ -78,11 +91,28 @@ void SPIRecv(SPIInstance *spi_ins, uint8_t *ptr_data, uint8_t len)
 
 void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_tx, uint8_t len)
 {
+
     // 用于稍后回调使用,请保证ptr_data_rx在回调函数被调用之前仍然在作用域内,否则析构之后的行为是未定义的!!!
     spi_ins->rx_size = len;
     spi_ins->rx_buffer = ptr_data_rx;
+    // 等待上一次传输完成
+    if (spi_ins->spi_handle->Instance == SPI1)
+    {
+        while (!SPIDeviceOnGoing[0])
+        {
+        };
+    }
+    else if (spi_ins->spi_handle->Instance == SPI2)
+    {
+        while (!SPIDeviceOnGoing[1])
+        {
+        };
+    }
     // 拉低片选,开始传输
     HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_RESET);
+    *spi_ins->cs_pin_state =
+        spi_ins->CS_State =
+            HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
     switch (spi_ins->spi_work_mode)
     {
     case SPI_DMA_MODE:
@@ -95,6 +125,9 @@ void SPITransRecv(SPIInstance *spi_ins, uint8_t *ptr_data_rx, uint8_t *ptr_data_
         HAL_SPI_TransmitReceive(spi_ins->spi_handle, ptr_data_tx, ptr_data_rx, len, 1000); // 默认50ms超时
         // 阻塞模式不会调用回调函数,传输完成后直接拉高片选结束
         HAL_GPIO_WritePin(spi_ins->GPIOx, spi_ins->cs_pin, GPIO_PIN_SET);
+        *spi_ins->cs_pin_state =
+            spi_ins->CS_State =
+                HAL_GPIO_ReadPin(spi_ins->GPIOx, spi_ins->cs_pin);
         break;
     default:
         while (1)
@@ -130,6 +163,9 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
         {
             // 先拉高片选,结束传输,在判断是否有回调函数,如果有则调用回调函数
             HAL_GPIO_WritePin(spi_instance[i]->GPIOx, spi_instance[i]->cs_pin, GPIO_PIN_SET);
+            *spi_instance[i]->cs_pin_state =
+                spi_instance[i]->CS_State =
+                    HAL_GPIO_ReadPin(spi_instance[i]->GPIOx, spi_instance[i]->cs_pin);
             // @todo 后续添加holdon模式,由用户自行决定何时释放片选,允许进行连续传输
             if (spi_instance[i]->callback != NULL) // 回调函数不为空, 则调用回调函数
                 spi_instance[i]->callback(spi_instance[i]);

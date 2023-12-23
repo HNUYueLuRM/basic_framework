@@ -17,29 +17,7 @@ static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 static BMI088Instance *bmi088; // 云台IMU
 void GimbalInit()
 {   
-    //gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
-    BMI088_Init_Config_s imu_config = {
-      .work_mode = BMI088_BLOCK_PERIODIC_MODE,
-      .spi_acc_config = {
-        .spi_handle = &hspi1,
-        .GPIOx = GPIOA,
-        .cs_pin = GPIO_PIN_4,
-        .spi_work_mode = SPI_BLOCK_MODE,
-      },
-      .spi_gyro_config = {
-        .spi_handle = &hspi1,
-        .GPIOx = GPIOA,
-        .cs_pin = GPIO_PIN_4,
-        .spi_work_mode = SPI_BLOCK_MODE,
-      },
-      .heat_pwm_config = {
-        .htim = &htim10,
-        .channel = TIM_CHANNEL_1,
-        .period = 1,
-      }
-
-    };
-    bmi088=BMI088Register(&imu_config);
+    gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
     // YAW
     Motor_Init_Config_s yaw_config = {
         .can_init_config = {

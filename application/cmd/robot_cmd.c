@@ -50,48 +50,48 @@ BMI088Instance *bmi088_test; // 云台IMU
 BMI088_Data_t bmi088_data;
 void RobotCMDInit()
 {
-    BMI088_Init_Config_s bmi088_config = {
-        .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
-        .work_mode = BMI088_BLOCK_TRIGGER_MODE,
-        .spi_acc_config = {
-            .spi_handle = &hspi1,
-            .GPIOx = GPIOA,
-            .cs_pin = GPIO_PIN_4,
-            .spi_work_mode = SPI_DMA_MODE,
-        },
-        .acc_int_config = {
-            .GPIOx = GPIOC,
-            .GPIO_Pin = GPIO_PIN_4,
-            .exti_mode = GPIO_EXTI_MODE_RISING,
-        },
-        .spi_gyro_config = {
-            .spi_handle = &hspi1,
-            .GPIOx = GPIOB,
-            .cs_pin = GPIO_PIN_0,
-            .spi_work_mode = SPI_DMA_MODE,
-        },
-        .gyro_int_config = {
-            .GPIO_Pin = GPIO_PIN_5,
-            .GPIOx = GPIOC,
-            .exti_mode = GPIO_EXTI_MODE_RISING,
-        },
-        .heat_pwm_config = {
-            .htim = &htim10,
-            .channel = TIM_CHANNEL_1,
-            .period = 1,
-        },
-        .heat_pid_config = {
-            .Kp = 0.5,
-            .Ki = 0,
-            .Kd = 0,
-            .DeadBand = 0.1,
-            .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
-            .IntegralLimit = 100,
-            .MaxOut = 100,
-        },
-    };
-    bmi088_test = BMI088Register(&bmi088_config);
-    rc_data = RemoteControlInit(&huart3);   // 修改为对应串口,注意如果是自研板dbus协议串口需选用添加了反相器的那个
+    // BMI088_Init_Config_s bmi088_config = {
+    //     .cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
+    //     .work_mode = BMI088_BLOCK_TRIGGER_MODE,
+    //     .spi_acc_config = {
+    //         .spi_handle = &hspi1,
+    //         .GPIOx = GPIOA,
+    //         .cs_pin = GPIO_PIN_4,
+    //         .spi_work_mode = SPI_DMA_MODE,
+    //     },
+    //     .acc_int_config = {
+    //         .GPIOx = GPIOC,
+    //         .GPIO_Pin = GPIO_PIN_4,
+    //         .exti_mode = GPIO_EXTI_MODE_RISING,
+    //     },
+    //     .spi_gyro_config = {
+    //         .spi_handle = &hspi1,
+    //         .GPIOx = GPIOB,
+    //         .cs_pin = GPIO_PIN_0,
+    //         .spi_work_mode = SPI_DMA_MODE,
+    //     },
+    //     .gyro_int_config = {
+    //         .GPIO_Pin = GPIO_PIN_5,
+    //         .GPIOx = GPIOC,
+    //         .exti_mode = GPIO_EXTI_MODE_RISING,
+    //     },
+    //     .heat_pwm_config = {
+    //         .htim = &htim10,
+    //         .channel = TIM_CHANNEL_1,
+    //         .period = 1,
+    //     },
+    //     .heat_pid_config = {
+    //         .Kp = 0.5,
+    //         .Ki = 0,
+    //         .Kd = 0,
+    //         .DeadBand = 0.1,
+    //         .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+    //         .IntegralLimit = 100,
+    //         .MaxOut = 100,
+    //     },
+    // };
+    //bmi088_test = BMI088Register(&bmi088_config);
+   rc_data = RemoteControlInit(&huart3);   // 修改为对应串口,注意如果是自研板dbus协议串口需选用添加了反相器的那个
     vision_recv_data = VisionInit(&huart1); // 视觉通信串口
 
     gimbal_cmd_pub = PubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));
@@ -319,7 +319,7 @@ static void EmergencyHandler()
 /* 机器人核心控制任务,200Hz频率运行(必须高于视觉发送频率) */
 void RobotCMDTask()
 {
-    BMI088Acquire(bmi088_test,&bmi088_data) ;
+   // BMI088Acquire(bmi088_test,&bmi088_data) ;
     // 从其他应用获取回传数据
 #ifdef ONE_BOARD
     SubGetMessage(chassis_feed_sub, (void *)&chassis_fetch_data);
