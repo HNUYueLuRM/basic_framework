@@ -15,7 +15,7 @@
 #define SPEED_SMOOTH_COEF 0.85f
 #define REDUCTION_RATIO_DRIVEN 1
 #define ECD_ANGLE_COEF_LK (360.0f / 65536.0f)
-#define CURRENT_TORQUE_COEF_LK 0.003645f // 电流设定值转换成扭矩的系数,算出来的设定值除以这个系数就是扭矩值
+#define CURRENT_TORQUE_COEF_LK 0.00512f  // 电流设定值转换成扭矩的系数，这里对应的是16T
 
 typedef struct // 9025
 {

@@ -121,7 +121,7 @@ HTMotorInstance *HTMotorInit(Motor_Init_Config_s *config)
     Daemon_Init_Config_s conf = {
         .callback = HTMotorLostCallback,
         .owner_id = motor,
-        .reload_count = 5, // 20ms
+        .reload_count = 5, // 50ms
     };
     motor->motor_daemon = DaemonRegister(&conf);
 
@@ -155,6 +155,9 @@ __attribute__((noreturn)) void HTMotorTask(void const *argument)
     while (1)
     {
         pid_ref = motor->pid_ref;
+        if (setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
+            pid_ref *= -1;
+
         if ((setting->close_loop_type & ANGLE_LOOP) && setting->outer_loop_type == ANGLE_LOOP)
         {
             if (setting->angle_feedback_source == OTHER_FEED)
@@ -186,8 +189,6 @@ __attribute__((noreturn)) void HTMotorTask(void const *argument)
         }
 
         set = pid_ref;
-        if (setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
-            set *= -1;
 
         LIMIT_MIN_MAX(set, T_MIN, T_MAX);
         tmp = float_to_uint(set, T_MIN, T_MAX, 12);
