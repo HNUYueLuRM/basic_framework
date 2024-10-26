@@ -14,7 +14,7 @@ static Subscriber_t *gimbal_sub;                  // cmd控制消息订阅者
 static Gimbal_Upload_Data_s gimbal_feedback_data; // 回传给cmd的云台状态信息
 static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
-static BMI088Instance *bmi088; // 云台IMU
+// static BMI088Instance *bmi088; // 云台IMU
 void GimbalInit()
 {   
     gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
