@@ -139,6 +139,7 @@ modules/motor/DMmotor/dmmotor.c \
 modules/motor/step_motor/step_motor.c \
 modules/motor/servo_motor/servo_motor.c \
 modules/motor/motor_task.c \
+modules/motor/power_control.c \
 modules/oled/oled.c \
 modules/referee/crc_ref.c \
 modules/referee/rm_referee.c \

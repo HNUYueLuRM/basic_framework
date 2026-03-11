@@ -6,6 +6,12 @@
         "usbd_cdc.h": "c",
         "usbd_conf.h": "c",
         "usbd_desc.h": "c",
-        "usbd_cdc_if.h": "c"
+        "usbd_cdc_if.h": "c",
+        "chassis.h": "c",
+        "remote_control.h": "c",
+        "arm_math.h": "c",
+        "can_comm.h": "c",
+        "dji_motor.h": "c",
+        "bsp_log.h": "c"
     }
 }

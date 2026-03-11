@@ -13,7 +13,7 @@
 
 #include "chassis.h"
 #include "robot_def.h"
-#include "dji_motor.h"
+#include "power_control.h"
 #include "super_cap.h"
 #include "message_center.h"
 #include "referee_task.h"
@@ -42,7 +42,8 @@ static Subscriber_t *chassis_sub;                   // 用于订阅底盘的控�
 static Chassis_Ctrl_Cmd_s chassis_cmd_recv;         // 底盘接收到的控制命令
 static Chassis_Upload_Data_s chassis_feedback_data; // 底盘回传的反馈数据
 
-static referee_info_t* referee_data; // 用于获取裁判系统的数据
+static PIDInstance buffer_PID;             // 用于底盘的缓冲能量PID
+static referee_info_t *referee_data;       // 用于获取裁判系统的数据
 static Referee_Interactive_info_t ui_data; // UI数据，将底盘中的数据传入此结构体的对应变量中，UI会自动检测是否变化，对应显示UI
 
 static SuperCapInstance *cap;                                       // 超级电容
@@ -52,8 +53,8 @@ static DJIMotorInstance *motor_lf, *motor_rf, *motor_lb, *motor_rb; // left righ
 // static float t;
 
 /* 私有函数计算的中介变量,设为静态避免参数传递的开销 */
-static float chassis_vx, chassis_vy;     // 将云台系的速度投影到底盘
-static float vt_lf, vt_rf, vt_lb, vt_rb; // 底盘速度解算后的临时输出,待进行限幅
+static float chassis_vx, chassis_vy;                      // 将云台系的速度投影到底盘
+static float vt_lf, vt_rf, vt_lb, vt_rb;                  // 底盘速度解算后的临时输出,待进行限幅
 
 void ChassisInit()
 {
@@ -62,49 +63,53 @@ void ChassisInit()
         .can_init_config.can_handle = &hcan1,
         .controller_param_init_config = {
             .speed_PID = {
-                .Kp = 10, // 4.5
-                .Ki = 0,  // 0
-                .Kd = 0,  // 0
-                .IntegralLimit = 3000,
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
-                .MaxOut = 12000,
-            },
-            .current_PID = {
-                .Kp = 0.5, // 0.4
+                .Kp = 4.5, // 4.5
                 .Ki = 0,   // 0
-                .Kd = 0,
+                .Kd = 0,   // 0
                 .IntegralLimit = 3000,
                 .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .MaxOut = 15000,
+                .Output_LPF_RC = 0.3,
             },
         },
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
-            .outer_loop_type = SPEED_LOOP,
-            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
+            .outer_loop_type = SPEED_LOOP, // 设置为开环，电机设定值由下面的功率控制设定，不走普通的pid
+            .close_loop_type = SPEED_LOOP,
         },
         .motor_type = M3508,
     };
     //  @todo: 当前还没有设置电机的正反转,仍然需要手动添加reference的正负号,需要电机module的支持,待修改.
+    //使用功率控制的电机需要使用PowerControlInit()函数初始化,因为电机的控制方式不同
     chassis_motor_config.can_init_config.tx_id = 1;
-    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
-    motor_lf = DJIMotorInit(&chassis_motor_config);
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_NORMAL;
+    motor_lf = PowerControlInit(&chassis_motor_config);
 
     chassis_motor_config.can_init_config.tx_id = 2;
-    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
-    motor_rf = DJIMotorInit(&chassis_motor_config);
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_NORMAL;
+    motor_rf = PowerControlInit(&chassis_motor_config);
 
     chassis_motor_config.can_init_config.tx_id = 4;
-    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
-    motor_lb = DJIMotorInit(&chassis_motor_config);
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_NORMAL;
+    motor_lb = PowerControlInit(&chassis_motor_config);
 
     chassis_motor_config.can_init_config.tx_id = 3;
-    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_REVERSE;
-    motor_rb = DJIMotorInit(&chassis_motor_config);
+    chassis_motor_config.controller_setting_init_config.motor_reverse_flag = MOTOR_DIRECTION_NORMAL;
+    motor_rb = PowerControlInit(&chassis_motor_config);
 
-    referee_data = UITaskInit(&huart6,&ui_data); // 裁判系统初始化,会同时初始化UI
+    referee_data = UITaskInit(&huart6, &ui_data); // 裁判系统初始化,会同时初始化UI
 
+/* Buffer环暂未测试，逻辑是计算期望buffer与实际buffer的差值，转换为冗余的功率，todo：输入给功率控制部分，待完善 */
+    PID_Init_Config_s Buffer_pid_conf = {
+        .Kp = 0.1,
+        .Ki = 0,
+        .Kd = 0,
+        .IntegralLimit = 1000,
+        .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+        .MaxOut = 1000,
+    };
+    PIDInit(&buffer_PID, &Buffer_pid_conf); // 缓冲能量PID初始化
     SuperCap_Init_Config_s cap_conf = {
         .can_config = {
             .can_handle = &hcan2,
@@ -192,6 +197,7 @@ void ChassisTask()
     chassis_cmd_recv = *(Chassis_Ctrl_Cmd_s *)CANCommGet(chasiss_can_comm);
 #endif // CHASSIS_BOARD
 
+    SetPowerLimit(referee_data->GameRobotState.chassis_power_limit);//设置功率限制
     if (chassis_cmd_recv.chassis_mode == CHASSIS_ZERO_FORCE)
     { // 如果出现重要模块离线或遥控器设置为急停,让电机停止
         DJIMotorStop(motor_lf);
