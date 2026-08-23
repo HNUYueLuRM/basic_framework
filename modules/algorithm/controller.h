@@ -133,4 +133,11 @@ void PIDInit(PIDInstance *pid, PID_Init_Config_s *config);
  */
 float PIDCalculate(PIDInstance *pid, float measure, float ref);
 
+/**
+ * @brief  PID清零
+ * @param  pid: 指向PID结构体的指针
+ * @retval 无
+ */
+void PIDClear(PIDInstance *pid);
+
 #endif

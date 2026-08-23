@@ -214,7 +214,7 @@ void DJIMotorStop(DJIMotorInstance *motor)
 
 void DJIMotorEnable(DJIMotorInstance *motor)
 {
-    motor->stop_flag = MOTOR_ENALBED;
+    motor->stop_flag = MOTOR_ENABLED;
 }
 
 /* 修改电机的实际闭环对象 */

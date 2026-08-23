@@ -48,7 +48,7 @@ Publisher_t *PubRegister(char *name, uint8_t data_len)
     memset(node->next_topic_node, 0, sizeof(Publisher_t));
     node->next_topic_node->data_len = data_len;
     strcpy(node->next_topic_node->topic_name, name);
-    node->pub_registered_flag = 1;
+    node->next_topic_node->pub_registered_flag = 1;
     return node->next_topic_node;
 }
 
@@ -88,7 +88,7 @@ uint8_t SubGetMessage(Subscriber_t *sub, void *data_ptr)
         return 0;
     }
     memcpy(data_ptr, sub->queue[sub->front_idx], sub->data_len);
-    sub->front_idx = (sub->front_idx++) % QUEUE_SIZE; // 队列头索引增加
+    sub->front_idx = (sub->front_idx + 1) % QUEUE_SIZE; // 队列头索引增加
     sub->temp_size--;                                 // pop一个数据,长度减1
     return 1;
 }

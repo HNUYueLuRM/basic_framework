@@ -36,9 +36,10 @@ typedef enum
 
 typedef enum
 {
-    FEEDFORWARD_NONE = 0b00,
-    CURRENT_FEEDFORWARD = 0b01,
-    SPEED_FEEDFORWARD = 0b10,
+    FEEDFORWARD_NONE = 0b000,
+    CURRENT_FEEDFORWARD = 0b001,
+    SPEED_FEEDFORWARD = 0b010,
+    FORCE_FEEDFORWARD = 0b100,
     CURRENT_AND_SPEED_FEEDFORWARD = CURRENT_FEEDFORWARD | SPEED_FEEDFORWARD,
 } Feedfoward_Type_e;
 
@@ -65,7 +66,7 @@ typedef enum
 typedef enum
 {
     MOTOR_STOP = 0,
-    MOTOR_ENALBED = 1,
+    MOTOR_ENABLED = 1,
 } Motor_Working_Type_e;
 
 /* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
@@ -80,6 +81,17 @@ typedef struct
     Feedfoward_Type_e feedforward_flag;            // 前馈标志
 
 } Motor_Control_Setting_s;
+
+typedef struct
+{
+    Closeloop_Type_e outer_loop_type;              // 最外层的闭环，必须设置
+    Closeloop_Type_e close_loop_type;              // 使用几个闭环(串级)
+    Motor_Reverse_Flag_e motor_reverse_flag;       // 是否反转
+    Feedback_Source_e angle_feedback_source;       // 角度反馈类型
+    Feedback_Source_e speed_feedback_source;       // 速度反馈类型
+    Feedfoward_Type_e feedforward_flag;         // 前馈标志
+
+} DMMotor_Control_Setting_s;
 
 /* 电机控制器,包括其他来源的反馈数据指针,3环控制器和电机的参考输入*/
 // 后续增加前馈数据指针
@@ -126,6 +138,18 @@ typedef struct
     PID_Init_Config_s angle_PID;
 } Motor_Controller_Init_s;
 
+typedef struct
+{
+    float *other_angle_feedback_ptr; // 角度反馈数据指针,注意电机使用total_angle
+    float *other_speed_feedback_ptr; // 速度反馈数据指针,单位为angle per sec
+
+    float *speed_feedforward_ptr;   // 速度前馈数据指针
+    float *force_feedforward_ptr; // 力矩前馈数据指针
+
+    PID_Init_Config_s speed_PID;
+    PID_Init_Config_s angle_PID;
+} DMMotor_Controller_Init_s;
+
 /* 用于初始化CAN电机的结构体,各类电机通用 */
 typedef struct
 {
@@ -134,5 +158,37 @@ typedef struct
     Motor_Type_e motor_type;
     CAN_Init_Config_s can_init_config;
 } Motor_Init_Config_s;
+
+typedef struct
+{
+    // PID相关的配置
+    DMMotor_Controller_Init_s controller_param_init_config;
+    DMMotor_Control_Setting_s controller_setting_init_config;
+    
+    CAN_Init_Config_s can_init_config;//CAN实例
+} DMMotor_Init_Config_s;//DM普通模式对应的初始化结构体
+
+typedef enum
+{
+    MOTOR_INIT = 0,
+    MOTOR_READY,
+}Motor_state_e;
+
+typedef struct
+{
+
+    float Kp;
+    float Kd;
+
+} MIT_Controller_Init_s;
+
+typedef struct
+{
+    MIT_Controller_Init_s controller_param_init_config;//MIT参数
+    Motor_Reverse_Flag_e motor_reverse_flag; // 是否反转
+    CAN_Init_Config_s can_init_config;//CAN实例
+
+} MIT_Init_Config_s;//MIT模式对应的初始化结构体
+
 
 #endif // !MOTOR_DEF_H

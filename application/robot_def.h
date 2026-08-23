@@ -206,6 +206,13 @@ typedef struct
     // ...
 } Shoot_Upload_Data_s;
 
+/* ----------------ui绘制所需----------------*/
+typedef enum
+{
+    UI_KEEP,
+    UI_REFRESH,
+} ui_mode_e;
+
 #pragma pack() // 开启字节对齐,结束前面的#pragma pack(1)
 
 #endif // !ROBOT_DEF_H

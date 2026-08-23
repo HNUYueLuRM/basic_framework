@@ -41,6 +41,15 @@
 #define switch_is_mid(s) (s == RC_SW_MID)
 #define switch_is_up(s) (s == RC_SW_UP)
 
+/* ----------------------- FS_RC Switch Definition----------------------------- */
+#define FS_RC_SW_UP ((uint16_t)0)   // 开关向上时的值
+#define FS_RC_SW_MID ((uint16_t)1)  // 开关中间时的值
+#define FS_RC_SW_DOWN ((uint16_t)2) // 开关向下时的值
+// 三个判断开关状态的宏
+#define fs_switch_is_down(s) (s == FS_RC_SW_DOWN)
+#define fs_switch_is_mid(s) (s == FS_RC_SW_MID)
+#define fs_switch_is_up(s) (s == FS_RC_SW_UP)
+
 /* ----------------------- PC Key Definition-------------------------------- */
 // 对应key[x][0~16],获取对应的键;例如通过key[KEY_PRESS][Key_W]获取W键是否按下,后续改为位域后删除
 #define Key_W 0
@@ -113,6 +122,25 @@ typedef struct
     uint8_t key_count[3][16];
 } RC_ctrl_t;
 
+typedef struct
+{
+    int16_t channel[10];  // 右侧水平拨杆
+
+    struct
+    {
+        int16_t rocker_l_; // 左水平
+        int16_t rocker_l1; // 左竖直
+        int16_t rocker_r_; // 右水平
+        int16_t rocker_r1; // 右竖直
+        uint8_t switch_left_1;  // 左侧开关
+        uint8_t switch_left_2;  // 左侧开关
+        uint8_t switch_right_1;  // 右侧开关
+        uint8_t switch_right_2; // 右侧开关
+        int16_t knob_l;//左旋钮
+        int16_t knob_r;//右旋钮
+    } rc;
+} FS_RC_ctrl_t;
+
 /* ------------------------- Internal Data ----------------------------------- */
 
 /**
@@ -122,6 +150,7 @@ typedef struct
  *
  */
 RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle);
+FS_RC_ctrl_t *FS_RemoteControlInit(UART_HandleTypeDef *rc_usart_handle);
 
 /**
  * @brief 检查遥控器是否在线,若尚未初始化也视为离线
@@ -129,5 +158,6 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle);
  * @return uint8_t 1:在线 0:离线
  */
 uint8_t RemoteControlIsOnline();
+uint8_t FS_RemoteControlIsOnline();
 
 #endif

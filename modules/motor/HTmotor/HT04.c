@@ -227,7 +227,7 @@ void HTMotorStop(HTMotorInstance *motor)
 
 void HTMotorEnable(HTMotorInstance *motor)
 {
-    motor->stop_flag = MOTOR_ENALBED;
+    motor->stop_flag = MOTOR_ENABLED;
 }
 
 void HTMotorOuterLoop(HTMotorInstance *motor, Closeloop_Type_e type)

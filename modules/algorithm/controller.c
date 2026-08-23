@@ -206,3 +206,22 @@ float PIDCalculate(PIDInstance *pid, float measure, float ref)
 
     return pid->Output;
 }
+
+/**
+ * @brief  PID清零
+ * @param  pid: 指向PID结构体的指针
+ * @retval 无
+ */
+void PIDClear(PIDInstance *pid)
+{
+    pid->ITerm = 0;
+    pid->Last_Err = 0;
+    pid->Last_Output = 0;
+    pid->Last_Dout = 0;
+    pid->Last_ITerm = 0;
+    pid->Iout = 0;
+    pid->Pout = 0;
+    pid->Dout = 0;
+    pid->Output = 0;
+    pid->dt = DWT_GetDeltaT(&pid->DWT_CNT); // 一定要更新时间戳，否则失能后在使能I会非常大
+}

@@ -13,9 +13,9 @@
 #pragma pack(1)
 typedef struct
 {
-    uint16_t vol; // 电压
-    uint16_t current; // 电流
-    uint16_t power; // 功率
+    float cap_vol; // 电容电压(最小8.5V,最大23V)
+    float power_in; // 裁判系统的功率输入(电管供电)
+    float power_chassis; // 底盘的输入功率
 } SuperCap_Msg_s;
 #pragma pack()
 
