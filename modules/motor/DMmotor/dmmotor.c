@@ -39,7 +39,7 @@ static void DMMotorSetMode(DMMotor_Mode_e cmd, DMMotorInstance *motor)
 {
     memset(motor->motor_can_instance->tx_buff, 0xff, 7);  // 发送电机指令的时候前面7bytes都是0xff
     motor->motor_can_instance->tx_buff[7] = (uint8_t)cmd; // 最后一位是命令id
-    CANTransmit(motor->motor_can_instance, 1);
+    CANTransmit(motor->motor_can_instance, 8);
 }
 
 //DM电机接收回调函数，用于处理接收到的数据
@@ -289,7 +289,7 @@ void DMMotorTask()
             motor->motor_can_instance->tx_buff[7] = (uint8_t)(motor_send_mailbox.torque_des);
 
             //发送控制帧
-            CANTransmit(motor->motor_can_instance, 1);
+            CANTransmit(motor->motor_can_instance, 8);
         }
         else if (motor->working_type == NORMAL_MODE)//普通模式需要发送的控制帧
         {
@@ -356,7 +356,7 @@ void DMMotorTask()
             motor->motor_can_instance->tx_buff[7] = (uint8_t)(motor_send_mailbox.torque_des);
 
             //发送控制帧
-            CANTransmit(motor->motor_can_instance, 1);
+            CANTransmit(motor->motor_can_instance, 8);
         }
     }
 }

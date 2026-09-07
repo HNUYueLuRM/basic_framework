@@ -146,7 +146,7 @@ void LKMotorControl()
     }
 
     if (idx) // 如果有电机注册了
-        CANTransmit(sender_instance, 0.2);
+        CANTransmit(sender_instance, 8);
 }
 
 void LKMotorStop(LKMotorInstance *motor)

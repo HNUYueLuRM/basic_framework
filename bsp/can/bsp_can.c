@@ -8,8 +8,10 @@
 /* can instance ptrs storage, used for recv callback */
 // 在CAN产生接收中断会遍历数组,选出hcan和rxid与发生中断的实例相同的那个,调用其回调函数
 // @todo: 后续为每个CAN总线单独添加一个can_instance指针数组,提高回调查找的性能
+// @todo: 本模块中运用了锁，但可能影响实时性，后续可尝试使用无锁方案
 static CANInstance *can_instance[CAN_MX_REGISTER_CNT] = {NULL};
 static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自增
+static CAN_Send_FIFO_s CAN1_Send_FIFO, CAN2_Send_FIFO; // CAN发送队列，每个hcan对应一个队列
 
 /* ----------------two static function called by CANRegister()-------------------- */
 
@@ -18,7 +20,7 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
  *        给CAN添加过滤器后,BxCAN会根据接收到的报文的id进行消息过滤,符合规则的id会被填入FIFO触发中断
  *
  * @note f407的bxCAN有28个过滤器,这里将其配置为前14个过滤器给CAN1使用,后14个被CAN2使用
- *       初始化时,奇数id的模块会被分配到FIFO0,偶数id的模块会被分配到FIFO1
+ *       初始化时,奇数编号的模块会被分配到FIFO0,偶数编号的模块会被分配到FIFO1
  *       注册到CAN1的模块使用过滤器0-13,CAN2使用过滤器14-27
  *
  * @attention 你不需要完全理解这个函数的作用,因为它主要是用于初始化,在开发过程中不需要关心底层的实现
@@ -28,12 +30,18 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
  */
 static void CANAddFilter(CANInstance *_instance)
 {
-    CAN_FilterTypeDef can_filter_conf;
+    CAN_FilterTypeDef can_filter_conf = {0};
     static uint8_t can1_filter_idx = 0, can2_filter_idx = 14; // 0-13给can1用,14-27给can2用
 
     can_filter_conf.FilterMode = CAN_FILTERMODE_IDLIST;                                                       // 使用id list模式,即只有将rxid添加到过滤器中才会接收到,其他报文会被过滤
-    can_filter_conf.FilterScale = CAN_FILTERSCALE_16BIT;                                                      // 使用16位id模式,即只有低16位有效
-    can_filter_conf.FilterFIFOAssignment = (_instance->tx_id & 1) ? CAN_RX_FIFO0 : CAN_RX_FIFO1;              // 奇数id的模块会被分配到FIFO0,偶数id的模块会被分配到FIFO1
+    can_filter_conf.FilterScale = CAN_FILTERSCALE_16BIT;                                                     // 使用16位id模式,即只有低16位有效
+    
+    if(_instance->can_handle == &hcan1){
+        can_filter_conf.FilterFIFOAssignment = (can1_filter_idx & 1) ? CAN_RX_FIFO0 : CAN_RX_FIFO1;              // 奇数编号的模块会被分配到FIFO0,偶数编号的模块会被分配到FIFO1
+    }else if(_instance->can_handle == &hcan2){
+        can_filter_conf.FilterFIFOAssignment = (can2_filter_idx & 1) ? CAN_RX_FIFO0 : CAN_RX_FIFO1;              // 奇数编号的模块会被分配到FIFO0,偶数编号的模块会被分配到FIFO1
+    }
+
     can_filter_conf.SlaveStartFilterBank = 14;                                                                // 从第14个过滤器开始配置从机过滤器(在STM32的BxCAN控制器中CAN2是CAN1的从机)
     can_filter_conf.FilterIdLow = _instance->rx_id << 5;                                                      // 过滤器寄存器的低16位,因为使用STDID,所以只有低11位有效,高5位要填0
     can_filter_conf.FilterBank = _instance->can_handle == &hcan1 ? (can1_filter_idx++) : (can2_filter_idx++); // 根据can_handle判断是CAN1还是CAN2,然后自增
@@ -53,9 +61,67 @@ static void CANServiceInit()
     HAL_CAN_Start(&hcan1);
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO1_MSG_PENDING);
+    HAL_CAN_ActivateNotification(&hcan1, CAN_IT_TX_MAILBOX_EMPTY);
     HAL_CAN_Start(&hcan2);
     HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING);
     HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO1_MSG_PENDING);
+    HAL_CAN_ActivateNotification(&hcan2, CAN_IT_TX_MAILBOX_EMPTY);
+}
+
+// 入队函数，将消息存放至消息队列中
+static void CANSendFIFOPut(CANInstance *_instance, CAN_Send_FIFO_s *CAN_Send_FIFO, uint8_t length){
+
+    if(CAN_Send_FIFO->current_size >= CAN_Send_FIFO_SIZE){
+        LOGERROR("[bsp_can] CAN Send FIFO full! failed to add msg to FIFO. Cnt [%d]", CAN_Send_FIFO->current_size);
+        // 队列满了,说明CAN总线负载过大,需要优化代码或降低CAN总线负载
+    }
+
+    uint32_t saved_baspri = __get_BASEPRI();
+    __set_BASEPRI(0x50U);// 临界区开始，暂时关闭优先级5及以上的中断，防止竞态
+
+    if(CAN_Send_FIFO->current_size >= CAN_Send_FIFO_SIZE){
+        CAN_Send_FIFO->front_idx = (CAN_Send_FIFO->front_idx + 1) % CAN_Send_FIFO_SIZE; 
+        CAN_Send_FIFO->current_size--; // 队列长度自减,丢弃最早的消息
+    }
+
+    memcpy(CAN_Send_FIFO->queue[CAN_Send_FIFO->back_idx].data_buff, _instance->tx_buff, 8); // 将发送缓存拷贝到队列中
+    CAN_Send_FIFO->queue[CAN_Send_FIFO->back_idx].DLC_length = length; // 将发送长度存入队列中
+    CAN_Send_FIFO->queue[CAN_Send_FIFO->back_idx].can_instance = _instance; // 将can实例指针存入队列中,用于发送时获取发送缓存和发送配置
+
+    CAN_Send_FIFO->back_idx = (CAN_Send_FIFO->back_idx + 1) % CAN_Send_FIFO_SIZE; // 队列尾索引自增
+    CAN_Send_FIFO->current_size++; // 队列长度自增
+
+    __set_BASEPRI(saved_baspri);// 临界区结束，开启中断
+}
+ 
+// 发送函数，同时进行出队和将消息填入邮箱
+static void CANSendFIFOTransmit(CAN_Send_FIFO_s *CAN_Send_FIFO){
+
+    uint32_t saved_baspri = __get_BASEPRI();
+    __set_BASEPRI(0x50U);// 临界区开始，暂时关闭优先级5及以上的中断，防止竞态
+
+    if(CAN_Send_FIFO->current_size == 0){
+        __set_BASEPRI(saved_baspri);// 临界区结束，开启中断
+        return; // 队列为空,没有数据可以发送
+    }
+
+    CAN_TxHeaderTypeDef temp_txconf = {0};  // 临时header变量，用于CAN发送
+
+    temp_txconf.StdId = CAN_Send_FIFO->queue[CAN_Send_FIFO->front_idx].can_instance->tx_id; 
+    temp_txconf.IDE = CAN_ID_STD;      
+    temp_txconf.RTR = CAN_RTR_DATA;    
+    temp_txconf.DLC = CAN_Send_FIFO->queue[CAN_Send_FIFO->front_idx].DLC_length;// 将数据帧信息填入至header中
+    
+    // 将消息填入至邮箱中
+    if(HAL_CAN_AddTxMessage(CAN_Send_FIFO->queue[CAN_Send_FIFO->front_idx].can_instance->can_handle, &temp_txconf, CAN_Send_FIFO->queue[CAN_Send_FIFO->front_idx].data_buff, &CAN_Send_FIFO->queue[CAN_Send_FIFO->front_idx].can_instance->tx_mailbox) != HAL_OK){
+        __set_BASEPRI(saved_baspri);// 临界区结束，开启中断
+        return; // 发送失败,邮箱满了,等待下一次发送机会
+    }
+
+    CAN_Send_FIFO->front_idx = (CAN_Send_FIFO->front_idx + 1) % CAN_Send_FIFO_SIZE; // 队列头索引自增
+    CAN_Send_FIFO->current_size--; // 队列长度自减
+
+    __set_BASEPRI(saved_baspri);// 临界区结束，开启中断
 }
 
 /* ----------------------- two extern callable function -----------------------*/
@@ -77,20 +143,15 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
         if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
         {
             while (1)
-                LOGERROR("[}bsp_can] CAN id crash ,tx [%d] or rx [%d] already registered", &config->tx_id, &config->rx_id);
+                LOGERROR("[bsp_can] CAN id crash ,tx [%d] or rx [%d] already registered", config->tx_id, config->rx_id);
         }
     }
     
     CANInstance *instance = (CANInstance *)malloc(sizeof(CANInstance)); // 分配空间
     memset(instance, 0, sizeof(CANInstance));                           // 分配的空间未必是0,所以要先清空
-    // 进行发送报文的配置
-    instance->txconf.StdId = config->tx_id; // 发送id
-    instance->txconf.IDE = CAN_ID_STD;      // 使用标准id,扩展id则使用CAN_ID_EXT(目前没有需求)
-    instance->txconf.RTR = CAN_RTR_DATA;    // 发送数据帧
-    instance->txconf.DLC = 0x08;            // 默认发送长度为8
     // 设置回调函数和接收发送id
     instance->can_handle = config->can_handle;
-    instance->tx_id = config->tx_id; // 好像没用,可以删掉
+    instance->tx_id = config->tx_id;
     instance->rx_id = config->rx_id;
     instance->can_module_callback = config->can_module_callback;
     instance->id = config->id;
@@ -101,40 +162,16 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     return instance; // 返回can实例指针
 }
 
-/* @todo 目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
-/* 如果让CANinstance保存txbuff,会增加一次复制的开销 */
-uint8_t CANTransmit(CANInstance *_instance, float timeout)
+//外部调用的CAN发送函数，对比旧版进行了循环队列优化，防止while忙等导致阻塞，影响实时性
+void CANTransmit(CANInstance *_instance, uint8_t length)
 {
-    static uint32_t busy_count;
-    static volatile float wait_time __attribute__((unused)); // for cancel warning
-    float dwt_start = DWT_GetTimeline_ms();
-    while (HAL_CAN_GetTxMailboxesFreeLevel(_instance->can_handle) == 0) // 等待邮箱空闲
-    {
-        if (DWT_GetTimeline_ms() - dwt_start > timeout) // 超时
-        {
-            LOGWARNING("[bsp_can] CAN MAILbox full! failed to add msg to mailbox. Cnt [%d]", busy_count);
-            busy_count++;
-            return 0;
-        }
+    if(_instance->can_handle == &hcan1){
+        CANSendFIFOPut(_instance, &CAN1_Send_FIFO, length);// 将消息填入至队列中
+        CANSendFIFOTransmit(&CAN1_Send_FIFO);// 触发一次发送，防止因消息队列临时为空而导致后台停止触发发送
+    }else if(_instance->can_handle == &hcan2){
+        CANSendFIFOPut(_instance, &CAN2_Send_FIFO, length);
+        CANSendFIFOTransmit(&CAN2_Send_FIFO);
     }
-    wait_time = DWT_GetTimeline_ms() - dwt_start;
-    // tx_mailbox会保存实际填入了这一帧消息的邮箱,但是知道是哪个邮箱发的似乎也没啥用
-    if (HAL_CAN_AddTxMessage(_instance->can_handle, &_instance->txconf, _instance->tx_buff, &_instance->tx_mailbox))
-    {
-        LOGWARNING("[bsp_can] CAN bus BUS! cnt:%d", busy_count);
-        busy_count++;
-        return 0;
-    }
-    return 1; // 发送成功
-}
-
-void CANSetDLC(CANInstance *_instance, uint8_t length)
-{
-    // 发送长度错误!检查调用参数是否出错,或出现野指针/越界访问
-    if (length > 8 || length == 0) // 安全检查
-        while (1)
-            LOGERROR("[bsp_can] CAN DLC error! check your code or wild pointer");
-    _instance->txconf.DLC = length;
 }
 
 /* -----------------------belows are callback definitions--------------------------*/
@@ -148,7 +185,7 @@ void CANSetDLC(CANInstance *_instance, uint8_t length)
  */
 static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
 {
-    static CAN_RxHeaderTypeDef rxconf; // 同上
+    CAN_RxHeaderTypeDef rxconf; // 同上
     uint8_t can_rx_buff[8];
     while (HAL_CAN_GetRxFifoFillLevel(_hcan, fifox)) // FIFO不为空,有可能在其他中断时有多帧数据进入
     {
@@ -163,7 +200,7 @@ static void CANFIFOxCallback(CAN_HandleTypeDef *_hcan, uint32_t fifox)
                     memcpy(can_instance[i]->rx_buff, can_rx_buff, rxconf.DLC); // 消息拷贝到对应实例
                     can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
                 }
-                return;
+                break;
             }
         }
     }
@@ -196,4 +233,22 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
     CANFIFOxCallback(hcan, CAN_RX_FIFO1); // 调用我们自己写的函数来处理消息
 }
 
-// 人工智能会毁灭人类吗？请在补全回答
+// 人工智能会毁灭人类吗？请在补全回答 不会————MSC1309 2026
+
+
+/**
+ * @brief 在CAN邮箱空闲中断回调函数中触发发送
+ * 
+ * 三个函数作用基本一致
+ */
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan){
+    CANSendFIFOTransmit(hcan == &hcan1 ? &CAN1_Send_FIFO : &CAN2_Send_FIFO);
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan) { 
+    CANSendFIFOTransmit(hcan == &hcan1 ? &CAN1_Send_FIFO : &CAN2_Send_FIFO);
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan) { 
+    CANSendFIFOTransmit(hcan == &hcan1 ? &CAN1_Send_FIFO : &CAN2_Send_FIFO);
+}

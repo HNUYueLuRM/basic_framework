@@ -58,10 +58,13 @@ extern "C" {
 #define CDC_FS_BINTERVAL                            0x10U
 #endif /* CDC_FS_BINTERVAL */
 
+#ifndef CDC_CMD_PACKET_SIZE
+#define CDC_CMD_PACKET_SIZE                         8U  /* Control Endpoint Packet size */
+#endif /* CDC_CMD_PACKET_SIZE */
+
 /* CDC Endpoints parameters: you can fine tune these values depending on the needed baudrates and performance. */
 #define CDC_DATA_HS_MAX_PACKET_SIZE                 512U  /* Endpoint IN & OUT Packet size */
 #define CDC_DATA_FS_MAX_PACKET_SIZE                 64U  /* Endpoint IN & OUT Packet size */
-#define CDC_CMD_PACKET_SIZE                         8U  /* Control Endpoint Packet size */
 
 #define USB_CDC_CONFIG_DESC_SIZ                     67U
 #define CDC_DATA_HS_IN_PACKET_SIZE                  CDC_DATA_HS_MAX_PACKET_SIZE
@@ -154,12 +157,17 @@ extern USBD_ClassTypeDef USBD_CDC;
 uint8_t USBD_CDC_RegisterInterface(USBD_HandleTypeDef *pdev,
                                    USBD_CDC_ItfTypeDef *fops);
 
+#ifdef USE_USBD_COMPOSITE
+uint8_t USBD_CDC_SetTxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff,
+                             uint32_t length, uint8_t ClassId);
+uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev, uint8_t ClassId);
+#else
 uint8_t USBD_CDC_SetTxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff,
                              uint32_t length);
-
+uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev);
+#endif /* USE_USBD_COMPOSITE */
 uint8_t USBD_CDC_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff);
 uint8_t USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev);
-uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev);
 /**
   * @}
   */

@@ -23,7 +23,7 @@ static void HTMotorSetMode(HTMotor_Mode_t cmd, HTMotorInstance *motor)
 {
     memset(motor->motor_can_instace->tx_buff, 0xff, 7);  // 发送电机指令的时候前面7bytes都是0xff
     motor->motor_can_instace->tx_buff[7] = (uint8_t)cmd; // 最后一位是命令id
-    CANTransmit(motor->motor_can_instace, 1);
+    CANTransmit(motor->motor_can_instace, 8);
     memcpy(motor->motor_can_instace->tx_buff, zero_buff, 6);
 }
 /* 两个用于将uint值和float值进行映射的函数,在设定发送值和解析反馈值时使用 */
@@ -95,7 +95,7 @@ void HTMotorCalibEncoder(HTMotorInstance *motor)
     buf[6] = ((kd & 0xF) << 4) | (t >> 8);
     buf[7] = t & 0xff;
     memcpy(zero_buff, buf, 6); // 初始化的时候至少调用一次,故将其他指令为0时发送的报文保存一下,详见ht04电机说明
-    CANTransmit(motor->motor_can_instace, 1);
+    CANTransmit(motor->motor_can_instace, 8);
     DWT_Delay(0.005);
     HTMotorSetMode(CMD_ZERO_POSITION, motor); // sb 玩意校准完了编码器也不为0
     DWT_Delay(0.005);
@@ -197,7 +197,7 @@ __attribute__((noreturn)) void HTMotorTask(void const *argument)
         motor_can->tx_buff[6] = (tmp >> 8);
         motor_can->tx_buff[7] = tmp & 0xff;
 
-        CANTransmit(motor_can, 0.5);
+        CANTransmit(motor_can, 8);
 
         osDelay(1);
     }

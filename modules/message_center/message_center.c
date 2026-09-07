@@ -95,7 +95,7 @@ uint8_t SubGetMessage(Subscriber_t *sub, void *data_ptr)
 
 uint8_t PubPushMessage(Publisher_t *pub, void *data_ptr)
 {
-    static Subscriber_t *iter;
+    Subscriber_t *iter;
     iter = pub->first_subs; // iter作为订阅者指针,遍历订阅该话题的所有订阅者;如果为空说明遍历结束
     // 遍历订阅了当前话题的所有订阅者,依次填入最新消息
     while (iter)
