@@ -282,7 +282,6 @@ typedef struct {
     float MIT_Kp;                              // MIT 模式 Kp
     float MIT_Kd;                              // MIT 模式 Kd
     int rx_refresh_dt;                         // 通信质量监测（自增）
-    int rx_init_flag;                          // 首次接收标志
     Motor_Working_Type_e stop_flag;            // 软件启停标志
     CANInstance *motor_can_instance;           // 挂载的 CAN 实例
     Motor_Control_Type_e working_type;         // NORMAL_MODE / MIT_MODE

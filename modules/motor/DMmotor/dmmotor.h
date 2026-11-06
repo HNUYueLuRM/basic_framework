@@ -90,7 +90,6 @@ typedef struct
 
     int rx_refresh_dt;//用于通过实时观测变量来监测总线通信质量不参与通信超时的判断（看门狗依赖DM内置的timeout）
     //如果观察该变量大于等于2，则说明通信质量低，请检查布线是否规范，总线负载是否过高
-    int rx_init_flag;//第一次收到反馈标志位，用于防止多圈角度计数错误
 
     Motor_Working_Type_e stop_flag;//软件关闭电机标志位
     CANInstance *motor_can_instance;//电机对应的CAN通信实例

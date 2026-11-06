@@ -11,7 +11,6 @@
 
 #include "dmmotor.h"
 #include "memory.h"
-#include "general_def.h"
 #include "user_lib.h"
 #include "string.h"
 #include "bsp_log.h"
@@ -60,11 +59,6 @@ static void DMMotorDecode(CANInstance *motor_can)
 
     tmp = (uint16_t)((rxbuff[1] << 8) | rxbuff[2]);
     measure->position = uint_to_float(tmp, DM_P_MIN, DM_P_MAX, 16);//解析角度
-
-    if (motor->rx_init_flag == 0){
-        measure->last_position = measure->position;//防止因为第一次接受到数据时measure->last_position默认为0导致计数错误
-        motor->rx_init_flag = 1;
-    }
 
     tmp = (uint16_t)((rxbuff[3] << 4) | rxbuff[4] >> 4);
     measure->velocity = uint_to_float(tmp, DM_V_MIN, DM_V_MAX, 12);//解析速度
